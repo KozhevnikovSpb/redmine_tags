@@ -2,7 +2,7 @@
 
 <%= error_messages_for @tag_cloud %>
 
-<%= form_for [@project, @tag_cloud], html: { class: 'tabular' } do |f| %>
+<%= form_for [@project, @tag_cloud] do |f| %>
   <%= render partial: 'form', locals: { f: f } %>
 <% end %>
 
