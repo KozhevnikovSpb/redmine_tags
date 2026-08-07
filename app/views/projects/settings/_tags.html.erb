@@ -9,7 +9,6 @@
   <table class="list tag-clouds-settings-table" id="tag-clouds-settings-table">
     <thead>
       <tr>
-        <th class="tag-cloud-col-drag"></th>
         <th class="tag-cloud-col-name"><%= l(:label_tag_cloud_name, default: 'Name') %></th>
         <th class="tag-cloud-col-filters"><%= l(:label_tag_cloud_filters, default: 'Filters') %></th>
         <th class="tag-cloud-col-visible"><%= l(:label_tag_cloud_visible_by_default, default: 'Visible by default') %></th>
@@ -22,13 +21,6 @@
         <tr id="tag-cloud-<%= cloud.id %>"
             class="<%= cycle('odd', 'even') %><%= ' system' if cloud.is_system? %>"
             data-id="<%= cloud.id %>">
-          <td class="tag-cloud-col-drag">
-            <% unless cloud.is_system? %>
-              <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
-                <%= sprite_icon('reorder', '') %>
-              </span>
-            <% end %>
-          </td>
           <td class="tag-cloud-col-name name">
             <%= cloud.name %>
             <% if cloud.is_system? %>
@@ -38,6 +30,11 @@
           <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
           <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
           <td class="buttons">
+            <% unless cloud.is_system? %>
+              <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
+                <%= sprite_icon('reorder', '') %>
+              </span>
+            <% end %>
             <%= link_to sprite_icon('edit', l(:button_edit)),
                         edit_project_tag_cloud_path(@project, cloud),
                         class: 'icon icon-edit',
