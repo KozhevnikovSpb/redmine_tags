@@ -11,6 +11,76 @@
 .most_used_tag { cursor: pointer; color: #169; }
 .most_used_tag:hover { text-decoration: underline;}
 
+/* ---- Project settings: Tag Clouds table ---- */
+.tag-clouds-settings-table .tag-cloud-col-drag {
+  width: 28px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.tag-clouds-settings-table .tag-cloud-col-name,
+.tag-clouds-settings-table .tag-cloud-col-filters {
+  text-align: left !important;
+}
+
+.tag-clouds-settings-table thead .tag-cloud-col-name,
+.tag-clouds-settings-table thead .tag-cloud-col-filters {
+  text-align: left !important;
+}
+
+.tag-clouds-settings-table .tag-cloud-col-visible {
+  text-align: center;
+  width: 120px;
+}
+
+.tag-clouds-settings-table .buttons {
+  white-space: nowrap;
+  width: 64px;
+  text-align: right;
+}
+
+.tag-clouds-settings-table .buttons a.icon-only {
+  margin-left: 4px;
+}
+
+.tag-clouds-settings-table .tag-cloud-system-badge {
+  margin-left: 6px;
+  font-size: 0.75em;
+  vertical-align: middle;
+}
+
+.tag-clouds-settings-table .tag-cloud-drag-handle {
+  display: inline-block;
+  color: #999;
+  cursor: grab;
+  user-select: none;
+  font-size: 14px;
+  letter-spacing: -2px;
+  line-height: 1;
+  padding: 2px 4px;
+}
+
+.tag-clouds-settings-table .tag-cloud-drag-handle:active {
+  cursor: grabbing;
+  color: #666;
+}
+
+.tag-clouds-settings-table tr.ui-sortable-helper {
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.tag-clouds-settings-table tr.tag-cloud-settings-placeholder {
+  visibility: visible !important;
+  height: 36px;
+  background: #e8eef5;
+  border: 1px dashed #628db6;
+}
+
+.tag-clouds-settings-table tr.tag-cloud-settings-placeholder td {
+  border: none;
+}
+
 /* Select visible tag clouds — sidebar control */
 .sidebar-tag-cloud-controls {
   margin: 6px 0 10px;
@@ -102,7 +172,7 @@
   visibility: visible !important;
 }
 
-/* Drag handle (grip) */
+/* Drag handle (grip) in modal */
 #select-visible-tag-clouds-form .tag-cloud-drag-handle {
   display: inline-flex;
   align-items: center;

@@ -2,40 +2,49 @@
 
 <% if @project.present? %>
   <% TagCloud.ensure_system_cloud(@project) %>
-  <% @tag_clouds = @project.tag_clouds.order(:position, :id) %>
+  <% @tag_clouds = @project.tag_clouds.unscoped.order(:position, :id).to_a %>
 <% end %>
 
 <% if @tag_clouds && @tag_clouds.any? %>
-  <table class="list">
+  <table class="list tag-clouds-settings-table" id="tag-clouds-settings-table">
     <thead>
       <tr>
-        <th><%= l(:label_tag_cloud_name, default: 'Name') %></th>
-        <th><%= l(:label_tag_cloud_filters, default: 'Filters') %></th>
-        <th><%= l(:label_tag_cloud_visible_by_default, default: 'Visible by default') %></th>
-        <th><%= l(:label_tag_cloud_position, default: 'Position') %></th>
-        <th class="actions"></th>
+        <th class="tag-cloud-col-drag"></th>
+        <th class="tag-cloud-col-name"><%= l(:label_tag_cloud_name, default: 'Name') %></th>
+        <th class="tag-cloud-col-filters"><%= l(:label_tag_cloud_filters, default: 'Filters') %></th>
+        <th class="tag-cloud-col-visible"><%= l(:label_tag_cloud_visible_by_default, default: 'Visible by default') %></th>
+        <th class="buttons"></th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="tag-clouds-sortable-settings"
+           data-reorder-url="<%= reorder_project_tag_clouds_path(@project) %>">
       <% @tag_clouds.each_with_index do |cloud, idx| %>
-        <tr class="<%= idx.even? ? 'even' : 'odd' %><%= ' system' if cloud.is_system? %>">
-          <td>
+        <tr id="tag-cloud-<%= cloud.id %>"
+            class="<%= cycle('odd', 'even') %><%= ' system' if cloud.is_system? %>"
+            data-id="<%= cloud.id %>">
+          <td class="tag-cloud-col-drag">
+            <span class="tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">&#8942;&#8942;</span>
+          </td>
+          <td class="tag-cloud-col-name name">
             <%= cloud.name %>
             <% if cloud.is_system? %>
-              <span class="badge badge-info" style="margin-left: 5px;"><%= l(:label_tag_cloud_system, default: 'system') %></span>
+              <span class="badge badge-info tag-cloud-system-badge"><%= l(:label_tag_cloud_system, default: 'system') %></span>
             <% end %>
           </td>
-          <td><%= tag_cloud_filters_summary(cloud) %></td>
-          <td><%= cloud.visible_by_default ? '✓' : '—' %></td>
-          <td><%= cloud.position %></td>
-          <td class="actions">
-            <%= link_to l(:button_edit), edit_project_tag_cloud_path(@project, cloud), class: 'icon icon-edit' %>
+          <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
+          <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
+          <td class="buttons">
+            <%= link_to '',
+                        edit_project_tag_cloud_path(@project, cloud),
+                        class: 'icon-only icon-edit',
+                        title: l(:button_edit) %>
             <% unless cloud.is_system? %>
-              <%= link_to l(:button_delete),
+              <%= link_to '',
                           project_tag_cloud_path(@project, cloud),
                           method: :delete,
                           data: { confirm: l(:text_are_you_sure) },
-                          class: 'icon icon-del' %>
+                          class: 'icon-only icon-del',
+                          title: l(:button_delete) %>
             <% end %>
           </td>
         </tr>
@@ -49,7 +58,7 @@
 <p>
   <%= link_to l(:label_new_tag_cloud, default: 'New Tag Cloud'),
               new_project_tag_cloud_path(@project),
-              class: 'icon icon-add button' %>
+              class: 'icon icon-add' %>
 </p>
 
 <p class="info"><%= l(:text_tag_clouds_info, default: 'Tag clouds allow multiple analytical views of issues with independent filters. System cloud is protected and always present.') %></p>

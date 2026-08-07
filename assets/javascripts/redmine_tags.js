@@ -18,4 +18,58 @@ $(function () {
             $('<span>', { class: 'most_used_tag', text: item }).appendTo($container);
         });
     });
+
+    // Project settings: drag-and-drop reorder of tag clouds
+    function initTagCloudsSettingsSortable() {
+        var $tbody = $('#tag-clouds-sortable-settings');
+        if (!$tbody.length || typeof $.fn.sortable !== 'function') {
+            return;
+        }
+        if ($tbody.data('ui-sortable')) {
+            return;
+        }
+
+        var reorderUrl = $tbody.data('reorder-url');
+
+        $tbody.sortable({
+            handle: '.tag-cloud-drag-handle',
+            axis: 'y',
+            items: 'tr',
+            helper: function (e, tr) {
+                var $originals = tr.children();
+                var $helper = tr.clone();
+                $helper.children().each(function (index) {
+                    $(this).width($originals.eq(index).outerWidth());
+                });
+                return $helper;
+            },
+            placeholder: 'tag-cloud-settings-placeholder',
+            tolerance: 'pointer',
+            update: function () {
+                var ids = $tbody.find('tr[data-id]').map(function () {
+                    return $(this).data('id');
+                }).get();
+
+                if (!reorderUrl || !ids.length) {
+                    return;
+                }
+
+                $.ajax({
+                    url: reorderUrl,
+                    type: 'POST',
+                    dataType: 'text',
+                    data: {
+                        tag_cloud_ids: ids,
+                        authenticity_token: $('meta[name="csrf-token"]').attr('content')
+                    }
+                });
+            }
+        });
+    }
+
+    initTagCloudsSettingsSortable();
+    // Settings tabs may load content via AJAX
+    $(document).on('ajax:complete', function () {
+        initTagCloudsSettingsSortable();
+    });
 });
