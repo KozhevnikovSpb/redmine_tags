@@ -9,9 +9,9 @@
   <table class="list tag-clouds-settings-table" id="tag-clouds-settings-table">
     <thead>
       <tr>
-        <th class="tag-cloud-col-name"><%= l(:label_tag_cloud_name, default: 'Name') %></th>
-        <th class="tag-cloud-col-filters"><%= l(:label_tag_cloud_filters, default: 'Filters') %></th>
-        <th class="tag-cloud-col-visible"><%= l(:label_tag_cloud_visible_by_default, default: 'Visible by default') %></th>
+        <th class="tag-cloud-col-name"><%= l(:label_tag_cloud_name) %></th>
+        <th class="tag-cloud-col-filters"><%= l(:label_tag_cloud_filters) %></th>
+        <th class="tag-cloud-col-visible"><%= l(:label_tag_cloud_visible_by_default) %></th>
         <th class="buttons"></th>
       </tr>
     </thead>
@@ -22,9 +22,9 @@
             class="<%= cycle('odd', 'even') %><%= ' system' if cloud.is_system? %>"
             data-id="<%= cloud.id %>">
           <td class="tag-cloud-col-name name">
-            <%= cloud.name %>
+            <%= cloud.is_system? ? l(:label_default_tag_cloud) : cloud.name %>
             <% if cloud.is_system? %>
-              <span class="badge badge-info tag-cloud-system-badge"><%= l(:label_tag_cloud_system, default: 'system') %></span>
+              <span class="badge badge-info tag-cloud-system-badge"><%= l(:label_tag_cloud_system) %></span>
             <% end %>
           </td>
           <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
@@ -57,9 +57,9 @@
 <% end %>
 
 <p>
-  <%= link_to sprite_icon('add', l(:label_new_tag_cloud, default: 'New Tag Cloud')),
+  <%= link_to sprite_icon('add', l(:label_new_tag_cloud)),
               new_project_tag_cloud_path(@project),
               class: 'icon icon-add' %>
 </p>
 
-<p class="info"><%= l(:text_tag_clouds_info, default: 'Tag clouds allow multiple analytical views of issues with independent filters. System cloud is protected and always present.') %></p>
+<p class="info"><%= l(:text_tag_clouds_info) %></p>

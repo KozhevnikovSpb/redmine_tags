@@ -8,7 +8,12 @@
 <div class="box tag-cloud-form" data-label-all="<%= label_all %>">
   <p class="tag-cloud-name-row">
     <%= f.label :name, l(:label_tag_cloud_name) %>
-    <%= f.text_field :name, required: true, size: 60 %>
+    <% if @tag_cloud.is_system? %>
+      <%= f.text_field :name, value: l(:label_default_tag_cloud), required: true, size: 60, readonly: true %>
+      <%= f.hidden_field :name, value: @tag_cloud.name.presence || l(:label_default_tag_cloud) %>
+    <% else %>
+      <%= f.text_field :name, required: true, size: 60 %>
+    <% end %>
   </p>
 
   <fieldset class="tag-cloud-filters-fieldset">
