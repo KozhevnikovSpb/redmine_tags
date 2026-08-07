@@ -1,48 +1,102 @@
-<div class="box">
+<%
+  status_selected  = Array(@tag_cloud.status_filter).map(&:to_i).reject(&:zero?)
+  version_selected = Array(@tag_cloud.version_filter).map(&:to_i).reject(&:zero?)
+  tracker_selected = Array(@tag_cloud.tracker_filter).map(&:to_i).reject(&:zero?)
+%>
+
+<div class="box tabular tag-cloud-form">
   <p>
     <%= f.label :name, l(:label_tag_cloud_name, default: 'Name') %>
     <%= f.text_field :name, required: true, size: 60 %>
   </p>
 
-  <fieldset>
-    <legend>
-      <%= l(:label_tag_cloud_filters, default: 'Filters') %>
-      <span class="info">(<%= l(:text_tag_cloud_filters_empty_means_all, default: 'empty = Any / all items') %>)</span>
-    </legend>
+  <fieldset class="tag-cloud-filters-fieldset">
+    <legend><%= l(:label_tag_cloud_filters, default: 'Filters') %></legend>
 
-    <p>
-      <%= f.label :status_filter, l(:label_tag_cloud_status_filter, default: 'Status filter') %>
-      <%= f.select :status_filter,
-                   @statuses.map { |s| [s.name, s.id] },
-                   { selected: (@tag_cloud.status_filter || []).map(&:to_i) },
-                   { multiple: true, size: 6, class: 'select2' } %>
-    </p>
+    <div class="tag-cloud-filters-grid">
+      <%# ---- Status ---- %>
+      <div class="tag-cloud-filter-panel" data-filter="status_filter">
+        <div class="tag-cloud-filter-header">
+          <span class="tag-cloud-filter-title"><%= l(:label_tag_cloud_status_filter, default: 'Status filter') %></span>
+          <button type="button" class="tag-cloud-filter-add" title="<%= l(:button_add) %>">+</button>
+        </div>
+        <div class="tag-cloud-filter-chips" <%= 'hidden' if status_selected.empty? %>>
+          <% @statuses.each do |s| %>
+            <% next unless status_selected.include?(s.id) %>
+            <span class="tag-cloud-filter-chip" data-id="<%= s.id %>"><%= s.name %></span>
+          <% end %>
+        </div>
+        <ul class="tag-cloud-filter-list" hidden>
+          <% @statuses.each do |s| %>
+            <li class="tag-cloud-filter-option<%= ' is-selected' if status_selected.include?(s.id) %>"
+                data-id="<%= s.id %>"
+                data-name="<%= s.name %>"><%= s.name %></li>
+          <% end %>
+        </ul>
+        <div class="tag-cloud-filter-inputs">
+          <% status_selected.each do |id| %>
+            <input type="hidden" name="tag_cloud[status_filter][]" value="<%= id %>">
+          <% end %>
+        </div>
+      </div>
 
-    <p>
-      <%= f.label :version_filter, l(:label_tag_cloud_version_filter, default: 'Version filter') %>
-      <%= f.select :version_filter,
-                   @versions.map { |v| [v.name, v.id] },
-                   { selected: (@tag_cloud.version_filter || []).map(&:to_i) },
-                   { multiple: true, size: 6, class: 'select2' } %>
-    </p>
+      <%# ---- Version ---- %>
+      <div class="tag-cloud-filter-panel" data-filter="version_filter">
+        <div class="tag-cloud-filter-header">
+          <span class="tag-cloud-filter-title"><%= l(:label_tag_cloud_version_filter, default: 'Version filter') %></span>
+          <button type="button" class="tag-cloud-filter-add" title="<%= l(:button_add) %>">+</button>
+        </div>
+        <div class="tag-cloud-filter-chips" <%= 'hidden' if version_selected.empty? %>>
+          <% @versions.each do |v| %>
+            <% next unless version_selected.include?(v.id) %>
+            <span class="tag-cloud-filter-chip" data-id="<%= v.id %>"><%= v.name %></span>
+          <% end %>
+        </div>
+        <ul class="tag-cloud-filter-list" hidden>
+          <% @versions.each do |v| %>
+            <li class="tag-cloud-filter-option<%= ' is-selected' if version_selected.include?(v.id) %>"
+                data-id="<%= v.id %>"
+                data-name="<%= v.name %>"><%= v.name %></li>
+          <% end %>
+        </ul>
+        <div class="tag-cloud-filter-inputs">
+          <% version_selected.each do |id| %>
+            <input type="hidden" name="tag_cloud[version_filter][]" value="<%= id %>">
+          <% end %>
+        </div>
+      </div>
 
-    <p>
-      <%= f.label :tracker_filter, l(:label_tag_cloud_tracker_filter, default: 'Tracker filter') %>
-      <%= f.select :tracker_filter,
-                   @trackers.map { |t| [t.name, t.id] },
-                   { selected: (@tag_cloud.tracker_filter || []).map(&:to_i) },
-                   { multiple: true, size: 6, class: 'select2' } %>
-    </p>
+      <%# ---- Tracker ---- %>
+      <div class="tag-cloud-filter-panel" data-filter="tracker_filter">
+        <div class="tag-cloud-filter-header">
+          <span class="tag-cloud-filter-title"><%= l(:label_tag_cloud_tracker_filter, default: 'Tracker filter') %></span>
+          <button type="button" class="tag-cloud-filter-add" title="<%= l(:button_add) %>">+</button>
+        </div>
+        <div class="tag-cloud-filter-chips" <%= 'hidden' if tracker_selected.empty? %>>
+          <% @trackers.each do |t| %>
+            <% next unless tracker_selected.include?(t.id) %>
+            <span class="tag-cloud-filter-chip" data-id="<%= t.id %>"><%= t.name %></span>
+          <% end %>
+        </div>
+        <ul class="tag-cloud-filter-list" hidden>
+          <% @trackers.each do |t| %>
+            <li class="tag-cloud-filter-option<%= ' is-selected' if tracker_selected.include?(t.id) %>"
+                data-id="<%= t.id %>"
+                data-name="<%= t.name %>"><%= t.name %></li>
+          <% end %>
+        </ul>
+        <div class="tag-cloud-filter-inputs">
+          <% tracker_selected.each do |id| %>
+            <input type="hidden" name="tag_cloud[tracker_filter][]" value="<%= id %>">
+          <% end %>
+        </div>
+      </div>
+    </div>
   </fieldset>
 
   <p>
     <%= f.label :visible_by_default, l(:label_tag_cloud_visible_by_default, default: 'Visible by default') %>
     <%= f.check_box :visible_by_default %>
-  </p>
-
-  <p>
-    <%= f.label :position, l(:label_tag_cloud_position, default: 'Position') %>
-    <%= f.text_field :position, size: 5 %>
   </p>
 
   <% if @tag_cloud.persisted? && @tag_cloud.is_system? %>
@@ -54,6 +108,6 @@
 </div>
 
 <p class="buttons">
-  <%= f.submit @tag_cloud.new_record? ? l(:button_create) : l(:button_save), class: 'button' %>
-  <%= link_to l(:button_cancel), { controller: 'projects', action: 'settings', id: @project, tab: 'tags' }, class: 'button' %>
+  <%= f.submit @tag_cloud.new_record? ? l(:button_create) : l(:button_save) %>
+  <%= link_to l(:button_cancel), { controller: 'projects', action: 'settings', id: @project, tab: 'tags' } %>
 </p>

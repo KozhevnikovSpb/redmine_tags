@@ -81,6 +81,141 @@
   border: none;
 }
 
+/* ---- Tag cloud form: filter panels (variant B) ---- */
+.tag-cloud-form .tag-cloud-filters-fieldset {
+  margin: 12px 0;
+  padding: 10px 12px 14px;
+}
+
+.tag-cloud-filters-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .tag-cloud-filters-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tag-cloud-filter-panel {
+  min-width: 0;
+}
+
+.tag-cloud-filter-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.tag-cloud-filter-title {
+  font-weight: bold;
+  font-size: 0.95em;
+}
+
+.tag-cloud-filter-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #f7f7f7;
+  color: #169;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tag-cloud-filter-add:hover {
+  background: #e8eef5;
+  border-color: #628db6;
+}
+
+.tag-cloud-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+  min-height: 0;
+}
+
+.tag-cloud-filter-chips[hidden] {
+  display: none !important;
+}
+
+.tag-cloud-filter-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #e8eef5;
+  border: 1px solid #b8c9dc;
+  border-radius: 10px;
+  font-size: 0.85em;
+  color: #333;
+  cursor: pointer;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-cloud-filter-chip:hover {
+  background: #fde8e8;
+  border-color: #d88;
+  text-decoration: line-through;
+}
+
+.tag-cloud-filter-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background: #fff;
+}
+
+.tag-cloud-filter-list[hidden] {
+  display: none !important;
+}
+
+.tag-cloud-filter-option {
+  padding: 5px 10px;
+  cursor: pointer;
+  line-height: 1.35;
+  border-bottom: 1px solid #f0f0f0;
+  user-select: none;
+}
+
+.tag-cloud-filter-option:last-child {
+  border-bottom: none;
+}
+
+.tag-cloud-filter-option:hover {
+  background: #f5f5f5;
+}
+
+.tag-cloud-filter-option.is-selected {
+  background: #628db6;
+  color: #fff;
+}
+
+.tag-cloud-filter-option.is-selected:hover {
+  background: #507aaa;
+}
+
+.tag-cloud-filter-inputs {
+  display: none;
+}
+
 /* Select visible tag clouds — sidebar control */
 .sidebar-tag-cloud-controls {
   margin: 6px 0 10px;
@@ -111,7 +246,6 @@
   padding: 8px 12px;
 }
 
-/* Compact modal content */
 #ajax-modal:has(#select-visible-tag-clouds-form),
 #ajax-modal:has(.tag-clouds-visibility-box) {
   height: auto !important;
@@ -125,7 +259,6 @@
   height: auto !important;
 }
 
-/* Checkbox / sortable box */
 #select-visible-tag-clouds-form .tag-clouds-visibility-box {
   display: block;
   overflow: hidden;
@@ -172,7 +305,6 @@
   visibility: visible !important;
 }
 
-/* Drag handle (grip) in modal */
 #select-visible-tag-clouds-form .tag-cloud-drag-handle {
   display: inline-flex;
   align-items: center;
@@ -207,7 +339,6 @@
   margin-left: 4px;
 }
 
-/* Hint */
 #select-visible-tag-clouds-form .tag-clouds-visibility-hint {
   display: block;
   width: auto;
@@ -221,7 +352,6 @@
   line-height: 1.35;
 }
 
-/* Buttons */
 #select-visible-tag-clouds-form .tag-clouds-visibility-buttons {
   text-align: right;
   margin: 6px 0 0 0;
