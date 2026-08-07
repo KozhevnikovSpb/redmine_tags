@@ -79,11 +79,13 @@ $(function () {
     });
 
     // ---- Tag cloud form: filter lists ----
-    // + opens list and keeps it open; click toggles selection; empty = All
+    var LABEL_ALL = $('.tag-cloud-filter-all').first().text().trim() || 'all';
+
     function syncFilterPanel($panel) {
         var filterName = $panel.data('filter');
         var $inputs = $panel.find('.tag-cloud-filter-inputs');
         var $all = $panel.find('.tag-cloud-filter-all');
+        var $count = $panel.find('.tag-cloud-filter-count');
         var count = $panel.find('.tag-cloud-filter-option.is-selected').length;
 
         $inputs.empty();
@@ -96,12 +98,28 @@ $(function () {
         });
 
         $all.prop('hidden', count > 0);
+
+        if (count === 0) {
+            $count.text('· ' + LABEL_ALL);
+        } else {
+            $count.text('(' + count + ')');
+        }
     }
 
-    $(document).on('click', '.tag-cloud-filter-add', function (e) {
+    function setToggleState($panel, open) {
+        var $btn = $panel.find('.tag-cloud-filter-toggle');
+        var $list = $panel.find('.tag-cloud-filter-list');
+        $list.prop('hidden', !open);
+        $btn.toggleClass('is-open', open);
+        $btn.text(open ? '−' : '+');
+    }
+
+    $(document).on('click', '.tag-cloud-filter-toggle', function (e) {
         e.preventDefault();
-        var $list = $(this).closest('.tag-cloud-filter-panel').find('.tag-cloud-filter-list');
-        $list.prop('hidden', false);
+        var $panel = $(this).closest('.tag-cloud-filter-panel');
+        var $list = $panel.find('.tag-cloud-filter-list');
+        var open = $list.prop('hidden');
+        setToggleState($panel, open);
     });
 
     $(document).on('click', '.tag-cloud-filter-option', function (e) {
