@@ -66,6 +66,7 @@ en:
   # Select visible tag clouds modal (UI alpha)
   label_select_visible_tag_clouds: Select visible tag clouds
   label_tag_clouds_visibility: Visible tag clouds
-  text_select_visible_tag_clouds_hint: Choose which custom tag clouds should be shown in the issues sidebar for you.
+  label_tag_cloud_drag_to_reorder: Drag to change display order
+  text_select_visible_tag_clouds_hint: Choose which custom tag clouds should be shown in the issues sidebar for you. Drag rows to change order.
   notice_tag_cloud_preferences_updated: Visible tag clouds updated.
   notice_failed_to_update_tag_cloud_preferences: Failed to update visible tag clouds.

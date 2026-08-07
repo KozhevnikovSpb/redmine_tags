@@ -1,5 +1,32 @@
 $('#ajax-modal').html('<%= escape_javascript(render partial: 'tag_cloud_preferences/select_modal') %>');
 showModal('ajax-modal', '420px');
-// Fit height to content — remove extra empty space under buttons
 $('#ajax-modal').css({ height: 'auto', 'max-height': 'none', 'min-height': '0' });
 $('#ajax-modal').closest('.ui-dialog').css({ height: 'auto' });
+
+(function () {
+  var $list = $('#tag-clouds-sortable');
+  if (!$list.length || typeof $.fn.sortable !== 'function') {
+    return;
+  }
+
+  function syncOrderInputs() {
+    $list.find('.tag-cloud-row').each(function () {
+      var id = $(this).data('id');
+      $(this).find('input.tag-cloud-order-input').val(id);
+    });
+  }
+
+  $list.sortable({
+    handle: '.tag-cloud-drag-handle',
+    axis: 'y',
+    tolerance: 'pointer',
+    placeholder: 'tag-cloud-row-placeholder',
+    helper: 'clone',
+    opacity: 0.9,
+    update: function () {
+      syncOrderInputs();
+    }
+  });
+
+  syncOrderInputs();
+})();

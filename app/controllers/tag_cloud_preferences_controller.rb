@@ -17,18 +17,23 @@ class TagCloudPreferencesController < ApplicationController
   end
 
   # PUT/PATCH /projects/:project_id/tag_cloud_preferences
-  # Bulk update visibility for custom clouds only.
+  # Bulk update visibility + display order for custom clouds.
   def update
     TagCloud.ensure_system_cloud(@project)
     load_custom_tag_clouds
     selected_ids = Array(params[:visible_tag_cloud_ids]).map(&:to_i)
+    order_ids = Array(params[:tag_cloud_order]).map(&:to_i)
 
     TagCloudPreference.transaction do
+      # Visibility per user
       @tag_clouds.each do |cloud|
         preference = cloud.preferences.find_or_initialize_by(user: User.current)
         preference.visible = selected_ids.include?(cloud.id)
         preference.save!
       end
+
+      # Project-wide display order (position) from drag-and-drop
+      apply_cloud_order(order_ids) if order_ids.any?
     end
 
     redirect_back fallback_location: project_issues_path(@project),
@@ -68,5 +73,23 @@ class TagCloudPreferencesController < ApplicationController
                           .where(is_system: false)
                           .order(:position, :id)
                           .to_a
+  end
+
+  # Reorder custom clouds by position; system cloud stays at position 0.
+  def apply_cloud_order(order_ids)
+    allowed = @tag_clouds.index_by(&:id)
+    # Keep only known custom cloud ids, preserve drag order
+    ordered = order_ids.select { |id| allowed.key?(id) }.uniq
+    # Append any custom clouds missing from the payload (safety)
+    ordered += @tag_clouds.map(&:id) - ordered
+
+    ordered.each_with_index do |id, index|
+      cloud = allowed[id]
+      next unless cloud
+
+      # System stays at 0; custom start from 1
+      new_position = index + 1
+      cloud.update!(position: new_position) if cloud.position != new_position
+    end
   end
 end

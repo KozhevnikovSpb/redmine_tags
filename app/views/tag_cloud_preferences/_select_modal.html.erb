@@ -5,17 +5,21 @@
     <% if @tag_clouds.blank? %>
       <p class="nodata"><%= l(:label_no_data) %></p>
     <% else %>
-      <div class="tag-clouds-visibility-list">
+      <ul class="tag-clouds-visibility-list" id="tag-clouds-sortable">
         <% @tag_clouds.each do |cloud| %>
-          <label for="visible_tag_cloud_<%= cloud.id %>">
-            <%= check_box_tag 'visible_tag_cloud_ids[]',
-                              cloud.id,
-                              @visible_ids.include?(cloud.id),
-                              id: "visible_tag_cloud_#{cloud.id}" %>
-            <span class="tag-cloud-name"><%= cloud.name %></span>
-          </label>
+          <li class="tag-cloud-row" data-id="<%= cloud.id %>">
+            <span class="tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">&#8942;&#8942;</span>
+            <label for="visible_tag_cloud_<%= cloud.id %>">
+              <%= check_box_tag 'visible_tag_cloud_ids[]',
+                                cloud.id,
+                                @visible_ids.include?(cloud.id),
+                                id: "visible_tag_cloud_#{cloud.id}" %>
+              <span class="tag-cloud-name"><%= cloud.name %></span>
+            </label>
+            <%= hidden_field_tag 'tag_cloud_order[]', cloud.id, class: 'tag-cloud-order-input', id: nil %>
+          </li>
         <% end %>
-      </div>
+      </ul>
     <% end %>
   </div>
 
