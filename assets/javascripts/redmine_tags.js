@@ -79,10 +79,13 @@ $(function () {
     });
 
     // ---- Tag cloud form: filter lists ----
-    // + opens list and keeps it open; click toggles selection; empty = all
-    function syncFilterInputs($panel) {
+    // + opens list and keeps it open; click toggles selection; empty = All
+    function syncFilterPanel($panel) {
         var filterName = $panel.data('filter');
         var $inputs = $panel.find('.tag-cloud-filter-inputs');
+        var $all = $panel.find('.tag-cloud-filter-all');
+        var count = $panel.find('.tag-cloud-filter-option.is-selected').length;
+
         $inputs.empty();
         $panel.find('.tag-cloud-filter-option.is-selected').each(function () {
             $('<input>', {
@@ -91,6 +94,8 @@ $(function () {
                 value: $(this).data('id')
             }).appendTo($inputs);
         });
+
+        $all.prop('hidden', count > 0);
     }
 
     $(document).on('click', '.tag-cloud-filter-add', function (e) {
@@ -102,6 +107,6 @@ $(function () {
     $(document).on('click', '.tag-cloud-filter-option', function (e) {
         e.preventDefault();
         $(this).toggleClass('is-selected');
-        syncFilterInputs($(this).closest('.tag-cloud-filter-panel'));
+        syncFilterPanel($(this).closest('.tag-cloud-filter-panel'));
     });
 });

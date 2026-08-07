@@ -26,6 +26,9 @@
                 data-id="<%= s.id %>"><%= s.name %></li>
           <% end %>
         </ul>
+        <div class="tag-cloud-filter-all"<%= ' hidden' unless status_selected.empty? %>>
+          <%= l(:label_all) %>
+        </div>
         <div class="tag-cloud-filter-inputs">
           <% status_selected.each do |id| %>
             <input type="hidden" name="tag_cloud[status_filter][]" value="<%= id %>">
@@ -45,6 +48,9 @@
                 data-id="<%= v.id %>"><%= v.name %></li>
           <% end %>
         </ul>
+        <div class="tag-cloud-filter-all"<%= ' hidden' unless version_selected.empty? %>>
+          <%= l(:label_all) %>
+        </div>
         <div class="tag-cloud-filter-inputs">
           <% version_selected.each do |id| %>
             <input type="hidden" name="tag_cloud[version_filter][]" value="<%= id %>">
@@ -64,6 +70,9 @@
                 data-id="<%= t.id %>"><%= t.name %></li>
           <% end %>
         </ul>
+        <div class="tag-cloud-filter-all"<%= ' hidden' unless tracker_selected.empty? %>>
+          <%= l(:label_all) %>
+        </div>
         <div class="tag-cloud-filter-inputs">
           <% tracker_selected.each do |id| %>
             <input type="hidden" name="tag_cloud[tracker_filter][]" value="<%= id %>">

@@ -218,6 +218,17 @@
   border-color: #507aaa;
 }
 
+.tag-cloud-filter-all {
+  margin-top: 4px;
+  font-size: 0.9em;
+  color: #888;
+  font-style: italic;
+}
+
+.tag-cloud-filter-all[hidden] {
+  display: none !important;
+}
+
 .tag-cloud-filter-inputs {
   display: none;
 }
