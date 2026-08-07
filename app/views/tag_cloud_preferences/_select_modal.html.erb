@@ -27,6 +27,6 @@
 
   <div class="buttons tag-clouds-visibility-buttons">
     <%= submit_tag l(:button_save), name: nil, disabled: @tag_clouds.blank? %>
-    <%= submit_tag l(:button_cancel), name: nil, onclick: 'hideModal(this);', type: 'button' %>
+    <%= button_tag l(:button_cancel), type: 'button', onclick: 'hideModal(this);', name: nil %>
   </div>
 <% end %>

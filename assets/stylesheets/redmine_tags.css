@@ -41,7 +41,7 @@
   padding: 8px 12px;
 }
 
-/* Compact modal content — less empty space under buttons */
+/* Compact modal content */
 #ajax-modal:has(#select-visible-tag-clouds-form),
 #ajax-modal:has(.tag-clouds-visibility-box) {
   height: auto !important;
@@ -60,7 +60,7 @@
   display: block;
   overflow: hidden;
   padding: 8px 12px;
-  margin: 0 0 0 0;
+  margin: 0;
 }
 
 #select-visible-tag-clouds-form .tag-clouds-visibility-list {
@@ -96,13 +96,23 @@
   line-height: 1.35;
 }
 
-/* Buttons — tight bottom */
+/* Buttons — same height for Save (input) and Cancel (button) */
 #select-visible-tag-clouds-form .tag-clouds-visibility-buttons {
   text-align: right;
   margin: 6px 0 0 0;
   padding: 0;
   clear: both;
 }
-#select-visible-tag-clouds-form .tag-clouds-visibility-buttons input[type="submit"] {
-  margin-left: 6px;
+
+#select-visible-tag-clouds-form .tag-clouds-visibility-buttons input[type="submit"],
+#select-visible-tag-clouds-form .tag-clouds-visibility-buttons button {
+  display: inline-block;
+  box-sizing: border-box;
+  height: 28px;
+  line-height: 26px;
+  padding: 0 12px;
+  margin: 0 0 0 6px;
+  vertical-align: middle;
+  font-size: 13px;
+  font-family: inherit;
 }
