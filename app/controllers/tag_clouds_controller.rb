@@ -23,7 +23,7 @@ class TagCloudsController < ApplicationController
     @tag_cloud.position = next_position if @tag_cloud.position.blank?
 
     if @tag_cloud.save
-      redirect_to project_settings_path(@project, tab: 'tags'), notice: l(:notice_tag_cloud_created)
+      redirect_to settings_project_path(@project, tab: 'tags'), notice: l(:notice_tag_cloud_created)
     else
       load_filter_options
       render :new, status: :unprocessable_entity
@@ -36,7 +36,7 @@ class TagCloudsController < ApplicationController
 
   def update
     if @tag_cloud.update(tag_cloud_params)
-      redirect_to project_settings_path(@project, tab: 'tags'), notice: l(:notice_tag_cloud_updated)
+      redirect_to settings_project_path(@project, tab: 'tags'), notice: l(:notice_tag_cloud_updated)
     else
       load_filter_options
       render :edit, status: :unprocessable_entity
@@ -45,12 +45,12 @@ class TagCloudsController < ApplicationController
 
   def destroy
     if @tag_cloud.is_system?
-      redirect_to project_settings_path(@project, tab: 'tags'), alert: l(:alert_cannot_delete_system_cloud)
+      redirect_to settings_project_path(@project, tab: 'tags'), alert: l(:alert_cannot_delete_system_cloud)
       return
     end
 
     @tag_cloud.destroy!
-    redirect_to project_settings_path(@project, tab: 'tags'), notice: l(:notice_tag_cloud_deleted)
+    redirect_to settings_project_path(@project, tab: 'tags'), notice: l(:notice_tag_cloud_deleted)
   end
 
   def reorder
