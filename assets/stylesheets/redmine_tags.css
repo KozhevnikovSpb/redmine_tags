@@ -35,12 +35,7 @@
 
 .tag-clouds-settings-table .buttons {
   white-space: nowrap;
-  width: 64px;
   text-align: right;
-}
-
-.tag-clouds-settings-table .buttons a.icon-only {
-  margin-left: 4px;
 }
 
 .tag-clouds-settings-table .tag-cloud-system-badge {
@@ -49,20 +44,28 @@
   vertical-align: middle;
 }
 
-.tag-clouds-settings-table .tag-cloud-drag-handle {
-  display: inline-block;
-  color: #999;
+/* Redmine-style sort handle (reorder icon) */
+.tag-clouds-settings-table .tag-cloud-drag-handle,
+#select-visible-tag-clouds-form .tag-cloud-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: grab;
+  color: #999;
   user-select: none;
-  font-size: 14px;
-  letter-spacing: -2px;
-  line-height: 1;
-  padding: 2px 4px;
+  padding: 2px;
 }
 
-.tag-clouds-settings-table .tag-cloud-drag-handle:active {
+.tag-clouds-settings-table .tag-cloud-drag-handle:active,
+#select-visible-tag-clouds-form .tag-cloud-drag-handle:active {
   cursor: grabbing;
   color: #666;
+}
+
+.tag-clouds-settings-table .tag-cloud-drag-handle svg,
+#select-visible-tag-clouds-form .tag-cloud-drag-handle svg {
+  width: 16px;
+  height: 16px;
 }
 
 .tag-clouds-settings-table tr.ui-sortable-helper {
@@ -81,7 +84,39 @@
   border: none;
 }
 
-/* ---- Tag cloud form: filter panels (variant B) ---- */
+/* ---- Tag cloud form ---- */
+.tag-cloud-form .tag-cloud-name-row {
+  margin: 0 0 12px 0;
+  text-align: left;
+}
+
+.tag-cloud-form .tag-cloud-name-row label {
+  display: block;
+  float: none;
+  width: auto;
+  text-align: left;
+  margin: 0 0 4px 0;
+  font-weight: bold;
+}
+
+.tag-cloud-form .tag-cloud-name-row input[type="text"] {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  box-sizing: border-box;
+}
+
+.tag-cloud-form .tag-cloud-visible-row {
+  margin: 12px 0 0 0;
+}
+
+.tag-cloud-form .tag-cloud-visible-row label {
+  display: inline;
+  float: none;
+  margin-left: 4px;
+  font-weight: normal;
+}
+
 .tag-cloud-form .tag-cloud-filters-fieldset {
   margin: 12px 0;
   padding: 10px 12px 14px;
@@ -137,39 +172,6 @@
 .tag-cloud-filter-add:hover {
   background: #e8eef5;
   border-color: #628db6;
-}
-
-.tag-cloud-filter-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-bottom: 6px;
-  min-height: 0;
-}
-
-.tag-cloud-filter-chips[hidden] {
-  display: none !important;
-}
-
-.tag-cloud-filter-chip {
-  display: inline-block;
-  padding: 2px 8px;
-  background: #e8eef5;
-  border: 1px solid #b8c9dc;
-  border-radius: 10px;
-  font-size: 0.85em;
-  color: #333;
-  cursor: pointer;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tag-cloud-filter-chip:hover {
-  background: #fde8e8;
-  border-color: #d88;
-  text-decoration: line-through;
 }
 
 .tag-cloud-filter-list {
@@ -303,25 +305,6 @@
   border: 1px dashed #628db6;
   border-radius: 3px;
   visibility: visible !important;
-}
-
-#select-visible-tag-clouds-form .tag-cloud-drag-handle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 18px;
-  width: 18px;
-  color: #999;
-  cursor: grab;
-  user-select: none;
-  font-size: 14px;
-  letter-spacing: -2px;
-  line-height: 1;
-}
-
-#select-visible-tag-clouds-form .tag-cloud-drag-handle:active {
-  cursor: grabbing;
-  color: #666;
 }
 
 #select-visible-tag-clouds-form .tag-cloud-row label {

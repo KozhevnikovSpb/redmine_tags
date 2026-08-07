@@ -78,69 +78,30 @@ $(function () {
         initTagCloudsSettingsSortable();
     });
 
-    // ---- Tag cloud form: collapsible toggle filters ----
-    function syncFilterPanel($panel) {
+    // ---- Tag cloud form: filter lists ----
+    // + opens list and keeps it open; click toggles selection; empty = all
+    function syncFilterInputs($panel) {
         var filterName = $panel.data('filter');
-        var $list = $panel.find('.tag-cloud-filter-list');
-        var $chips = $panel.find('.tag-cloud-filter-chips');
         var $inputs = $panel.find('.tag-cloud-filter-inputs');
-        var selected = [];
-
-        $list.find('.tag-cloud-filter-option.is-selected').each(function () {
-            selected.push({
-                id: String($(this).data('id')),
-                name: $(this).data('name') || $(this).text()
-            });
-        });
-
-        $chips.empty();
-        if (selected.length === 0) {
-            $chips.prop('hidden', true);
-        } else {
-            $chips.prop('hidden', false);
-            $.each(selected, function (_, item) {
-                $('<span>', {
-                    class: 'tag-cloud-filter-chip',
-                    'data-id': item.id,
-                    text: item.name
-                }).appendTo($chips);
-            });
-        }
-
         $inputs.empty();
-        $.each(selected, function (_, item) {
+        $panel.find('.tag-cloud-filter-option.is-selected').each(function () {
             $('<input>', {
                 type: 'hidden',
                 name: 'tag_cloud[' + filterName + '][]',
-                value: item.id
+                value: $(this).data('id')
             }).appendTo($inputs);
         });
     }
 
     $(document).on('click', '.tag-cloud-filter-add', function (e) {
         e.preventDefault();
-        var $panel = $(this).closest('.tag-cloud-filter-panel');
-        var $list = $panel.find('.tag-cloud-filter-list');
-        var open = !$list.prop('hidden');
-        // close other open lists in the same form
-        $panel.closest('.tag-cloud-filters-grid').find('.tag-cloud-filter-list').prop('hidden', true);
-        $list.prop('hidden', open);
+        var $list = $(this).closest('.tag-cloud-filter-panel').find('.tag-cloud-filter-list');
+        $list.prop('hidden', false);
     });
 
     $(document).on('click', '.tag-cloud-filter-option', function (e) {
         e.preventDefault();
         $(this).toggleClass('is-selected');
-        syncFilterPanel($(this).closest('.tag-cloud-filter-panel'));
-    });
-
-    // Click on chip removes selection
-    $(document).on('click', '.tag-cloud-filter-chip', function (e) {
-        e.preventDefault();
-        var $panel = $(this).closest('.tag-cloud-filter-panel');
-        var id = String($(this).data('id'));
-        $panel.find('.tag-cloud-filter-option').filter(function () {
-            return String($(this).data('id')) === id;
-        }).removeClass('is-selected');
-        syncFilterPanel($panel);
+        syncFilterInputs($(this).closest('.tag-cloud-filter-panel'));
     });
 });

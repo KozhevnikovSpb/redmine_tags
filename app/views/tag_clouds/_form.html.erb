@@ -4,8 +4,8 @@
   tracker_selected = Array(@tag_cloud.tracker_filter).map(&:to_i).reject(&:zero?)
 %>
 
-<div class="box tabular tag-cloud-form">
-  <p>
+<div class="box tag-cloud-form">
+  <p class="tag-cloud-name-row">
     <%= f.label :name, l(:label_tag_cloud_name, default: 'Name') %>
     <%= f.text_field :name, required: true, size: 60 %>
   </p>
@@ -20,17 +20,10 @@
           <span class="tag-cloud-filter-title"><%= l(:label_tag_cloud_status_filter, default: 'Status filter') %></span>
           <button type="button" class="tag-cloud-filter-add" title="<%= l(:button_add) %>">+</button>
         </div>
-        <div class="tag-cloud-filter-chips" <%= 'hidden' if status_selected.empty? %>>
-          <% @statuses.each do |s| %>
-            <% next unless status_selected.include?(s.id) %>
-            <span class="tag-cloud-filter-chip" data-id="<%= s.id %>"><%= s.name %></span>
-          <% end %>
-        </div>
-        <ul class="tag-cloud-filter-list" hidden>
+        <ul class="tag-cloud-filter-list"<%= ' hidden' if status_selected.empty? %>>
           <% @statuses.each do |s| %>
             <li class="tag-cloud-filter-option<%= ' is-selected' if status_selected.include?(s.id) %>"
-                data-id="<%= s.id %>"
-                data-name="<%= s.name %>"><%= s.name %></li>
+                data-id="<%= s.id %>"><%= s.name %></li>
           <% end %>
         </ul>
         <div class="tag-cloud-filter-inputs">
@@ -46,17 +39,10 @@
           <span class="tag-cloud-filter-title"><%= l(:label_tag_cloud_version_filter, default: 'Version filter') %></span>
           <button type="button" class="tag-cloud-filter-add" title="<%= l(:button_add) %>">+</button>
         </div>
-        <div class="tag-cloud-filter-chips" <%= 'hidden' if version_selected.empty? %>>
-          <% @versions.each do |v| %>
-            <% next unless version_selected.include?(v.id) %>
-            <span class="tag-cloud-filter-chip" data-id="<%= v.id %>"><%= v.name %></span>
-          <% end %>
-        </div>
-        <ul class="tag-cloud-filter-list" hidden>
+        <ul class="tag-cloud-filter-list"<%= ' hidden' if version_selected.empty? %>>
           <% @versions.each do |v| %>
             <li class="tag-cloud-filter-option<%= ' is-selected' if version_selected.include?(v.id) %>"
-                data-id="<%= v.id %>"
-                data-name="<%= v.name %>"><%= v.name %></li>
+                data-id="<%= v.id %>"><%= v.name %></li>
           <% end %>
         </ul>
         <div class="tag-cloud-filter-inputs">
@@ -72,17 +58,10 @@
           <span class="tag-cloud-filter-title"><%= l(:label_tag_cloud_tracker_filter, default: 'Tracker filter') %></span>
           <button type="button" class="tag-cloud-filter-add" title="<%= l(:button_add) %>">+</button>
         </div>
-        <div class="tag-cloud-filter-chips" <%= 'hidden' if tracker_selected.empty? %>>
-          <% @trackers.each do |t| %>
-            <% next unless tracker_selected.include?(t.id) %>
-            <span class="tag-cloud-filter-chip" data-id="<%= t.id %>"><%= t.name %></span>
-          <% end %>
-        </div>
-        <ul class="tag-cloud-filter-list" hidden>
+        <ul class="tag-cloud-filter-list"<%= ' hidden' if tracker_selected.empty? %>>
           <% @trackers.each do |t| %>
             <li class="tag-cloud-filter-option<%= ' is-selected' if tracker_selected.include?(t.id) %>"
-                data-id="<%= t.id %>"
-                data-name="<%= t.name %>"><%= t.name %></li>
+                data-id="<%= t.id %>"><%= t.name %></li>
           <% end %>
         </ul>
         <div class="tag-cloud-filter-inputs">
@@ -94,9 +73,9 @@
     </div>
   </fieldset>
 
-  <p>
-    <%= f.label :visible_by_default, l(:label_tag_cloud_visible_by_default, default: 'Visible by default') %>
+  <p class="tag-cloud-visible-row">
     <%= f.check_box :visible_by_default %>
+    <%= f.label :visible_by_default, l(:label_tag_cloud_visible_by_default, default: 'Visible by default') %>
   </p>
 
   <% if @tag_cloud.persisted? && @tag_cloud.is_system? %>

@@ -24,7 +24,9 @@
             data-id="<%= cloud.id %>">
           <td class="tag-cloud-col-drag">
             <% unless cloud.is_system? %>
-              <span class="tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">&#8942;&#8942;</span>
+              <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
+                <%= sprite_icon('reorder', '') %>
+              </span>
             <% end %>
           </td>
           <td class="tag-cloud-col-name name">
