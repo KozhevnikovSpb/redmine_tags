@@ -36,8 +36,7 @@ class TagCloudPreferencesController < ApplicationController
       apply_cloud_order(order_ids) if order_ids.any?
     end
 
-    redirect_back fallback_location: project_issues_path(@project),
-                  notice: l(:notice_tag_cloud_preferences_updated, default: 'Visible tag clouds updated.')
+    redirect_back fallback_location: project_issues_path(@project)
   rescue ActiveRecord::ActiveRecordError => e
     Rails.logger.error("[redmineup_tags] Failed to update tag cloud preferences: #{e.class}: #{e.message}")
     redirect_back fallback_location: project_issues_path(@project),
