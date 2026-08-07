@@ -16,12 +16,14 @@
           </label>
         <% end %>
       </div>
-
-      <p class="info tag-clouds-visibility-hint">
-        <%= l(:text_select_visible_tag_clouds_hint) %>
-      </p>
     <% end %>
   </div>
+
+  <% unless @tag_clouds.blank? %>
+    <p class="tag-clouds-visibility-hint">
+      <%= l(:text_select_visible_tag_clouds_hint) %>
+    </p>
+  <% end %>
 
   <div class="buttons tag-clouds-visibility-buttons">
     <%= submit_tag l(:button_save), name: nil, disabled: @tag_clouds.blank? %>

@@ -20,13 +20,6 @@
 }
 
 /* Modal: header bar in Redmine blue (matches top header line) */
-#ajax-modal.ui-dialog-content .ui-dialog-titlebar,
-.ui-dialog .ui-dialog-titlebar,
-#ajax-modal + .ui-dialog-titlebar {
-  /* fallback if dialog structure varies */
-}
-
-/* Target the modal when it contains our form */
 .ui-dialog:has(#select-visible-tag-clouds-form) .ui-dialog-titlebar,
 .ui-dialog:has(.tag-clouds-visibility-box) .ui-dialog-titlebar {
   background: #628db6 !important;
@@ -43,7 +36,7 @@
   color: #fff;
 }
 
-/* Also style native Redmine modal title (h3.title inside #ajax-modal) */
+/* Native Redmine modal title (h3.title inside #ajax-modal) */
 #ajax-modal:has(#select-visible-tag-clouds-form) > h3.title,
 #ajax-modal:has(.tag-clouds-visibility-box) > h3.title {
   background: #628db6;
@@ -63,18 +56,27 @@
   margin-left: 4px;
 }
 
-/* Modal: hint left-aligned under the list */
-.tag-clouds-visibility-hint {
-  margin-top: 14px;
-  text-align: left;
+/* Hint: outside the box, between checkboxes and buttons, left-aligned */
+#select-visible-tag-clouds-form .tag-clouds-visibility-hint,
+p.tag-clouds-visibility-hint {
+  display: block;
+  width: 100%;
+  margin: 10px 0 4px 0;
+  padding: 0;
+  text-align: left !important;
+  float: none !important;
+  clear: both;
   color: #666;
   font-size: 0.9em;
+  line-height: 1.4;
 }
 
 /* Modal: Save / Cancel right-aligned */
+#select-visible-tag-clouds-form .tag-clouds-visibility-buttons,
 .tag-clouds-visibility-buttons {
   text-align: right;
-  margin-top: 8px;
+  margin-top: 10px;
+  clear: both;
 }
 .tag-clouds-visibility-buttons input[type="submit"] {
   margin-left: 6px;
