@@ -1,9 +1,7 @@
 <h3 class="title"><%= l(:label_select_visible_tag_clouds) %></h3>
 
 <%= form_tag(project_tag_cloud_preferences_path(@project), method: :put, id: 'select-visible-tag-clouds-form') do %>
-  <fieldset class="box tabular">
-    <legend><%= l(:label_tag_clouds_visibility) %></legend>
-
+  <div class="box tabular tag-clouds-visibility-box">
     <% if @tag_clouds.blank? %>
       <p class="nodata"><%= l(:label_no_data) %></p>
     <% else %>
@@ -23,7 +21,7 @@
         <%= l(:text_select_visible_tag_clouds_hint) %>
       </p>
     <% end %>
-  </fieldset>
+  </div>
 
   <div class="buttons tag-clouds-visibility-buttons">
     <%= submit_tag l(:button_save), name: nil, disabled: @tag_clouds.blank? %>
