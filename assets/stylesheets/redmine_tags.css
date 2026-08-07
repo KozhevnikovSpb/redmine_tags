@@ -96,7 +96,7 @@
   line-height: 1.35;
 }
 
-/* Buttons — same height for Save (input) and Cancel (button) */
+/* Buttons — same size; pointer + hover for Cancel (button) and Save (submit) */
 #select-visible-tag-clouds-form .tag-clouds-visibility-buttons {
   text-align: right;
   margin: 6px 0 0 0;
@@ -115,4 +115,16 @@
   vertical-align: middle;
   font-size: 13px;
   font-family: inherit;
+  cursor: pointer;
+}
+
+#select-visible-tag-clouds-form .tag-clouds-visibility-buttons button:hover,
+#select-visible-tag-clouds-form .tag-clouds-visibility-buttons input[type="submit"]:hover:not(:disabled) {
+  background-color: #f0f0f0;
+  border-color: #999;
+}
+
+#select-visible-tag-clouds-form .tag-clouds-visibility-buttons input[type="submit"]:disabled {
+  cursor: default;
+  opacity: 0.65;
 }
