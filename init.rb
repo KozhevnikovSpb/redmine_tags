@@ -3,10 +3,10 @@ requires_redmineup version_or_higher: '1.1.10' rescue raise "\n\033[31mRedmine r
 require 'redmine'
 
 TAGS_VERSION_NUMBER = '0.0.1-alpha'
-TAGS_VERSION_TYPE = 'Alpha (multi Tag Clouds)'
+TAGS_VERSION_TYPE = 'Alpha'
 
 Redmine::Plugin.register :redmineup_tags do
-  name "Redmine Tags plugin (#{TAGS_VERSION_TYPE})"
+  name "Redmine Multi Tags Clouds plugin (#{TAGS_VERSION_TYPE})"
   author 'RedmineUP / KozhevnikovSpb'
   description 'Redmine issues tagging support with multiple tag clouds'
   version TAGS_VERSION_NUMBER
