@@ -10,3 +10,21 @@
 
 .most_used_tag { cursor: pointer; color: #169; }
 .most_used_tag:hover { text-decoration: underline;}
+
+/* Select visible tag clouds modal + sidebar controls */
+.sidebar-tag-cloud-controls {
+  margin-bottom: 8px;
+}
+.sidebar-tag-cloud-controls a {
+  font-size: 0.9em;
+}
+.tag-clouds-visibility-list label {
+  display: block;
+  margin: 4px 0;
+  cursor: pointer;
+}
+.tag-clouds-visibility-list .badge {
+  margin-left: 6px;
+  font-size: 0.75em;
+  vertical-align: middle;
+}

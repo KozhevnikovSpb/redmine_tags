@@ -56,6 +56,19 @@ module IssuesTagsHelper
     visible_clouds, hidden_clouds = custom_clouds.partition { |cloud| cloud.visible_for?(User.current) }
     sections = []
 
+    # Header / control for selecting visible clouds (UI modal)
+    if can_select_clouds && clouds.any?
+      sections << content_tag(:div, class: 'sidebar-tag-cloud-controls') do
+        link_to(
+          l(:label_select_visible_tag_clouds),
+          edit_project_tag_cloud_preferences_path(@project),
+          remote: true,
+          class: 'icon icon-settings',
+          title: l(:label_select_visible_tag_clouds)
+        )
+      end
+    end
+
     if system_cloud.nil? || system_cloud.visible_for?(User.current)
       sections << tag_cloud_section(
         system_cloud&.name || l(:tags),
@@ -86,6 +99,7 @@ module IssuesTagsHelper
       )
     end
 
+    # Keep compact list of hidden clouds + link to full modal
     sections << hidden_tag_clouds_section(hidden_clouds) if can_select_clouds && hidden_clouds.any?
 
     safe_join(sections)
@@ -135,7 +149,15 @@ module IssuesTagsHelper
     content_tag(:div, class: 'sidebar-tag-cloud sidebar-tag-cloud-hidden') do
       safe_join([
         content_tag(:h3, l(:label_hidden_tag_clouds)),
-        content_tag(:ul, safe_join(items))
+        content_tag(:ul, safe_join(items)),
+        content_tag(:p, class: 'small') do
+          link_to(
+            l(:label_select_visible_tag_clouds),
+            edit_project_tag_cloud_preferences_path(@project),
+            remote: true,
+            class: 'icon icon-settings'
+          )
+        end
       ])
     end
   end

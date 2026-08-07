@@ -25,5 +25,10 @@ RedmineApp::Application.routes.draw do
         post :toggle
       end
     end
+
+    # Bulk preferences modal (Select visible tag clouds)
+    resource :tag_cloud_preferences,
+             only: %i[edit update],
+             controller: 'tag_cloud_preferences'
   end
 end

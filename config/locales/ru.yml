@@ -62,3 +62,10 @@ ru:
   notice_tag_cloud_updated: Облако тегов успешно обновлено.
   notice_tag_cloud_deleted: Облако тегов успешно удалено.
   alert_cannot_delete_system_cloud: Системное облако нельзя удалить.
+
+  # Select visible tag clouds modal (UI alpha)
+  label_select_visible_tag_clouds: Выбрать видимые облака тегов
+  label_tag_clouds_visibility: Видимые облака тегов
+  text_select_visible_tag_clouds_hint: Выберите, какие облака тегов показывать в боковой панели задач. Системное облако также можно скрыть.
+  notice_tag_cloud_preferences_updated: Настройки видимости облаков тегов обновлены.
+  notice_failed_to_update_tag_cloud_preferences: Не удалось обновить настройки видимости облаков тегов.

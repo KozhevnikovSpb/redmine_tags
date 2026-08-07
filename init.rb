@@ -35,7 +35,7 @@ Redmine::Plugin.register :redmineup_tags do
       tag_clouds: %i[index new create edit update destroy reorder]
     }, require: :member
     permission :select_tag_clouds, {
-      tag_cloud_preferences: [:toggle]
+      tag_cloud_preferences: %i[toggle edit update]
     }
   end
 

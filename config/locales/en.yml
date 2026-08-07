@@ -62,3 +62,10 @@ en:
   notice_tag_cloud_updated: Tag cloud was successfully updated.
   notice_tag_cloud_deleted: Tag cloud was successfully deleted.
   alert_cannot_delete_system_cloud: System cloud cannot be deleted.
+
+  # Select visible tag clouds modal (UI alpha)
+  label_select_visible_tag_clouds: Select visible tag clouds
+  label_tag_clouds_visibility: Visible tag clouds
+  text_select_visible_tag_clouds_hint: Choose which tag clouds should be shown in the issues sidebar for you. System cloud can also be hidden.
+  notice_tag_cloud_preferences_updated: Visible tag clouds updated.
+  notice_failed_to_update_tag_cloud_preferences: Failed to update visible tag clouds.
