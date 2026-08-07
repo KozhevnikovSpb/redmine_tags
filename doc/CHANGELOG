@@ -4,6 +4,14 @@ Redmine Tags plugin - Tags board plugin for redmine
 Copyright (C) 2011-2026 Kirill Bezrukov (RedmineUP)
 http://www.redmineup.com/
 
+== 2026-08-07 v0.0.1-alpha
+
+* Start of multi Tag Clouds extension development
+* Version reset for new development line based on redmine_up_tags
+* Target: Redmine 7.0.0 / Ruby 3.4 / Rails 8.1
+* Compatibility with redmineup Q&A and other RedmineUP tag plugins preserved
+* Plugin ID remains :redmineup_tags
+
 == 2026-06-18 v2.1.2
 
 * ColorPicker moved to redmineup gem
