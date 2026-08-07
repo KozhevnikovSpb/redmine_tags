@@ -49,15 +49,24 @@ module IssuesTagsHelper
     return ''.html_safe if RedmineupTags.tag_list_view == :none
     return render_global_tags_sidebar unless @project
 
-    clouds = TagCloud.unscoped.where(project_id: @project.id).order(:position, :id).to_a
-    system_cloud = clouds.detect(&:is_system?)
-    custom_clouds = clouds.reject(&:is_system?)
+    # Load once; keep only one system cloud (protect against duplicate data)
+    all_clouds = @project.tag_clouds.unscoped.order(:position, :id).to_a
+    system_cloud = all_clouds.find(&:is_system?)
+    custom_clouds = all_clouds.reject(&:is_system?)
     can_select_clouds = User.current.allowed_to?(:select_tag_clouds, @project)
-    visible_clouds, hidden_clouds = custom_clouds.partition { |cloud| cloud.visible_for?(User.current) }
+    visible_custom = custom_clouds.select { |c| c.visible_for?(User.current) }
+
     sections = []
 
-    # Header / control for selecting visible clouds (UI modal)
-    if can_select_clouds && clouds.any?
+    # System / general tags cloud — always titled "Tags", always shown
+    sections << tag_cloud_section(
+      l(:tags),
+      render_sidebar_tags,
+      'sidebar-tag-cloud sidebar-tag-cloud-system'
+    )
+
+    # Select visible clouds link: under system cloud, only if custom clouds exist
+    if can_select_clouds && custom_clouds.any?
       sections << content_tag(:div, class: 'sidebar-tag-cloud-controls') do
         link_to(
           l(:label_select_visible_tag_clouds),
@@ -69,38 +78,15 @@ module IssuesTagsHelper
       end
     end
 
-    if system_cloud.nil? || system_cloud.visible_for?(User.current)
-      sections << tag_cloud_section(
-        system_cloud&.name || l(:tags),
-        render_sidebar_tags,
-        'sidebar-tag-cloud sidebar-tag-cloud-system'
-      )
-    end
-
-    visible_clouds.each do |cloud|
-      extra = nil
-      if can_select_clouds
-        extra = content_tag(:p, class: 'small') do
-          link_to(
-            l(:button_hide),
-            toggle_project_tag_cloud_preference_path(@project, cloud),
-            method: :post,
-            class: 'icon icon-close'
-          )
-        end
-      end
-
+    # Visible custom clouds only (no Hide/Show, no Hidden block)
+    visible_custom.each do |cloud|
       sections << tag_cloud_section(
         cloud.name,
         render_tag_cloud(cloud),
         'sidebar-tag-cloud',
-        data: { tag_cloud_id: cloud.id },
-        extra: extra
+        data: { tag_cloud_id: cloud.id }
       )
     end
-
-    # Keep compact list of hidden clouds + link to full modal
-    sections << hidden_tag_clouds_section(hidden_clouds) if can_select_clouds && hidden_clouds.any?
 
     safe_join(sections)
   rescue StandardError => e
@@ -128,37 +114,6 @@ module IssuesTagsHelper
         body,
         extra
       ].compact)
-    end
-  end
-
-  def hidden_tag_clouds_section(clouds)
-    items = clouds.map do |cloud|
-      content_tag(:li, data: { tag_cloud_id: cloud.id }) do
-        safe_join([
-          content_tag(:span, cloud.name),
-          link_to(
-            l(:button_show),
-            toggle_project_tag_cloud_preference_path(@project, cloud),
-            method: :post,
-            class: 'icon icon-add'
-          )
-        ], ' ')
-      end
-    end
-
-    content_tag(:div, class: 'sidebar-tag-cloud sidebar-tag-cloud-hidden') do
-      safe_join([
-        content_tag(:h3, l(:label_hidden_tag_clouds)),
-        content_tag(:ul, safe_join(items)),
-        content_tag(:p, class: 'small') do
-          link_to(
-            l(:label_select_visible_tag_clouds),
-            edit_project_tag_cloud_preferences_path(@project),
-            remote: true,
-            class: 'icon icon-settings'
-          )
-        end
-      ])
     end
   end
 

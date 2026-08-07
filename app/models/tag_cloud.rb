@@ -30,15 +30,24 @@ class TagCloud < ActiveRecord::Base
     return unless project&.persisted?
 
     project.with_lock do
-      project.tag_clouds.unscoped.find_or_create_by!(project_id: project.id, is_system: true) do |cloud|
-        cloud.name = I18n.t(:label_default_tag_cloud, default: 'Default Tags')
-        cloud.visible_by_default = true
-        cloud.position = 0
-        cloud.created_by = User.current if User.current&.persisted?
+      existing = project.tag_clouds.unscoped.where(is_system: true).order(:id).to_a
+      if existing.any?
+        # Keep the oldest system cloud; remove accidental duplicates
+        keep = existing.first
+        (existing - [keep]).each(&:destroy)
+        keep
+      else
+        project.tag_clouds.unscoped.create!(
+          name: I18n.t(:label_default_tag_cloud, default: 'Default Tags'),
+          visible_by_default: true,
+          is_system: true,
+          position: 0,
+          created_by: (User.current if User.current&.persisted?)
+        )
       end
     end
-  rescue ActiveRecord::RecordNotUnique
-    project.tag_clouds.unscoped.find_by(project_id: project.id, is_system: true)
+  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
+    project.tag_clouds.unscoped.where(is_system: true).order(:id).first
   end
 
   private

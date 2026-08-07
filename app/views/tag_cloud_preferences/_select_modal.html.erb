@@ -9,30 +9,23 @@
     <% else %>
       <div class="tag-clouds-visibility-list">
         <% @tag_clouds.each do |cloud| %>
-          <label class="floating" style="display: block; margin-bottom: 6px;">
+          <label class="floating" for="visible_tag_cloud_<%= cloud.id %>">
             <%= check_box_tag 'visible_tag_cloud_ids[]',
                               cloud.id,
                               @visible_ids.include?(cloud.id),
                               id: "visible_tag_cloud_#{cloud.id}" %>
-            <span class="tag-cloud-name">
-              <%= cloud.name %>
-              <% if cloud.is_system? %>
-                <span class="badge badge-info" title="<%= l(:label_tag_cloud_system) %>">
-                  <%= l(:label_tag_cloud_system) %>
-                </span>
-              <% end %>
-            </span>
+            <span class="tag-cloud-name"><%= cloud.name %></span>
           </label>
         <% end %>
       </div>
 
-      <p class="info" style="margin-top: 12px;">
+      <p class="info tag-clouds-visibility-hint">
         <%= l(:text_select_visible_tag_clouds_hint) %>
       </p>
     <% end %>
   </fieldset>
 
-  <div class="buttons">
+  <div class="buttons tag-clouds-visibility-buttons">
     <%= submit_tag l(:button_save), name: nil, disabled: @tag_clouds.blank? %>
     <%= submit_tag l(:button_cancel), name: nil, onclick: 'hideModal(this);', type: 'button' %>
   </div>
