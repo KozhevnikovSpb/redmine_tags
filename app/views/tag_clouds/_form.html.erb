@@ -9,8 +9,8 @@
   <p class="tag-cloud-name-row">
     <%= f.label :name, l(:label_tag_cloud_name) %>
     <% if @tag_cloud.is_system? %>
-      <%= f.text_field :name, value: l(:label_default_tag_cloud), required: true, size: 60, readonly: true %>
-      <%= f.hidden_field :name, value: @tag_cloud.name.presence || l(:label_default_tag_cloud) %>
+      <span class="tag-cloud-name-readonly"><%= l(:label_default_tag_cloud) %></span>
+      <%= f.hidden_field :name %>
     <% else %>
       <%= f.text_field :name, required: true, size: 60 %>
     <% end %>
