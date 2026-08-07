@@ -37,16 +37,30 @@
   background: #628db6;
   color: #fff;
   border-bottom: 1px solid #507aaa;
-  margin: -15px -15px 12px;
-  padding: 10px 15px;
+  margin: -10px -10px 10px;
+  padding: 8px 12px;
 }
 
-/* Checkbox box: solid container, no float collapse */
+/* Compact modal content — less empty space under buttons */
+#ajax-modal:has(#select-visible-tag-clouds-form),
+#ajax-modal:has(.tag-clouds-visibility-box) {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding-bottom: 8px !important;
+}
+
+.ui-dialog:has(#select-visible-tag-clouds-form),
+.ui-dialog:has(.tag-clouds-visibility-box) {
+  height: auto !important;
+}
+
+/* Checkbox box */
 #select-visible-tag-clouds-form .tag-clouds-visibility-box {
   display: block;
   overflow: hidden;
-  padding: 10px 12px;
-  margin-bottom: 0;
+  padding: 8px 12px;
+  margin: 0 0 0 0;
 }
 
 #select-visible-tag-clouds-form .tag-clouds-visibility-list {
@@ -58,34 +72,35 @@
   display: block;
   float: none;
   width: auto;
-  margin: 6px 0;
+  margin: 5px 0;
   padding: 0;
   cursor: pointer;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 #select-visible-tag-clouds-form .tag-clouds-visibility-list .tag-cloud-name {
   margin-left: 4px;
 }
 
-/* Hint: between box and buttons, left-aligned */
+/* Hint */
 #select-visible-tag-clouds-form .tag-clouds-visibility-hint {
   display: block;
   width: auto;
-  margin: 12px 0 4px 0;
+  margin: 8px 0 2px 0;
   padding: 0;
   text-align: left !important;
   float: none !important;
   clear: both;
   color: #666;
   font-size: 0.9em;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
-/* Buttons right-aligned */
+/* Buttons — tight bottom */
 #select-visible-tag-clouds-form .tag-clouds-visibility-buttons {
   text-align: right;
-  margin-top: 10px;
+  margin: 6px 0 0 0;
+  padding: 0;
   clear: both;
 }
 #select-visible-tag-clouds-form .tag-clouds-visibility-buttons input[type="submit"] {
