@@ -19,7 +19,7 @@
   font-size: 0.9em;
 }
 
-/* Modal: header bar in Redmine blue (matches top header line) */
+/* Modal: header bar in Redmine blue */
 .ui-dialog:has(#select-visible-tag-clouds-form) .ui-dialog-titlebar,
 .ui-dialog:has(.tag-clouds-visibility-box) .ui-dialog-titlebar {
   background: #628db6 !important;
@@ -31,12 +31,7 @@
 .ui-dialog:has(.tag-clouds-visibility-box) .ui-dialog-titlebar .ui-dialog-title {
   color: #fff !important;
 }
-.ui-dialog:has(#select-visible-tag-clouds-form) .ui-dialog-titlebar .ui-dialog-titlebar-close,
-.ui-dialog:has(.tag-clouds-visibility-box) .ui-dialog-titlebar .ui-dialog-titlebar-close {
-  color: #fff;
-}
 
-/* Native Redmine modal title (h3.title inside #ajax-modal) */
 #ajax-modal:has(#select-visible-tag-clouds-form) > h3.title,
 #ajax-modal:has(.tag-clouds-visibility-box) > h3.title {
   background: #628db6;
@@ -46,22 +41,38 @@
   padding: 10px 15px;
 }
 
-/* Modal: checkboxes list */
-.tag-clouds-visibility-list label {
+/* Checkbox box: solid container, no float collapse */
+#select-visible-tag-clouds-form .tag-clouds-visibility-box {
   display: block;
-  margin: 6px 0;
-  cursor: pointer;
+  overflow: hidden;
+  padding: 10px 12px;
+  margin-bottom: 0;
 }
-.tag-clouds-visibility-list .tag-cloud-name {
+
+#select-visible-tag-clouds-form .tag-clouds-visibility-list {
+  display: block;
+  overflow: hidden;
+}
+
+#select-visible-tag-clouds-form .tag-clouds-visibility-list label {
+  display: block;
+  float: none;
+  width: auto;
+  margin: 6px 0;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1.5;
+}
+
+#select-visible-tag-clouds-form .tag-clouds-visibility-list .tag-cloud-name {
   margin-left: 4px;
 }
 
-/* Hint: outside the box, between checkboxes and buttons, left-aligned */
-#select-visible-tag-clouds-form .tag-clouds-visibility-hint,
-p.tag-clouds-visibility-hint {
+/* Hint: between box and buttons, left-aligned */
+#select-visible-tag-clouds-form .tag-clouds-visibility-hint {
   display: block;
-  width: 100%;
-  margin: 10px 0 4px 0;
+  width: auto;
+  margin: 12px 0 4px 0;
   padding: 0;
   text-align: left !important;
   float: none !important;
@@ -71,13 +82,12 @@ p.tag-clouds-visibility-hint {
   line-height: 1.4;
 }
 
-/* Modal: Save / Cancel right-aligned */
-#select-visible-tag-clouds-form .tag-clouds-visibility-buttons,
-.tag-clouds-visibility-buttons {
+/* Buttons right-aligned */
+#select-visible-tag-clouds-form .tag-clouds-visibility-buttons {
   text-align: right;
   margin-top: 10px;
   clear: both;
 }
-.tag-clouds-visibility-buttons input[type="submit"] {
+#select-visible-tag-clouds-form .tag-clouds-visibility-buttons input[type="submit"] {
   margin-left: 6px;
 }

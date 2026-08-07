@@ -1,13 +1,13 @@
 <h3 class="title"><%= l(:label_select_visible_tag_clouds) %></h3>
 
 <%= form_tag(project_tag_cloud_preferences_path(@project), method: :put, id: 'select-visible-tag-clouds-form') do %>
-  <div class="box tabular tag-clouds-visibility-box">
+  <div class="box tag-clouds-visibility-box">
     <% if @tag_clouds.blank? %>
       <p class="nodata"><%= l(:label_no_data) %></p>
     <% else %>
       <div class="tag-clouds-visibility-list">
         <% @tag_clouds.each do |cloud| %>
-          <label class="floating" for="visible_tag_cloud_<%= cloud.id %>">
+          <label for="visible_tag_cloud_<%= cloud.id %>">
             <%= check_box_tag 'visible_tag_cloud_ids[]',
                               cloud.id,
                               @visible_ids.include?(cloud.id),
