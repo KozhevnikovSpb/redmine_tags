@@ -57,10 +57,18 @@ class TagCloudsController < ApplicationController
     ids = Array(params[:tag_cloud_ids]).map(&:to_i)
     clouds = @project.tag_clouds.unscoped.where(id: ids).index_by(&:id)
 
+    # System cloud always position 0; custom clouds follow in given order
+    system = @project.tag_clouds.unscoped.find_by(is_system: true)
+    ordered_ids = ids.dup
+    if system
+      ordered_ids.delete(system.id)
+      ordered_ids.unshift(system.id)
+    end
+
     TagCloud.transaction do
-      ids.each_with_index do |id, index|
-        cloud = clouds[id]
-        raise ActiveRecord::RecordNotFound unless cloud
+      ordered_ids.each_with_index do |id, index|
+        cloud = clouds[id] || (system if system && system.id == id)
+        next unless cloud
 
         cloud.update!(position: index)
       end

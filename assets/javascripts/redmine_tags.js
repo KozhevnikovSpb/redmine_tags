@@ -19,7 +19,7 @@ $(function () {
         });
     });
 
-    // Project settings: drag-and-drop reorder of tag clouds
+    // Project settings: drag-and-drop reorder (custom clouds only; system fixed)
     function initTagCloudsSettingsSortable() {
         var $tbody = $('#tag-clouds-sortable-settings');
         if (!$tbody.length || typeof $.fn.sortable !== 'function') {
@@ -34,7 +34,8 @@ $(function () {
         $tbody.sortable({
             handle: '.tag-cloud-drag-handle',
             axis: 'y',
-            items: 'tr',
+            items: 'tr:not(.system)',
+            cancel: 'tr.system, a, button',
             helper: function (e, tr) {
                 var $originals = tr.children();
                 var $helper = tr.clone();
@@ -46,6 +47,12 @@ $(function () {
             placeholder: 'tag-cloud-settings-placeholder',
             tolerance: 'pointer',
             update: function () {
+                // Keep system cloud first in DOM if present
+                var $system = $tbody.children('tr.system');
+                if ($system.length) {
+                    $tbody.prepend($system);
+                }
+
                 var ids = $tbody.find('tr[data-id]').map(function () {
                     return $(this).data('id');
                 }).get();
@@ -68,7 +75,6 @@ $(function () {
     }
 
     initTagCloudsSettingsSortable();
-    // Settings tabs may load content via AJAX
     $(document).on('ajax:complete', function () {
         initTagCloudsSettingsSortable();
     });

@@ -18,12 +18,14 @@
     </thead>
     <tbody id="tag-clouds-sortable-settings"
            data-reorder-url="<%= reorder_project_tag_clouds_path(@project) %>">
-      <% @tag_clouds.each_with_index do |cloud, idx| %>
+      <% @tag_clouds.each do |cloud| %>
         <tr id="tag-cloud-<%= cloud.id %>"
             class="<%= cycle('odd', 'even') %><%= ' system' if cloud.is_system? %>"
             data-id="<%= cloud.id %>">
           <td class="tag-cloud-col-drag">
-            <span class="tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">&#8942;&#8942;</span>
+            <% unless cloud.is_system? %>
+              <span class="tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">&#8942;&#8942;</span>
+            <% end %>
           </td>
           <td class="tag-cloud-col-name name">
             <%= cloud.name %>
@@ -34,16 +36,16 @@
           <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
           <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
           <td class="buttons">
-            <%= link_to '',
+            <%= link_to l(:button_edit),
                         edit_project_tag_cloud_path(@project, cloud),
-                        class: 'icon-only icon-edit',
+                        class: 'icon icon-edit',
                         title: l(:button_edit) %>
             <% unless cloud.is_system? %>
-              <%= link_to '',
+              <%= link_to l(:button_delete),
                           project_tag_cloud_path(@project, cloud),
                           method: :delete,
                           data: { confirm: l(:text_are_you_sure) },
-                          class: 'icon-only icon-del',
+                          class: 'icon icon-del',
                           title: l(:button_delete) %>
             <% end %>
           </td>
