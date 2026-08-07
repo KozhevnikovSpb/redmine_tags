@@ -36,12 +36,12 @@
           <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
           <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
           <td class="buttons">
-            <%= link_to l(:button_edit),
+            <%= link_to sprite_icon('edit', l(:button_edit)),
                         edit_project_tag_cloud_path(@project, cloud),
                         class: 'icon icon-edit',
                         title: l(:button_edit) %>
             <% unless cloud.is_system? %>
-              <%= link_to l(:button_delete),
+              <%= link_to sprite_icon('del', l(:button_delete)),
                           project_tag_cloud_path(@project, cloud),
                           method: :delete,
                           data: { confirm: l(:text_are_you_sure) },
@@ -58,7 +58,7 @@
 <% end %>
 
 <p>
-  <%= link_to l(:label_new_tag_cloud, default: 'New Tag Cloud'),
+  <%= link_to sprite_icon('add', l(:label_new_tag_cloud, default: 'New Tag Cloud')),
               new_project_tag_cloud_path(@project),
               class: 'icon icon-add' %>
 </p>
