@@ -12,37 +12,41 @@ ru:
   issues_open_only: Только открытые задачи
   issues_sort_by: Упорядочить теги по
   use_colors: Использовать цвета
-  
+
   issue_tags_sidebar_none: Не показывать
   issue_tags_sidebar_list: Список
   issue_tags_sidebar_cloud: Облако
   issue_tags_sidebar_simple_cloud: Простое облако
-  
+
   issues_sort_by_name: Названию
   issues_sort_by_count: Кол-ву задач
   issues_sort_order_asc: по возрастанию
   issues_sort_order_desc: по убыванию
 
   auto_complete_new_tag: Добавить...
-  
-  label_tags_add_tag: + добавить тег
-  issue_tags_manage_tags: Управлять тэгами
-  issue_tags_tag: Тэг
-  issue_tags_button_merge: Объединить
-  issue_tags_label_merge: Объединить выбранные тэги
 
-  tags_suggestion_order: Предпологаемый порядок
+  label_tags_add_tag: + добавить тег
+  issue_tags_manage_tags: Управлять тегами
+  issue_tags_tag: Тег
+  issue_tags_button_merge: Объединить
+  issue_tags_label_merge: Объединить выбранные теги
+
+  tags_suggestion_order: Порядок подсказок
   tags_order_by_name: Имя
   tags_order_by_last_created: Последние созданные
   tags_order_by_most_used: Часто используемые
 
   permission_create_tags: Создание тегов
   permission_edit_tags: Редактирование тегов
+  permission_manage_tag_clouds: Управление облаками тегов
+  permission_select_tag_clouds: Выбор видимых облаков тегов
+
+  project_module_tags: Теги
 
   label_tags_remove_tags: Убрать теги
   tag_clouds: Облака тегов
 
-  # Tag Cloud management (new feature)
+  # Tag Cloud management
   label_new_tag_cloud: Новое облако тегов
   label_edit_tag_cloud: Редактировать облако тегов
   label_default_tag_cloud: Облако по умолчанию
@@ -55,6 +59,9 @@ ru:
   label_tag_cloud_visible_by_default: Видимо по умолчанию
   label_tag_cloud_position: Позиция
   label_tag_cloud_system: системное
+  label_tag_cloud_system_cloud: Системное облако
+  label_tag_cloud_drag_to_reorder: Перетащите, чтобы изменить порядок отображения
+  button_collapse: Свернуть
   text_tag_cloud_filters_empty_means_all: пусто = Любые / все
   text_tag_clouds_info: Облака тегов позволяют создавать несколько независимых аналитических представлений задач с собственными фильтрами. Системное облако сохраняет поведение оригинального плагина и не может быть удалено.
   text_cannot_delete_system_cloud: Это защищённое системное облако (для обратной совместимости). Его можно редактировать, но нельзя удалить.
@@ -63,10 +70,9 @@ ru:
   notice_tag_cloud_deleted: Облако тегов успешно удалено.
   alert_cannot_delete_system_cloud: Системное облако нельзя удалить.
 
-  # Select visible tag clouds modal (UI alpha)
+  # Select visible tag clouds modal
   label_select_visible_tag_clouds: Выбрать видимые облака тегов
   label_tag_clouds_visibility: Видимые облака тегов
-  label_tag_cloud_drag_to_reorder: Перетащите, чтобы изменить порядок отображения
   text_select_visible_tag_clouds_hint: Выберите, какие пользовательские облака тегов показывать в боковой панели задач. Перетаскивайте строки, чтобы изменить порядок.
   notice_tag_cloud_preferences_updated: Настройки видимости облаков тегов обновлены.
   notice_failed_to_update_tag_cloud_preferences: Не удалось обновить настройки видимости облаков тегов.

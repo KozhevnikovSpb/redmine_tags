@@ -2,28 +2,29 @@
   status_selected  = Array(@tag_cloud.status_filter).map(&:to_i).reject(&:zero?)
   version_selected = Array(@tag_cloud.version_filter).map(&:to_i).reject(&:zero?)
   tracker_selected = Array(@tag_cloud.tracker_filter).map(&:to_i).reject(&:zero?)
+  label_all = l(:label_all)
 %>
 
-<div class="box tag-cloud-form">
+<div class="box tag-cloud-form" data-label-all="<%= label_all %>">
   <p class="tag-cloud-name-row">
-    <%= f.label :name, l(:label_tag_cloud_name, default: 'Name') %>
+    <%= f.label :name, l(:label_tag_cloud_name) %>
     <%= f.text_field :name, required: true, size: 60 %>
   </p>
 
   <fieldset class="tag-cloud-filters-fieldset">
-    <legend><%= l(:label_tag_cloud_filters, default: 'Filters') %></legend>
+    <legend><%= l(:label_tag_cloud_filters) %></legend>
 
     <div class="tag-cloud-filters-grid">
       <%# ---- Status ---- %>
       <div class="tag-cloud-filter-panel" data-filter="status_filter">
         <div class="tag-cloud-filter-header">
           <span class="tag-cloud-filter-title">
-            <%= l(:label_tag_cloud_status_filter, default: 'Status filter') %>
-            <span class="tag-cloud-filter-count"><%= status_selected.empty? ? "· #{l(:label_all)}" : "(#{status_selected.size})" %></span>
+            <%= l(:label_tag_cloud_status_filter) %>
+            <span class="tag-cloud-filter-count"><%= status_selected.empty? ? "· #{label_all}" : "(#{status_selected.size})" %></span>
           </span>
           <button type="button"
                   class="tag-cloud-filter-toggle<%= ' is-open' unless status_selected.empty? %>"
-                  title="<%= status_selected.empty? ? l(:button_add) : l(:button_collapse, default: 'Collapse') %>">
+                  title="<%= status_selected.empty? ? l(:button_add) : l(:button_collapse) %>">
             <%= status_selected.empty? ? '+' : '−' %>
           </button>
         </div>
@@ -34,7 +35,7 @@
           <% end %>
         </ul>
         <div class="tag-cloud-filter-all"<%= ' hidden' unless status_selected.empty? %>>
-          <%= l(:label_all) %>
+          <%= label_all %>
         </div>
         <div class="tag-cloud-filter-inputs">
           <% status_selected.each do |id| %>
@@ -47,12 +48,12 @@
       <div class="tag-cloud-filter-panel" data-filter="version_filter">
         <div class="tag-cloud-filter-header">
           <span class="tag-cloud-filter-title">
-            <%= l(:label_tag_cloud_version_filter, default: 'Version filter') %>
-            <span class="tag-cloud-filter-count"><%= version_selected.empty? ? "· #{l(:label_all)}" : "(#{version_selected.size})" %></span>
+            <%= l(:label_tag_cloud_version_filter) %>
+            <span class="tag-cloud-filter-count"><%= version_selected.empty? ? "· #{label_all}" : "(#{version_selected.size})" %></span>
           </span>
           <button type="button"
                   class="tag-cloud-filter-toggle<%= ' is-open' unless version_selected.empty? %>"
-                  title="<%= version_selected.empty? ? l(:button_add) : l(:button_collapse, default: 'Collapse') %>">
+                  title="<%= version_selected.empty? ? l(:button_add) : l(:button_collapse) %>">
             <%= version_selected.empty? ? '+' : '−' %>
           </button>
         </div>
@@ -63,7 +64,7 @@
           <% end %>
         </ul>
         <div class="tag-cloud-filter-all"<%= ' hidden' unless version_selected.empty? %>>
-          <%= l(:label_all) %>
+          <%= label_all %>
         </div>
         <div class="tag-cloud-filter-inputs">
           <% version_selected.each do |id| %>
@@ -76,12 +77,12 @@
       <div class="tag-cloud-filter-panel" data-filter="tracker_filter">
         <div class="tag-cloud-filter-header">
           <span class="tag-cloud-filter-title">
-            <%= l(:label_tag_cloud_tracker_filter, default: 'Tracker filter') %>
-            <span class="tag-cloud-filter-count"><%= tracker_selected.empty? ? "· #{l(:label_all)}" : "(#{tracker_selected.size})" %></span>
+            <%= l(:label_tag_cloud_tracker_filter) %>
+            <span class="tag-cloud-filter-count"><%= tracker_selected.empty? ? "· #{label_all}" : "(#{tracker_selected.size})" %></span>
           </span>
           <button type="button"
                   class="tag-cloud-filter-toggle<%= ' is-open' unless tracker_selected.empty? %>"
-                  title="<%= tracker_selected.empty? ? l(:button_add) : l(:button_collapse, default: 'Collapse') %>">
+                  title="<%= tracker_selected.empty? ? l(:button_add) : l(:button_collapse) %>">
             <%= tracker_selected.empty? ? '+' : '−' %>
           </button>
         </div>
@@ -92,7 +93,7 @@
           <% end %>
         </ul>
         <div class="tag-cloud-filter-all"<%= ' hidden' unless tracker_selected.empty? %>>
-          <%= l(:label_all) %>
+          <%= label_all %>
         </div>
         <div class="tag-cloud-filter-inputs">
           <% tracker_selected.each do |id| %>
@@ -105,13 +106,13 @@
 
   <p class="tag-cloud-visible-row">
     <%= f.check_box :visible_by_default %>
-    <%= f.label :visible_by_default, l(:label_tag_cloud_visible_by_default, default: 'Visible by default') %>
+    <%= f.label :visible_by_default, l(:label_tag_cloud_visible_by_default) %>
   </p>
 
   <% if @tag_cloud.persisted? && @tag_cloud.is_system? %>
     <p class="info">
-      <strong><%= l(:label_tag_cloud_system, default: 'System cloud') %></strong>.
-      <%= l(:text_cannot_delete_system_cloud, default: 'This cloud cannot be deleted but can be edited.') %>
+      <strong><%= l(:label_tag_cloud_system_cloud) %></strong>.
+      <%= l(:text_cannot_delete_system_cloud) %>
     </p>
   <% end %>
 </div>

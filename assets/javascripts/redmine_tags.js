@@ -79,7 +79,9 @@ $(function () {
     });
 
     // ---- Tag cloud form: filter lists ----
-    var LABEL_ALL = $('.tag-cloud-filter-all').first().text().trim() || 'all';
+    function labelAll() {
+        return $('.tag-cloud-form').data('label-all') || 'all';
+    }
 
     function syncFilterPanel($panel) {
         var filterName = $panel.data('filter');
@@ -100,7 +102,7 @@ $(function () {
         $all.prop('hidden', count > 0);
 
         if (count === 0) {
-            $count.text('· ' + LABEL_ALL);
+            $count.text('· ' + labelAll());
         } else {
             $count.text('(' + count + ')');
         }
