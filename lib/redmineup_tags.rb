@@ -22,7 +22,7 @@ module Redmineup
     module Taggable
       module SingletonMethods
         def available_tags_with_configurable_limit options = {}
-          available_tags_without_configurable_limit options.merge({limit: 10})
+          available_tags_without_configurable_limit options.merge({limit: 100})
         end
 
         alias_method :available_tags_without_configurable_limit, :available_tags
