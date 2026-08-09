@@ -105,8 +105,13 @@
   </fieldset>
 
   <p class="tag-cloud-visible-row">
-    <%= f.check_box :visible_by_default %>
+    <%= f.check_box :visible_by_default, {}, '1', '0' %>
     <%= f.label :visible_by_default, l(:label_tag_cloud_visible_by_default) %>
+  </p>
+
+  <p class="tag-cloud-subprojects-row">
+    <%= f.check_box :include_subprojects, {}, '1', '0' %>
+    <%= f.label :include_subprojects, l(:label_tag_cloud_include_subprojects, default: 'Include subprojects') %>
   </p>
 </div>
 

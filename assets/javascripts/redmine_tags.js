@@ -52,9 +52,11 @@ $(function () {
                     $tbody.prepend($system);
                 }
 
+                // Only numeric cloud ids (skip virtual "system")
                 var ids = $tbody.find('tr[data-id]').map(function () {
-                    return $(this).data('id');
-                }).get();
+                    var id = $(this).data('id');
+                    return (id && id !== 'system') ? id : null;
+                }).get().filter(function (id) { return id !== null; });
 
                 if (!reorderUrl || !ids.length) {
                     return;

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module IssuesTagsHelper
   def sidebar_tags
     return @sidebar_tags if defined?(@sidebar_tags)
@@ -33,11 +35,18 @@ module IssuesTagsHelper
   end
 
   def render_tag_cloud(cloud)
-    tags = TagCloudAggregator.new(cloud, project: @project, user: User.current).tags.to_a
+    open_only = RedmineupTags.settings['issues_open_only'].to_i == 1
+    tags = TagCloudAggregator.new(
+      cloud,
+      project: @project,
+      user: User.current,
+      open_only: open_only
+    ).tags.to_a
+
     render_tags_list(
       tags,
       show_count: RedmineupTags.settings['issues_show_count'].to_i == 1,
-      open_only: false,
+      open_only: open_only,
       style: RedmineupTags.tag_list_view
     )
   rescue StandardError => e
@@ -49,21 +58,19 @@ module IssuesTagsHelper
     return ''.html_safe if RedmineupTags.tag_list_view == :none
     return render_global_tags_sidebar unless @project
 
-    # Custom clouds only (Default/system is virtual, always shown)
     custom_clouds = TagCloud.for_project(@project).to_a
     can_select_clouds = User.current.allowed_to?(:select_tag_clouds, @project)
     visible_custom = custom_clouds.select { |c| c.visible_for?(User.current, project: @project) }
 
     sections = []
 
-    # System / general tags cloud — always titled "Tags", always shown
+    # Virtual system cloud — always titled "Tags"
     sections << tag_cloud_section(
       l(:tags),
       render_sidebar_tags,
       'sidebar-tag-cloud sidebar-tag-cloud-system'
     )
 
-    # Select visible clouds link: under system cloud, only if custom clouds exist
     if can_select_clouds && custom_clouds.any?
       sections << content_tag(:div, class: 'sidebar-tag-cloud-controls') do
         link_to(
@@ -76,11 +83,13 @@ module IssuesTagsHelper
       end
     end
 
-    # Visible custom clouds only
     visible_custom.each do |cloud|
+      body = render_tag_cloud(cloud)
+      next if body.blank?
+
       sections << tag_cloud_section(
         cloud.name,
-        render_tag_cloud(cloud),
+        body,
         'sidebar-tag-cloud',
         data: { tag_cloud_id: cloud.id }
       )

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TagCloudsController < ApplicationController
   before_action :find_project_by_project_id
   before_action :authorize
@@ -20,18 +22,16 @@ class TagCloudsController < ApplicationController
   def create
     @tag_cloud = TagCloud.new(tag_cloud_params)
     @tag_cloud.created_by = User.current
-    @tag_cloud.visibility ||= 'all'
+    @tag_cloud.visibility = 'all' if @tag_cloud.visibility.blank?
+    # Build join before validation so name uniqueness is scoped to this project
+    @tag_cloud.tag_cloud_projects.build(project: @project, position: next_position)
 
-    TagCloud.transaction do
-      @tag_cloud.save!
-      position = next_position
-      @tag_cloud.tag_cloud_projects.create!(project: @project, position: position)
+    if @tag_cloud.save
+      redirect_to settings_project_path(@project, tab: 'tags'), notice: l(:notice_tag_cloud_created)
+    else
+      load_filter_options
+      render :new, status: :unprocessable_entity
     end
-
-    redirect_to settings_project_path(@project, tab: 'tags'), notice: l(:notice_tag_cloud_created)
-  rescue ActiveRecord::RecordInvalid
-    load_filter_options
-    render :new, status: :unprocessable_entity
   end
 
   def edit
@@ -48,7 +48,6 @@ class TagCloudsController < ApplicationController
   end
 
   def destroy
-    # Unlink from this project; destroy cloud only if no other projects remain
     link = @tag_cloud.tag_cloud_projects.find_by(project_id: @project.id)
     link&.destroy
     @tag_cloud.destroy! if @tag_cloud.tag_cloud_projects.reload.empty?
@@ -57,7 +56,7 @@ class TagCloudsController < ApplicationController
   end
 
   def reorder
-    ids = Array(params[:tag_cloud_ids]).map(&:to_i).reject(&:zero?)
+    ids = Array(params[:tag_cloud_ids]).map { |v| Integer(v) rescue 0 }.reject(&:zero?)
     links = @project.tag_cloud_projects.where(tag_cloud_id: ids).index_by(&:tag_cloud_id)
 
     TagCloudProject.transaction do
@@ -89,7 +88,7 @@ class TagCloudsController < ApplicationController
   end
 
   def tag_cloud_params
-    params.require(:tag_cloud).permit(
+    raw = params.fetch(:tag_cloud, {}).permit(
       :name,
       :visible_by_default,
       :visibility,
@@ -99,5 +98,14 @@ class TagCloudsController < ApplicationController
       version_filter: [],
       tracker_filter: []
     )
+
+    # Missing checkbox / empty filter panels => false / []
+    raw[:visible_by_default] = ActiveModel::Type::Boolean.new.cast(raw[:visible_by_default])
+    raw[:tag_filter] = ActiveModel::Type::Boolean.new.cast(raw.fetch(:tag_filter, false))
+    raw[:include_subprojects] = ActiveModel::Type::Boolean.new.cast(raw.fetch(:include_subprojects, false))
+    raw[:status_filter] = Array(raw[:status_filter])
+    raw[:version_filter] = Array(raw[:version_filter])
+    raw[:tracker_filter] = Array(raw[:tracker_filter])
+    raw
   end
 end

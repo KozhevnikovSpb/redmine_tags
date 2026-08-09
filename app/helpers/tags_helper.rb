@@ -75,20 +75,50 @@ module TagsHelper
     options
   end
 
+  # Short filter description for Settings → Tags table
   def tag_cloud_filters_summary(tag_cloud)
     return '' unless tag_cloud
 
     parts = []
-    parts << filter_summary(:field_status, IssueStatus.where(id: tag_cloud.status_filter).sorted.pluck(:name))
-    parts << filter_summary(:field_fixed_version, Version.where(id: tag_cloud.version_filter).pluck(:name))
-    parts << filter_summary(:field_tracker, Tracker.where(id: tag_cloud.tracker_filter).sorted.pluck(:name))
+    parts << filter_summary(:field_status, safe_names(IssueStatus, tag_cloud.status_filter))
+    parts << filter_summary(:field_fixed_version, safe_names(Version, tag_cloud.version_filter))
+    parts << filter_summary(:field_tracker, safe_names(Tracker, tag_cloud.tracker_filter))
+
+    if tag_cloud.tag_filter
+      tag_names = if tag_cloud.tag_ids.any?
+                    Redmineup::Tag.where(id: tag_cloud.tag_ids).order(:name).pluck(:name)
+                  else
+                    []
+                  end
+      parts << filter_summary(:tags, tag_names.presence || [l(:label_none)])
+    end
+
+    if tag_cloud.include_subprojects
+      parts << content_tag(:span, l(:label_subproject_plural, default: 'Subprojects'))
+    end
+
     safe_join(parts, tag.br)
   end
 
   private
 
+  def safe_names(model, ids)
+    ids = Array(ids).map(&:to_i).reject(&:zero?)
+    return [] if ids.empty?
+
+    scope = model.where(id: ids)
+    scope = scope.sorted if scope.respond_to?(:sorted)
+    scope.pluck(:name)
+  end
+
   def filter_summary(label, values)
-    content_tag(:span, "#{l(label)}: #{values.presence&.join(', ') || l(:label_all)}")
+    text =
+      if values.blank?
+        "#{l(label)}: #{l(:label_all)}"
+      else
+        "#{l(label)}: #{values.join(', ')}"
+      end
+    content_tag(:span, text)
   end
 
   def add_tags(style, tags, content, item_el, options)
