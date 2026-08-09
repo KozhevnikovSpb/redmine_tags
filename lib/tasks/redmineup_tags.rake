@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Plugin directory on server: plugins/redmineup_tags (plugin id :redmineup_tags)
+# Plugin directory: plugins/redmineup_tags (id :redmineup_tags)
 
 def redmineup_tags_plugin_root
   begin
@@ -8,12 +8,11 @@ def redmineup_tags_plugin_root
   rescue StandardError
     nil
   end
-  candidates = [
-    File.expand_path('../..', __dir__), # lib/tasks -> plugin root
+  [
+    File.expand_path('../..', __dir__),
     Rails.root.join('plugins/redmineup_tags').to_s,
     Rails.root.join('plugins/redmine_tags').to_s
-  ]
-  candidates.find { |p| File.directory?(p) }
+  ].find { |p| File.directory?(p) }
 end
 
 def redmineup_tags_load_schema_repair!
@@ -21,62 +20,47 @@ def redmineup_tags_load_schema_repair!
 
   root = redmineup_tags_plugin_root
   path = root && File.join(root, 'lib/redmineup_tags/schema_repair.rb')
-
   unless path && File.file?(path)
-    raise <<~MSG
-      RedmineupTags::SchemaRepair not found.
-      Expected file: plugins/redmineup_tags/lib/redmineup_tags/schema_repair.rb
-      Plugin root tried: #{root.inspect}
-      Run: git pull in the plugin directory, then retry.
-    MSG
+    raise "SchemaRepair not found at #{path.inspect}. git pull in plugin dir."
   end
 
   load path
-  raise 'SchemaRepair loaded but constant missing' unless defined?(RedmineupTags::SchemaRepair)
-end
-
-def redmineup_tags_schema_status!
-  conn = ActiveRecord::Base.connection
-  puts '=== Multi Tag Clouds schema status ==='
-  %w[tag_clouds tag_cloud_projects tag_cloud_tags tag_cloud_roles tag_cloud_preferences tags taggings].each do |t|
-    puts format('  %-24s %s', t, conn.table_exists?(t) ? 'exists' : 'MISSING')
-  end
-  if conn.table_exists?(:tag_clouds)
-    cols = conn.columns(:tag_clouds).map(&:name)
-    puts "  tag_clouds columns: #{cols.join(', ')}"
-    legacy = %w[project_id position is_system] & cols
-    missing = %w[tag_filter include_subprojects owner_id visibility name visible_by_default] - cols
-    puts "  legacy still present: #{legacy.empty? ? 'none' : legacy.join(', ')}"
-    puts "  target missing: #{missing.empty? ? 'none' : missing.join(', ')}"
-  end
-  if conn.table_exists?(:tag_cloud_preferences)
-    cols = conn.columns(:tag_cloud_preferences).map(&:name)
-    puts "  preferences columns: #{cols.join(', ')}"
-  end
+  raise 'SchemaRepair constant missing after load' unless defined?(RedmineupTags::SchemaRepair)
 end
 
 namespace :redmineup_tags do
-  desc 'Bring Multi Tag Clouds DB to target schema (idempotent)'
+  desc 'V.0.0.2-beta: DROP cloud tables and recreate target schema. PRESERVES tags/taggings.'
+  task force_rebuild: :environment do
+    redmineup_tags_load_schema_repair!
+    puts 'WARNING: tag_clouds / preferences / projects / roles / tags-links will be wiped.'
+    puts 'PRESERVED: tags, taggings (real issue tags).'
+    RedmineupTags::SchemaRepair.force_rebuild!(verbose: true)
+  end
+
+  desc 'Ensure schema (soft). If legacy detected → force rebuild.'
   task repair_schema: :environment do
     redmineup_tags_load_schema_repair!
     RedmineupTags::SchemaRepair.run!(verbose: true)
   end
 
-  desc 'Print Multi Tag Clouds schema status (no changes)'
+  desc 'Print schema status (no changes)'
   task schema_status: :environment do
-    redmineup_tags_schema_status!
+    redmineup_tags_load_schema_repair!
+    RedmineupTags::SchemaRepair.status!(verbose: true)
   end
 end
 
 namespace :redmine_tags do
-  desc 'Alias: same as redmineup_tags:repair_schema'
+  task force_rebuild: :environment do
+    redmineup_tags_load_schema_repair!
+    RedmineupTags::SchemaRepair.force_rebuild!(verbose: true)
+  end
   task repair_schema: :environment do
     redmineup_tags_load_schema_repair!
     RedmineupTags::SchemaRepair.run!(verbose: true)
   end
-
-  desc 'Alias: same as redmineup_tags:schema_status'
   task schema_status: :environment do
-    redmineup_tags_schema_status!
+    redmineup_tags_load_schema_repair!
+    RedmineupTags::SchemaRepair.status!(verbose: true)
   end
 end
