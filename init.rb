@@ -16,8 +16,9 @@ Redmine::Plugin.register :redmineup_tags do
   requires_redmine version_or_higher: '7.0'
 
   settings default: {
-    sidebar_tag_list_view: 'none',
-    issues_show_count: 0,
+    # simple_cloud so sidebar shows tags out of the box for beta testing
+    sidebar_tag_list_view: 'simple_cloud',
+    issues_show_count: 1,
     issues_open_only: 0,
     issues_sort_by: 'name',
     use_colors: 1,

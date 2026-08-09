@@ -1,38 +1,15 @@
-<h3>Tag Clouds</h3>
-
-<p><strong>Tag Clouds management is under development.</strong></p>
-
-<p>Original plugin settings are available in the main Tags configuration.</p>
-
-<% if defined?(@tag_clouds) && @tag_clouds.any? %>
-  <table class="list">
-    <thead>
-    <tr>
-      <th>Name</th>
-      <th>Filters</th>
-      <th>Visible by Default</th>
-      <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    <% @tag_clouds.each do |cloud| %>
-      <tr>
-        <td><%= h cloud.name %></td>
-        <td>Status: <%= cloud.status_filter || 'Any' %>, Version: <%= cloud.version_filter || 'Any' %></td>
-        <td><%= cloud.visible_by_default ? 'Yes' : 'No' %></td>
-        <td>
-          <% if defined?(@project) && @project %>
-            <%= link_to 'Edit', edit_project_tag_cloud_path(@project, cloud) %>
-          <% end %>
-        </td>
-      </tr>
-    <% end %>
-    </tbody>
-  </table>
-<% else %>
-  <p>No tag clouds yet.</p>
-<% end %>
-
-<% if defined?(@project) && @project %>
-  <p><%= link_to 'Create New Tag Cloud', new_project_tag_cloud_path(@project), class: 'icon icon-add' %></p>
-<% end %>
+<p class="info">
+  <%= l(:text_tag_clouds_info) %>
+</p>
+<p>
+  <%= l(:label_tag_cloud_system_cloud) %>: <%= l(:label_default_tag_cloud) %>
+  — <%= l(:text_cannot_delete_system_cloud) %>
+</p>
+<p>
+  <%= link_to l(:label_settings), { controller: 'settings', action: 'plugin', id: 'redmineup_tags' } %>
+  — plugin-wide tag display options (sidebar style, colors, sort).
+</p>
+<p>
+  Tag clouds are managed per project:
+  <strong>Project → Settings → <%= l(:tag_clouds) %></strong>.
+</p>

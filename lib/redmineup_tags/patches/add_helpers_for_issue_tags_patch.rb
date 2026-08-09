@@ -30,12 +30,24 @@ module RedmineupTags
   end
 end
 
-[IssuesController, CalendarsController, GanttsController, SettingsController].each do |controller|
+[
+  IssuesController,
+  CalendarsController,
+  GanttsController,
+  SettingsController,
+  ProjectsController,
+  TagCloudsController,
+  TagCloudPreferencesController
+].each do |controller|
+  next unless defined?(controller)
+
   unless controller.included_modules.include?(RedmineupTags::Patches::AddHelpersForIssueTagsPatch)
     controller.send(:include, RedmineupTags::Patches::AddHelpersForIssueTagsPatch)
   end
 end
 
-unless ImportsController.included_modules.include?(RedmineupTags::Patches::AddHelpersForIssueTagsPatch)
-  ImportsController.send(:include, RedmineupTags::Patches::AddHelpersForIssueTagsPatch)
+if defined?(ImportsController)
+  unless ImportsController.included_modules.include?(RedmineupTags::Patches::AddHelpersForIssueTagsPatch)
+    ImportsController.send(:include, RedmineupTags::Patches::AddHelpersForIssueTagsPatch)
+  end
 end

@@ -45,6 +45,7 @@ en:
 
   label_tags_remove_tags: Remove tags
   tag_clouds: Tag Clouds
+  label_none: None
 
   # Tag Cloud management
   label_new_tag_cloud: New Tag Cloud
@@ -57,18 +58,19 @@ en:
   label_tag_cloud_version_filter: Version filter
   label_tag_cloud_tracker_filter: Tracker filter
   label_tag_cloud_visible_by_default: Visible by default
+  label_tag_cloud_include_subprojects: Include subprojects
   label_tag_cloud_position: Position
   label_tag_cloud_system: system
   label_tag_cloud_system_cloud: System cloud
   label_tag_cloud_drag_to_reorder: Drag to change display order
   button_collapse: Collapse
   text_tag_cloud_filters_empty_means_all: empty = Any / all
-  text_tag_clouds_info: Tag clouds provide multiple analytical slices of issues with custom filters. The system cloud preserves original plugin behavior and cannot be deleted.
-  text_cannot_delete_system_cloud: This is the protected system cloud (preserves backward compatibility). It can be edited but not deleted.
+  text_tag_clouds_info: Tag clouds provide multiple analytical slices of issues with custom filters. The default Tags cloud preserves original plugin behavior and is always shown.
+  text_cannot_delete_system_cloud: The default Tags cloud is virtual and always visible; it cannot be deleted.
   notice_tag_cloud_created: Tag cloud was successfully created.
   notice_tag_cloud_updated: Tag cloud was successfully updated.
   notice_tag_cloud_deleted: Tag cloud was successfully deleted.
-  alert_cannot_delete_system_cloud: System cloud cannot be deleted.
+  alert_cannot_delete_system_cloud: Default Tags cloud cannot be deleted.
 
   # Select visible tag clouds modal
   label_select_visible_tag_clouds: Select visible tag clouds
