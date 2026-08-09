@@ -33,7 +33,7 @@ module IssuesTagsHelper
   end
 
   def render_tag_cloud(cloud)
-    tags = TagCloudAggregator.new(cloud, user: User.current).tags.to_a
+    tags = TagCloudAggregator.new(cloud, project: @project, user: User.current).tags.to_a
     render_tags_list(
       tags,
       show_count: RedmineupTags.settings['issues_show_count'].to_i == 1,
@@ -49,12 +49,10 @@ module IssuesTagsHelper
     return ''.html_safe if RedmineupTags.tag_list_view == :none
     return render_global_tags_sidebar unless @project
 
-    # Load once; keep only one system cloud (protect against duplicate data)
-    all_clouds = @project.tag_clouds.unscoped.order(:position, :id).to_a
-    system_cloud = all_clouds.find(&:is_system?)
-    custom_clouds = all_clouds.reject(&:is_system?)
+    # Custom clouds only (Default/system is virtual, always shown)
+    custom_clouds = TagCloud.for_project(@project).to_a
     can_select_clouds = User.current.allowed_to?(:select_tag_clouds, @project)
-    visible_custom = custom_clouds.select { |c| c.visible_for?(User.current) }
+    visible_custom = custom_clouds.select { |c| c.visible_for?(User.current, project: @project) }
 
     sections = []
 
@@ -78,7 +76,7 @@ module IssuesTagsHelper
       end
     end
 
-    # Visible custom clouds only (no Hide/Show, no Hidden block)
+    # Visible custom clouds only
     visible_custom.each do |cloud|
       sections << tag_cloud_section(
         cloud.name,

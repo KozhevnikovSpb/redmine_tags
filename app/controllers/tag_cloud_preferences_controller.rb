@@ -4,12 +4,10 @@ class TagCloudPreferencesController < ApplicationController
   before_action :find_tag_cloud, only: :toggle
 
   # GET /projects/:project_id/tag_cloud_preferences/edit (JS)
-  # Modal shows only custom (non-system) tag clouds.
-  # System/Default cloud is always shown and is not managed here.
+  # Modal shows only custom tag clouds. Default/system is virtual and not listed.
   def edit
-    TagCloud.ensure_system_cloud(@project)
     load_custom_tag_clouds
-    @visible_ids = @tag_clouds.select { |c| c.visible_for?(User.current) }.map(&:id)
+    @visible_ids = @tag_clouds.select { |c| c.visible_for?(User.current, project: @project) }.map(&:id)
 
     respond_to do |format|
       format.js
@@ -19,20 +17,17 @@ class TagCloudPreferencesController < ApplicationController
   # PUT/PATCH /projects/:project_id/tag_cloud_preferences
   # Bulk update visibility + display order for custom clouds.
   def update
-    TagCloud.ensure_system_cloud(@project)
     load_custom_tag_clouds
     selected_ids = Array(params[:visible_tag_cloud_ids]).map(&:to_i)
     order_ids = Array(params[:tag_cloud_order]).map(&:to_i)
 
     TagCloudPreference.transaction do
-      # Visibility per user
       @tag_clouds.each do |cloud|
         preference = cloud.preferences.find_or_initialize_by(user: User.current)
         preference.visible = selected_ids.include?(cloud.id)
         preference.save!
       end
 
-      # Project-wide display order (position) from drag-and-drop
       apply_cloud_order(order_ids) if order_ids.any?
     end
 
@@ -44,10 +39,7 @@ class TagCloudPreferencesController < ApplicationController
   end
 
   # POST /projects/:project_id/tag_clouds/:tag_cloud_id/preference/toggle
-  # Kept for API compatibility; UI no longer uses individual toggle.
   def toggle
-    return if @tag_cloud.is_system?
-
     preference = @tag_cloud.preferences.find_or_initialize_by(user: User.current)
     current_visibility = preference.persisted? ? preference.visible? : @tag_cloud.visible_by_default?
     preference.visible = !current_visibility
@@ -63,32 +55,24 @@ class TagCloudPreferencesController < ApplicationController
   end
 
   def find_tag_cloud
-    @tag_cloud = @project.tag_clouds.unscoped.find(params[:tag_cloud_id])
+    @tag_cloud = TagCloud.for_project(@project).find(params[:tag_cloud_id])
   end
 
-  # Only non-system clouds. System cloud is always visible and not listed in modal.
   def load_custom_tag_clouds
-    @tag_clouds = @project.tag_clouds.unscoped
-                          .where(is_system: false)
-                          .order(:position, :id)
-                          .to_a
+    @tag_clouds = TagCloud.for_project(@project).to_a
   end
 
-  # Reorder custom clouds by position; system cloud stays at position 0.
+  # Reorder via tag_cloud_projects.position
   def apply_cloud_order(order_ids)
-    allowed = @tag_clouds.index_by(&:id)
-    # Keep only known custom cloud ids, preserve drag order
-    ordered = order_ids.select { |id| allowed.key?(id) }.uniq
-    # Append any custom clouds missing from the payload (safety)
+    links = @project.tag_cloud_projects.where(tag_cloud_id: order_ids).index_by(&:tag_cloud_id)
+    ordered = order_ids.select { |id| links.key?(id) }.uniq
     ordered += @tag_clouds.map(&:id) - ordered
 
     ordered.each_with_index do |id, index|
-      cloud = allowed[id]
-      next unless cloud
+      link = links[id] || @project.tag_cloud_projects.find_by(tag_cloud_id: id)
+      next unless link
 
-      # System stays at 0; custom start from 1
-      new_position = index + 1
-      cloud.update!(position: new_position) if cloud.position != new_position
+      link.update!(position: index) if link.position != index
     end
   end
 end
