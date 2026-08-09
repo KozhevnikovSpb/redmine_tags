@@ -2,13 +2,16 @@ module TagsHelper
   include Redmineup::TagsHelper
 
   def render_issue_tag_link(tag, options = {})
-    filters = [[:issue_tags, '=', tag.name]]
-    filters << [:status_id, 'o'] if options[:open_only]
+    filters = []
+    # status open first when plugin setting «open only» is on
+    filters << ['status_id', 'o', ''] if options[:open_only]
+    filters << ['issue_tags', '=', tag.name]
+
     content =
       if options[:use_search]
         link_to(tag, controller: 'search', action: 'index', id: @project, q: tag.name, wiki_pages: true, issues: true)
       else
-        link_to_issue_filter tag.name, filters, project_id: @project
+        link_to_issue_filter(tag.name, filters)
       end
     content << content_tag('span', "(#{tag.count})", class: 'tag-count') if options[:show_count]
     style = RedmineupTags.use_colors? ? { class: 'tag-label-color', style: "background-color: #{tag.color}" } : { class: 'tag-label' }
@@ -52,30 +55,40 @@ module TagsHelper
     content_tag(list_el, content, class: 'tags-cloud', style: (style == :simple_cloud ? 'text-align: left;' : ''))
   end
 
-  def link_to_issue_filter(title, filters, options = {})
-    options.merge! link_to_issue_filter_options(filters)
-    link_to title, options
+  # Build a link that Redmine applies immediately (no extra Apply click).
+  def link_to_issue_filter(title, filters, extra = {})
+    filter_params = link_to_issue_filter_options(filters).merge(extra)
+    path =
+      if @project
+        project_issues_path(@project, filter_params)
+      else
+        issues_path(filter_params)
+      end
+    link_to title, path
   end
 
+  # Canonical Redmine filter URL params (Redmine 1.2+ / 7.x):
+  #   set_filter=1&f[]=status_id&op[status_id]=o&v[status_id][]=&f[]=issue_tags&op[issue_tags]==&v[issue_tags][]=Name
   def link_to_issue_filter_options(filters)
-    options = {
-      controller: 'issues',
-      action: 'index',
-      set_filter: 1,
-      fields: [],
-      values: {},
-      operators: {}
-    }
+    f = []
+    op = {}
+    v = {}
 
-    filters.each do |name, operator, value|
-      options[:fields] << name
-      options[:operators][name] = operator
-      options[:values][name] = [value]
+    Array(filters).each do |name, operator, value|
+      name = name.to_s
+      f << name
+      op[name] = operator.to_s
+      v[name] = value.nil? || value == '' ? [''] : Array(value).map(&:to_s)
     end
-    options
+
+    {
+      set_filter: 1,
+      f: f,
+      op: op,
+      v: v
+    }
   end
 
-  # Short filter description for Settings → Tags table
   def tag_cloud_filters_summary(tag_cloud)
     return '' unless tag_cloud
 
