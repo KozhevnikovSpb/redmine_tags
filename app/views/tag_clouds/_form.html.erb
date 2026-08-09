@@ -8,12 +8,7 @@
 <div class="box tag-cloud-form" data-label-all="<%= label_all %>">
   <p class="tag-cloud-name-row">
     <%= f.label :name, l(:label_tag_cloud_name) %>
-    <% if @tag_cloud.is_system? %>
-      <span class="tag-cloud-name-readonly"><%= l(:label_default_tag_cloud) %></span>
-      <%= f.hidden_field :name %>
-    <% else %>
-      <%= f.text_field :name, required: true, size: 60 %>
-    <% end %>
+    <%= f.text_field :name, required: true, size: 60 %>
   </p>
 
   <fieldset class="tag-cloud-filters-fieldset">
@@ -113,13 +108,6 @@
     <%= f.check_box :visible_by_default %>
     <%= f.label :visible_by_default, l(:label_tag_cloud_visible_by_default) %>
   </p>
-
-  <% if @tag_cloud.persisted? && @tag_cloud.is_system? %>
-    <p class="info">
-      <strong><%= l(:label_tag_cloud_system_cloud) %></strong>.
-      <%= l(:text_cannot_delete_system_cloud) %>
-    </p>
-  <% end %>
 </div>
 
 <p class="buttons">
