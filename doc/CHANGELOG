@@ -4,6 +4,16 @@ Redmine Tags plugin - Tags board plugin for redmine
 Copyright (C) 2011-2026 Kirill Bezrukov (RedmineUP)
 http://www.redmineup.com/
 
+== 2026-08-09 v0.0.2-beta
+
+* Database schema force-rebuild to multi-project target (tag_cloud_projects, tag_cloud_tags, tag_cloud_roles)
+* Models rewritten for new schema: TagCloud no longer has project_id / is_system / position
+* New join models: TagCloudProject, TagCloudTag, TagCloudRole
+* Default/system cloud is virtual (not stored in DB)
+* TagCloudAggregator requires explicit project context
+* Unique name validated per linked projects
+* visible_for? respects visibility (all/owner/roles) + user preference override
+
 == 2026-08-07 v0.0.1-alpha
 
 * Start of multi Tag Clouds extension development
