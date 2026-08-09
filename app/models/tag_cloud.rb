@@ -1,53 +1,88 @@
+# frozen_string_literal: true
+
+# TagCloud — multi-project capable tag cloud definition.
+# Schema V.0.0.2-beta: no project_id / is_system / position on this table.
+# Position lives in tag_cloud_projects (per project). Default system cloud is virtual (not stored).
 class TagCloud < ActiveRecord::Base
-  belongs_to :project
-  belongs_to :created_by, class_name: 'User', optional: true
-  has_many :preferences, class_name: 'TagCloudPreference', dependent: :delete_all
+  VISIBILITIES = %w[all owner roles].freeze
+
+  has_many :tag_cloud_projects, dependent: :destroy, inverse_of: :tag_cloud
+  has_many :projects, through: :tag_cloud_projects
+
+  has_many :tag_cloud_tags, dependent: :destroy
+  has_many :tags, through: :tag_cloud_tags, class_name: 'Redmineup::Tag', source: :tag
+
+  has_many :tag_cloud_roles, dependent: :destroy
+  has_many :roles, through: :tag_cloud_roles
+
+  has_many :preferences, class_name: 'TagCloudPreference', dependent: :delete_all, inverse_of: :tag_cloud
+
+  belongs_to :owner, class_name: 'User', optional: true
+  belongs_to :created_by, class_name: 'User', optional: true, foreign_key: :created_by_id
 
   serialize :status_filter, coder: YAML, type: Array
   serialize :version_filter, coder: YAML, type: Array
   serialize :tracker_filter, coder: YAML, type: Array
 
-  validates :name, presence: true, uniqueness: { scope: :project_id }
-  validates :project, presence: true
-  validates :position, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
-  validate :single_system_cloud
-  validate :filters_belong_to_project
+  validates :name, presence: true
+  validates :visibility, inclusion: { in: VISIBILITIES }
+  validates :tag_filter, inclusion: { in: [true, false] }
+  validates :include_subprojects, inclusion: { in: [true, false] }
+  validates :visible_by_default, inclusion: { in: [true, false] }
 
-  default_scope { order(:position, :id) }
+  validate :name_unique_within_projects
+  validate :status_filter_exists
+  validate :roles_present_when_visibility_roles
 
   before_validation :normalize_filters
 
-  def is_system?
-    is_system == true
-  end
+  # Clouds linked to a given project, ordered by join position
+  scope :for_project, lambda { |project|
+    joins(:tag_cloud_projects)
+      .where(tag_cloud_projects: { project_id: project.id })
+      .order(Arel.sql('tag_cloud_projects.position ASC, tag_clouds.id ASC'))
+  }
 
-  def visible_for?(user)
-    preference = preferences.find_by(user_id: user.id) if user&.logged?
-    preference.nil? ? visible_by_default? : preference.visible?
-  end
+  # Preference overrides everything. Otherwise apply visibility rule.
+  def visible_for?(user, project: nil)
+    return false if user.nil?
 
-  def self.ensure_system_cloud(project)
-    return unless project&.persisted?
-
-    project.with_lock do
-      existing = project.tag_clouds.unscoped.where(is_system: true).order(:id).to_a
-      if existing.any?
-        # Keep the oldest system cloud; remove accidental duplicates
-        keep = existing.first
-        (existing - [keep]).each(&:destroy)
-        keep
-      else
-        project.tag_clouds.unscoped.create!(
-          name: I18n.t(:label_default_tag_cloud, default: 'Default Tags'),
-          visible_by_default: true,
-          is_system: true,
-          position: 0,
-          created_by: (User.current if User.current&.persisted?)
-        )
-      end
+    if user.logged?
+      pref = preferences.find_by(user_id: user.id)
+      return pref.visible? if pref
     end
-  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
-    project.tag_clouds.unscoped.where(is_system: true).order(:id).first
+
+    case visibility
+    when 'all'
+      visible_by_default?
+    when 'owner'
+      owner_id.present? && owner_id == user.id
+    when 'roles'
+      return false unless user.logged? && project
+      user_role_ids = user.roles_for_project(project).map(&:id)
+      (role_ids & user_role_ids).any?
+    else
+      false
+    end
+  end
+
+  def position_in(project)
+    return nil unless project
+    tag_cloud_projects.find_by(project_id: project.id)&.position
+  end
+
+  def linked_to?(project)
+    return false unless project
+    tag_cloud_projects.exists?(project_id: project.id)
+  end
+
+  # Convenience: tag ids when tag_filter is enabled
+  def tag_ids
+    tag_cloud_tags.pluck(:tag_id)
+  end
+
+  def role_ids
+    tag_cloud_roles.pluck(:role_id)
   end
 
   private
@@ -60,23 +95,33 @@ class TagCloud < ActiveRecord::Base
     end
   end
 
-  def single_system_cloud
-    return unless is_system? && project_id
+  # Name must be unique among clouds that share any common project
+  def name_unique_within_projects
+    return if name.blank?
+    return if projects.empty? && tag_cloud_projects.empty?
 
-    duplicate = self.class.unscoped.where(project_id: project_id, is_system: true)
-    duplicate = duplicate.where.not(id: id) if persisted?
-    errors.add(:is_system, :taken) if duplicate.exists?
+    project_ids = projects.map(&:id).presence || tag_cloud_projects.map(&:project_id)
+    return if project_ids.blank?
+
+    conflict = self.class
+                   .joins(:tag_cloud_projects)
+                   .where(tag_cloud_projects: { project_id: project_ids })
+                   .where(name: name)
+    conflict = conflict.where.not(id: id) if persisted?
+    errors.add(:name, :taken) if conflict.exists?
   end
 
-  def filters_belong_to_project
-    return unless project
+  def status_filter_exists
+    return if status_filter.blank?
 
-    invalid_trackers = tracker_filter - project.trackers.where(id: tracker_filter).pluck(:id)
-    invalid_versions = version_filter - project.versions.where(id: version_filter).pluck(:id)
-    invalid_statuses = status_filter - IssueStatus.where(id: status_filter).pluck(:id)
+    invalid = status_filter - IssueStatus.where(id: status_filter).pluck(:id)
+    errors.add(:status_filter, :invalid) if invalid.any?
+  end
 
-    errors.add(:tracker_filter, :invalid) if invalid_trackers.any?
-    errors.add(:version_filter, :invalid) if invalid_versions.any?
-    errors.add(:status_filter, :invalid) if invalid_statuses.any?
+  def roles_present_when_visibility_roles
+    return unless visibility == 'roles'
+    return if tag_cloud_roles.any? || roles.any?
+
+    errors.add(:roles, :blank)
   end
 end

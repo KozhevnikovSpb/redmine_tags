@@ -22,13 +22,12 @@ module RedmineupTags
     module ProjectPatch
       def self.included(base)
         base.class_eval do
-          has_many :tag_clouds, dependent: :destroy
-          after_create :ensure_default_tag_cloud
-        end
-      end
+          has_many :tag_cloud_projects, dependent: :destroy
+          has_many :tag_clouds, through: :tag_cloud_projects
 
-      def ensure_default_tag_cloud
-        TagCloud.ensure_system_cloud(self)
+          # Default system cloud is virtual (not stored in DB).
+          # No after_create ensure_system_cloud.
+        end
       end
     end
   end
