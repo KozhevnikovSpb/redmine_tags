@@ -71,7 +71,8 @@ REDMINEUP_TAGS_REQUIRED_FILES = [
   'query_tags_column',
   'redmineup_tags/patches/reports_controller_patch',
   'redmineup_tags/hooks/views_reports_hook',
-  'redmineup_tags/patches/project_patch'   # NEW: for TagCloud has_many + default cloud creation
+  'redmineup_tags/patches/project_patch',
+  'redmineup_tags/schema_repair'
 ]
 
 if Redmine::Plugin.installed?(:redmine_agile) &&
