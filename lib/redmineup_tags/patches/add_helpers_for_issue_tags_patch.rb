@@ -30,17 +30,8 @@ module RedmineupTags
   end
 end
 
-[
-  IssuesController,
-  CalendarsController,
-  GanttsController,
-  SettingsController,
-  ProjectsController,
-  TagCloudsController,
-  TagCloudPreferencesController
-].each do |controller|
-  next unless defined?(controller)
-
+# Core controllers only (loaded before plugin lib). Plugin controllers set helper in their own files.
+[IssuesController, CalendarsController, GanttsController, SettingsController, ProjectsController].each do |controller|
   unless controller.included_modules.include?(RedmineupTags::Patches::AddHelpersForIssueTagsPatch)
     controller.send(:include, RedmineupTags::Patches::AddHelpersForIssueTagsPatch)
   end

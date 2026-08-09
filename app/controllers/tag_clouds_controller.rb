@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 class TagCloudsController < ApplicationController
+  helper :tags
+  helper :issues_tags
+
   before_action :find_project_by_project_id
   before_action :authorize
   before_action :find_tag_cloud, only: %i[edit update destroy]
@@ -23,7 +26,6 @@ class TagCloudsController < ApplicationController
     @tag_cloud = TagCloud.new(tag_cloud_params)
     @tag_cloud.created_by = User.current
     @tag_cloud.visibility = 'all' if @tag_cloud.visibility.blank?
-    # Build join before validation so name uniqueness is scoped to this project
     @tag_cloud.tag_cloud_projects.build(project: @project, position: next_position)
 
     if @tag_cloud.save
@@ -99,7 +101,6 @@ class TagCloudsController < ApplicationController
       tracker_filter: []
     )
 
-    # Missing checkbox / empty filter panels => false / []
     raw[:visible_by_default] = ActiveModel::Type::Boolean.new.cast(raw[:visible_by_default])
     raw[:tag_filter] = ActiveModel::Type::Boolean.new.cast(raw.fetch(:tag_filter, false))
     raw[:include_subprojects] = ActiveModel::Type::Boolean.new.cast(raw.fetch(:include_subprojects, false))

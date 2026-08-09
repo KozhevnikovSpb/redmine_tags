@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 class TagCloudPreferencesController < ApplicationController
+  helper :tags
+  helper :issues_tags
+
   before_action :find_project_by_project_id
   before_action :authorize_select_tag_clouds
   before_action :find_tag_cloud, only: :toggle
 
-  # Modal: only custom clouds. Virtual Default is never listed.
   def edit
     load_custom_tag_clouds
     @visible_ids = @tag_clouds.select { |c| c.visible_for?(User.current, project: @project) }.map(&:id)
@@ -15,7 +17,6 @@ class TagCloudPreferencesController < ApplicationController
     end
   end
 
-  # Visibility override per user + order via tag_cloud_projects.position
   def update
     load_custom_tag_clouds
     selected_ids = Array(params[:visible_tag_cloud_ids]).map(&:to_i)
