@@ -10,7 +10,11 @@ http://www.redmineup.com/
 * Models rewritten for new schema: TagCloud no longer has project_id / is_system / position
 * New join models: TagCloudProject, TagCloudTag, TagCloudRole
 * Default/system cloud is virtual (not stored in DB)
-* TagCloudAggregator requires explicit project context
+* TagCloudAggregator: real RedmineUP tags only; empty filters = all; tag_filter without tags = empty; open_only + include_subprojects
+* Sidebar: system Tags + visible custom clouds via Aggregator
+* Settings filters summary (status/version/tracker/subprojects)
+* Form: save filters, visible_by_default, include_subprojects; create links project via TagCloudProject
+* Preferences: per-user visibility + order on join table
 * Unique name validated per linked projects
 * visible_for? respects visibility (all/owner/roles) + user preference override
 
