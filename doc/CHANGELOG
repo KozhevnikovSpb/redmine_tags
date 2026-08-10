@@ -4,19 +4,39 @@ Redmine Tags plugin - Tags board plugin for redmine
 Copyright (C) 2011-2026 Kirill Bezrukov (RedmineUP)
 http://www.redmineup.com/
 
-== 2026-08-09 v0.0.2-beta
+== 2026-08-10 v0.0.2-beta
 
-* Database schema force-rebuild to multi-project target (tag_cloud_projects, tag_cloud_tags, tag_cloud_roles)
-* Models rewritten for new schema: TagCloud no longer has project_id / is_system / position
-* New join models: TagCloudProject, TagCloudTag, TagCloudRole
-* Default/system cloud is virtual (not stored in DB)
-* TagCloudAggregator: real RedmineUP tags only; empty filters = all; tag_filter without tags = empty; open_only + include_subprojects
-* Sidebar: system Tags + visible custom clouds via Aggregator
-* Settings filters summary (status/version/tracker/subprojects)
-* Form: save filters, visible_by_default, include_subprojects; create links project via TagCloudProject
-* Preferences: per-user visibility + order on join table
-* Unique name validated per linked projects
-* visible_for? respects visibility (all/owner/roles) + user preference override
+Release tag: v0.0.2-beta
+Target: Redmine 7.0 / Ruby 3.4 / Rails 8.1
+Plugin ID: :redmineup_tags (compatibility with RedmineUP Q&A and other tag plugins)
+
+Schema & models
+* Force-rebuild multi-project schema (tag_clouds, tag_cloud_projects, tag_cloud_tags, tag_cloud_roles, tag_cloud_preferences)
+* Tags/taggings preserved
+* TagCloud without project_id / is_system / position; join models for project link and order
+* Default Tags cloud is virtual (not stored in DB)
+* visible_for? with visibility all|owner|roles + user preference override
+
+Display & filtering
+* TagCloudAggregator: real RedmineUP tags only; empty filters = all; include_subprojects; open_only from plugin settings
+* Sidebar: system Tags + custom clouds ordered by tag_cloud_projects.position
+* Settings: filters summary, create/edit filters, include_subprojects, visible_by_default
+* Preferences modal: per-user visibility + drag order
+* Default plugin settings: simple_cloud sidebar, show issue counts
+
+Fixes
+* Tag click links use Redmine f/op/v + set_filter so issue list applies immediately (no second Apply)
+* Helpers on ProjectsController; plugin controllers declare helpers
+* Locales EN/RU for multi tag clouds
+
+Docs
+* doc/TEST_DISPLAY_FILTERS.md — manual QA checklist
+* doc/RELEASE_0.0.2-beta.md — release notes
+
+Not in this release (planned later)
+* UI for tag_filter (whitelist tags)
+* UI for visibility owner/roles
+* Full automated functional suite
 
 == 2026-08-07 v0.0.1-alpha
 
@@ -52,7 +72,7 @@ http://www.redmineup.com/
 == 2024-02-15 v2.0.14
 
 * Dropped Redmine 3 support
-* Fixed insecure XMLHttpRequest 
+* Fixed insecure XMLHttpRequest
 * Fixed select2 bug
 
 == 2023-01-27 v2.0.13
@@ -139,4 +159,3 @@ http://www.redmineup.com/
 * Admin settings link
 * Alphabet sorting view for list
 * Merging tags fixes
-erging tags fixes
