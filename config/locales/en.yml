@@ -66,11 +66,28 @@ en:
   button_collapse: Collapse
   text_tag_cloud_filters_empty_means_all: empty = Any / all
   text_tag_clouds_info: Tag clouds provide multiple analytical slices of issues with custom filters. The default Tags cloud preserves original plugin behavior and is always shown.
+  text_tag_clouds_permissions_info: "Permissions (Roles and permissions → project module Tags): Manage tag clouds — create/edit/delete clouds (requires membership). Select visible tag clouds — per-user sidebar visibility. Cloud visibility rule (All / Owner / Roles) further restricts who sees each custom cloud."
   text_cannot_delete_system_cloud: The default Tags cloud is virtual and always visible; it cannot be deleted.
   notice_tag_cloud_created: Tag cloud was successfully created.
   notice_tag_cloud_updated: Tag cloud was successfully updated.
   notice_tag_cloud_deleted: Tag cloud was successfully deleted.
   alert_cannot_delete_system_cloud: Default Tags cloud cannot be deleted.
+
+  # Visibility
+  label_tag_cloud_visibility_rule: Visibility
+  label_tag_cloud_visibility_all: All users
+  label_tag_cloud_visibility_owner: Owner only
+  label_tag_cloud_visibility_roles: Selected roles
+  label_tag_cloud_owner: Owner
+  text_tag_cloud_visibility_hint: Controls who can see this cloud in the issues sidebar (before personal preference). Users with «Select visible tag clouds» can still override visibility for themselves.
+  text_tag_cloud_roles_required: Select at least one role. Users must have one of these roles in the project to see the cloud.
+  text_tag_cloud_visible_by_default_hint: When visibility is «All users», unchecked means hidden until the user enables it in Select visible tag clouds.
+
+  # Tag filter whitelist
+  label_tag_cloud_tag_filter: Tag whitelist
+  label_tag_cloud_tag_filter_enable: Restrict cloud to selected tags only
+  text_tag_cloud_tag_filter_hint: When enabled, only the selected tags appear in this cloud (still filtered by status/version/tracker). If enabled with no tags selected, the cloud is empty.
+  text_tag_cloud_no_tags_in_project: No tags found on issues in this project yet.
 
   # Select visible tag clouds modal
   label_select_visible_tag_clouds: Select visible tag clouds

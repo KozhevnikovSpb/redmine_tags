@@ -52,7 +52,6 @@ $(function () {
                     $tbody.prepend($system);
                 }
 
-                // Only numeric cloud ids (skip virtual "system")
                 var ids = $tbody.find('tr[data-id]').map(function () {
                     var id = $(this).data('id');
                     return (id && id !== 'system') ? id : null;
@@ -101,12 +100,18 @@ $(function () {
             }).appendTo($inputs);
         });
 
-        $all.prop('hidden', count > 0);
+        if ($all.length) {
+            $all.prop('hidden', count > 0);
+        }
 
-        if (count === 0) {
-            $count.text('· ' + labelAll());
-        } else {
-            $count.text('(' + count + ')');
+        if ($count.length) {
+            if (filterName === 'tag_ids' || filterName === 'role_ids') {
+                $count.text(count === 0 ? '· —' : '(' + count + ')');
+            } else if (count === 0) {
+                $count.text('· ' + labelAll());
+            } else {
+                $count.text('(' + count + ')');
+            }
         }
     }
 
@@ -131,4 +136,37 @@ $(function () {
         $(this).toggleClass('is-selected');
         syncFilterPanel($(this).closest('.tag-cloud-filter-panel'));
     });
+
+    // tag_filter checkbox shows/hides tag whitelist panel
+    $(document).on('change', '#tag_cloud_tag_filter', function () {
+        var on = $(this).is(':checked');
+        $('#tag-cloud-tags-panel').prop('hidden', !on);
+        if (!on) {
+            $('#tag-cloud-tags-panel .tag-cloud-filter-option.is-selected').removeClass('is-selected');
+            syncFilterPanel($('#tag-cloud-tags-panel'));
+        }
+    });
+
+    // visibility radios show/hide roles panel
+    function syncVisibilityPanels() {
+        var value = $('input[name="tag_cloud[visibility]"]:checked').val() || 'all';
+        var roles = value === 'roles';
+        $('#tag-cloud-roles-panel').prop('hidden', !roles);
+        if (!roles) {
+            $('#tag-cloud-roles-panel .tag-cloud-filter-option.is-selected').removeClass('is-selected');
+            syncFilterPanel($('#tag-cloud-roles-panel'));
+        }
+    }
+
+    $(document).on('change', 'input[name="tag_cloud[visibility]"]', function () {
+        syncVisibilityPanels();
+    });
+
+    // initial state on form load
+    if ($('.tag-cloud-form').length) {
+        syncVisibilityPanels();
+        if (!$('#tag_cloud_tag_filter').is(':checked')) {
+            $('#tag-cloud-tags-panel').prop('hidden', true);
+        }
+    }
 });
