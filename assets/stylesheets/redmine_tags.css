@@ -19,13 +19,19 @@
 }
 
 .tag-clouds-settings-table .tag-cloud-col-name,
-.tag-clouds-settings-table .tag-cloud-col-filters {
+.tag-clouds-settings-table .tag-cloud-col-filters,
+.tag-clouds-settings-table .tag-cloud-col-visibility {
   text-align: left !important;
 }
 
 .tag-clouds-settings-table thead .tag-cloud-col-name,
-.tag-clouds-settings-table thead .tag-cloud-col-filters {
+.tag-clouds-settings-table thead .tag-cloud-col-filters,
+.tag-clouds-settings-table thead .tag-cloud-col-visibility {
   text-align: left !important;
+}
+
+.tag-clouds-settings-table .tag-cloud-col-visibility {
+  max-width: 220px;
 }
 
 .tag-clouds-settings-table .tag-cloud-col-visible {
@@ -106,18 +112,31 @@
   box-sizing: border-box;
 }
 
-.tag-cloud-form .tag-cloud-visible-row {
+.tag-cloud-form .tag-cloud-visible-row,
+.tag-cloud-form .tag-cloud-subprojects-row,
+.tag-cloud-form .tag-cloud-tag-filter-toggle-row {
   margin: 12px 0 0 0;
 }
 
-.tag-cloud-form .tag-cloud-visible-row label {
+.tag-cloud-form .tag-cloud-visible-row label,
+.tag-cloud-form .tag-cloud-subprojects-row label,
+.tag-cloud-form .tag-cloud-tag-filter-toggle-row label {
   display: inline;
   float: none;
   margin-left: 4px;
   font-weight: normal;
 }
 
-.tag-cloud-form .tag-cloud-filters-fieldset {
+.tag-cloud-form .tag-cloud-visible-hint,
+.tag-cloud-form .tag-cloud-tag-filter-hint {
+  margin: 4px 0 8px 0;
+  color: #666;
+  font-size: 0.9em;
+}
+
+.tag-cloud-form .tag-cloud-filters-fieldset,
+.tag-cloud-form .tag-cloud-tag-filter-fieldset,
+.tag-cloud-form .tag-cloud-visibility-fieldset {
   margin: 12px 0;
   padding: 12px 14px 16px;
   background: #f9fafb;
@@ -204,6 +223,12 @@
   display: none !important;
 }
 
+.tag-cloud-tags-panel .tag-cloud-filter-list,
+.tag-cloud-roles-panel .tag-cloud-filter-list {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
 .tag-cloud-filter-option {
   margin: 2px 0;
   padding: 4px 8px;
@@ -237,7 +262,6 @@
   border-color: #406090;
 }
 
-/* All placeholder — framed block matching list rhythm */
 .tag-cloud-filter-all {
   margin: 0;
   padding: 10px 12px;
@@ -259,6 +283,36 @@
 
 .tag-cloud-filter-inputs {
   display: none;
+}
+
+/* Visibility radios */
+.tag-cloud-visibility-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin: 8px 0 12px;
+}
+
+.tag-cloud-visibility-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  float: none;
+  width: auto;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.tag-cloud-owner-info {
+  margin: 0 0 8px;
+  color: #555;
+  font-size: 0.9em;
+}
+
+#tag-cloud-roles-panel[hidden],
+#tag-cloud-tags-panel[hidden] {
+  display: none !important;
 }
 
 /* Select visible tag clouds — sidebar control */

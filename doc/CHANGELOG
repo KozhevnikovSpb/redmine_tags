@@ -4,6 +4,34 @@ Redmine Tags plugin - Tags board plugin for redmine
 Copyright (C) 2011-2026 Kirill Bezrukov (RedmineUP)
 http://www.redmineup.com/
 
+== 2026-08-15 v0.0.3
+
+Release: remaining logic + permissions (tag_filter UI, visibility UI)
+Target: Redmine 7.0 / Ruby 3.4 / Rails 8.1
+Plugin ID: :redmineup_tags
+
+Form & visibility
+* UI for visibility: all / owner / roles (radio)
+* Roles multi-select when visibility=roles; validation requires ≥1 role
+* Owner auto-assigned to current user when visibility=owner
+* UI for tag_filter: whitelist of project tags; empty whitelist ⇒ empty cloud
+* Settings table shows visibility summary column
+* Locales EN/RU for all new labels and permission help text
+
+Permissions
+* manage_tag_clouds (require: :member) — CRUD + reorder
+* select_tag_clouds — personal sidebar visibility modal
+* Cloud-level visibility rule applied in visible_for? before preference override
+* Documented in settings info text
+
+Logic
+* Controller syncs role_ids / tag_ids on create/update; clears when not applicable
+* Model assigned_role_ids / assigned_tag_ids work for new records before save
+* Unit tests for owner, roles, tag_filter, uniqueness, preferences
+
+Not in this release
+* V.0.0.4 full automated functional suite / exhaustive manual matrix only
+
 == 2026-08-10 v0.0.2-beta
 
 Release tag: v0.0.2-beta
@@ -32,11 +60,6 @@ Fixes
 Docs
 * doc/TEST_DISPLAY_FILTERS.md — manual QA checklist
 * doc/RELEASE_0.0.2-beta.md — release notes
-
-Not in this release (planned later)
-* UI for tag_filter (whitelist tags)
-* UI for visibility owner/roles
-* Full automated functional suite
 
 == 2026-08-07 v0.0.1-alpha
 
