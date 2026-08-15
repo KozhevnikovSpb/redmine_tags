@@ -3,7 +3,6 @@ module TagsHelper
 
   def render_issue_tag_link(tag, options = {})
     filters = []
-    # status open first when plugin setting «open only» is on
     filters << ['status_id', 'o', ''] if options[:open_only]
     filters << ['issue_tags', '=', tag.name]
 
@@ -55,7 +54,6 @@ module TagsHelper
     content_tag(list_el, content, class: 'tags-cloud', style: (style == :simple_cloud ? 'text-align: left;' : ''))
   end
 
-  # Build a link that Redmine applies immediately (no extra Apply click).
   def link_to_issue_filter(title, filters, extra = {})
     filter_params = link_to_issue_filter_options(filters).merge(extra)
     path =
@@ -67,8 +65,6 @@ module TagsHelper
     link_to title, path
   end
 
-  # Canonical Redmine filter URL params (Redmine 1.2+ / 7.x):
-  #   set_filter=1&f[]=status_id&op[status_id]=o&v[status_id][]=&f[]=issue_tags&op[issue_tags]==&v[issue_tags][]=Name
   def link_to_issue_filter_options(filters)
     f = []
     op = {}
@@ -111,6 +107,29 @@ module TagsHelper
     end
 
     safe_join(parts, tag.br)
+  end
+
+  def tag_cloud_visibility_summary(tag_cloud)
+    return '' unless tag_cloud
+
+    case tag_cloud.visibility
+    when 'owner'
+      owner_name = tag_cloud.owner&.name
+      if owner_name.present?
+        "#{l(:label_tag_cloud_visibility_owner)} (#{owner_name})"
+      else
+        l(:label_tag_cloud_visibility_owner)
+      end
+    when 'roles'
+      role_names = Role.where(id: tag_cloud.role_ids).order(:name).pluck(:name)
+      if role_names.any?
+        "#{l(:label_tag_cloud_visibility_roles)}: #{role_names.join(', ')}"
+      else
+        l(:label_tag_cloud_visibility_roles)
+      end
+    else
+      l(:label_tag_cloud_visibility_all)
+    end
   end
 
   private

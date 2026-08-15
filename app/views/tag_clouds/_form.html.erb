@@ -2,7 +2,11 @@
   status_selected  = Array(@tag_cloud.status_filter).map(&:to_i).reject(&:zero?)
   version_selected = Array(@tag_cloud.version_filter).map(&:to_i).reject(&:zero?)
   tracker_selected = Array(@tag_cloud.tracker_filter).map(&:to_i).reject(&:zero?)
+  role_selected    = Array(@tag_cloud.role_ids).map(&:to_i).reject(&:zero?)
+  tag_selected     = Array(@tag_cloud.tag_ids).map(&:to_i).reject(&:zero?)
   label_all = l(:label_all)
+  visibility = @tag_cloud.visibility.presence || 'all'
+  tag_filter_on = @tag_cloud.tag_filter
 %>
 
 <div class="box tag-cloud-form" data-label-all="<%= label_all %>">
@@ -104,10 +108,97 @@
     </div>
   </fieldset>
 
+  <%# ---- Tag whitelist (tag_filter) ---- %>
+  <fieldset class="tag-cloud-tag-filter-fieldset">
+    <legend><%= l(:label_tag_cloud_tag_filter) %></legend>
+    <p class="tag-cloud-tag-filter-toggle-row">
+      <%= f.check_box :tag_filter, {}, '1', '0' %>
+      <%= f.label :tag_filter, l(:label_tag_cloud_tag_filter_enable) %>
+    </p>
+    <p class="info tag-cloud-tag-filter-hint"><%= l(:text_tag_cloud_tag_filter_hint) %></p>
+
+    <div class="tag-cloud-filter-panel tag-cloud-tags-panel" data-filter="tag_ids" id="tag-cloud-tags-panel"<%= ' hidden' unless tag_filter_on %>>
+      <div class="tag-cloud-filter-header">
+        <span class="tag-cloud-filter-title">
+          <%= l(:tags) %>
+          <span class="tag-cloud-filter-count" id="tag-cloud-tags-count">
+            <%= tag_selected.empty? ? "· #{l(:label_none)}" : "(#{tag_selected.size})" %>
+          </span>
+        </span>
+      </div>
+      <% if @available_tags.blank? %>
+        <p class="info"><%= l(:text_tag_cloud_no_tags_in_project) %></p>
+      <% else %>
+        <ul class="tag-cloud-filter-list is-open">
+          <% @available_tags.each do |t| %>
+            <li class="tag-cloud-filter-option<%= ' is-selected' if tag_selected.include?(t.id) %>"
+                data-id="<%= t.id %>"><%= t.name %></li>
+          <% end %>
+        </ul>
+      <% end %>
+      <div class="tag-cloud-filter-inputs" id="tag-cloud-tag-ids-inputs">
+        <% tag_selected.each do |id| %>
+          <input type="hidden" name="tag_cloud[tag_ids][]" value="<%= id %>">
+        <% end %>
+      </div>
+    </div>
+  </fieldset>
+
+  <%# ---- Visibility ---- %>
+  <fieldset class="tag-cloud-visibility-fieldset">
+    <legend><%= l(:label_tag_cloud_visibility_rule) %></legend>
+    <p class="info"><%= l(:text_tag_cloud_visibility_hint) %></p>
+
+    <div class="tag-cloud-visibility-options">
+      <label class="tag-cloud-visibility-option">
+        <%= f.radio_button :visibility, 'all' %>
+        <span><%= l(:label_tag_cloud_visibility_all) %></span>
+      </label>
+      <label class="tag-cloud-visibility-option">
+        <%= f.radio_button :visibility, 'owner' %>
+        <span><%= l(:label_tag_cloud_visibility_owner) %></span>
+      </label>
+      <label class="tag-cloud-visibility-option">
+        <%= f.radio_button :visibility, 'roles' %>
+        <span><%= l(:label_tag_cloud_visibility_roles) %></span>
+      </label>
+    </div>
+
+    <% if visibility == 'owner' && @tag_cloud.owner.present? %>
+      <p class="tag-cloud-owner-info">
+        <%= l(:label_tag_cloud_owner) %>: <%= h(@tag_cloud.owner.name) %>
+      </p>
+    <% end %>
+
+    <div class="tag-cloud-filter-panel tag-cloud-roles-panel" data-filter="role_ids" id="tag-cloud-roles-panel"<%= ' hidden' unless visibility == 'roles' %>>
+      <div class="tag-cloud-filter-header">
+        <span class="tag-cloud-filter-title">
+          <%= l(:label_role_plural) %>
+          <span class="tag-cloud-filter-count" id="tag-cloud-roles-count">
+            <%= role_selected.empty? ? "· #{l(:label_none)}" : "(#{role_selected.size})" %>
+          </span>
+        </span>
+      </div>
+      <ul class="tag-cloud-filter-list is-open">
+        <% (@roles || []).each do |r| %>
+          <li class="tag-cloud-filter-option<%= ' is-selected' if role_selected.include?(r.id) %>"
+              data-id="<%= r.id %>"><%= r.name %></li>
+        <% end %>
+      </ul>
+      <div class="tag-cloud-filter-inputs" id="tag-cloud-role-ids-inputs">
+        <% role_selected.each do |id| %>
+          <input type="hidden" name="tag_cloud[role_ids][]" value="<%= id %>">
+        <% end %>
+      </div>
+      <p class="info"><%= l(:text_tag_cloud_roles_required) %></p>
+    </div>
+  </fieldset>
+
   <p class="tag-cloud-visible-row">
     <%= f.check_box :visible_by_default, {}, '1', '0' %>
     <%= f.label :visible_by_default, l(:label_tag_cloud_visible_by_default) %>
   </p>
+  <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_visible_by_default_hint) %></p>
 
   <p class="tag-cloud-subprojects-row">
     <%= f.check_box :include_subprojects, {}, '1', '0' %>

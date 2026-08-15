@@ -9,6 +9,7 @@
     <tr>
       <th class="tag-cloud-col-name"><%= l(:label_tag_cloud_name) %></th>
       <th class="tag-cloud-col-filters"><%= l(:label_tag_cloud_filters) %></th>
+      <th class="tag-cloud-col-visibility"><%= l(:label_tag_cloud_visibility_rule) %></th>
       <th class="tag-cloud-col-visible"><%= l(:label_tag_cloud_visible_by_default) %></th>
       <th class="buttons"></th>
     </tr>
@@ -22,6 +23,7 @@
         <span class="badge badge-info tag-cloud-system-badge"><%= l(:label_tag_cloud_system) %></span>
       </td>
       <td class="tag-cloud-col-filters"><%= l(:label_all) %></td>
+      <td class="tag-cloud-col-visibility"><%= l(:label_tag_cloud_visibility_all) %></td>
       <td class="tag-cloud-col-visible">✓</td>
       <td class="buttons"></td>
     </tr>
@@ -33,6 +35,7 @@
             data-id="<%= cloud.id %>">
           <td class="tag-cloud-col-name name"><%= cloud.name %></td>
           <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
+          <td class="tag-cloud-col-visibility"><%= tag_cloud_visibility_summary(cloud) %></td>
           <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
           <td class="buttons">
             <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
@@ -62,3 +65,4 @@
 </p>
 
 <p class="info"><%= l(:text_tag_clouds_info) %></p>
+<p class="info"><%= l(:text_tag_clouds_permissions_info) %></p>
