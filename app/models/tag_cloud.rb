@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # TagCloud — multi-project capable tag cloud definition.
-# Schema V.0.0.2-beta: no project_id / is_system / position on this table.
+# Schema: no project_id / is_system / position on this table.
 # Position lives in tag_cloud_projects (per project). Default system cloud is virtual (not stored).
 class TagCloud < ActiveRecord::Base
   VISIBILITIES = %w[all owner roles].freeze
@@ -35,6 +35,7 @@ class TagCloud < ActiveRecord::Base
   validate :roles_present_when_visibility_roles
 
   before_validation :normalize_filters
+  before_validation :normalize_owner_for_visibility
 
   # Clouds linked to a given project, ordered by join position
   scope :for_project, lambda { |project|
@@ -44,6 +45,9 @@ class TagCloud < ActiveRecord::Base
   }
 
   # Preference overrides everything. Otherwise apply visibility rule.
+  # - all: visible_by_default (unless user pref hides)
+  # - owner: only the owner (admins still need pref or ownership)
+  # - roles: intersection of cloud roles and user's project roles
   def visible_for?(user, project: nil)
     return false if user.nil?
 
@@ -56,11 +60,12 @@ class TagCloud < ActiveRecord::Base
     when 'all'
       visible_by_default?
     when 'owner'
-      owner_id.present? && owner_id == user.id
+      user.logged? && owner_id.present? && owner_id == user.id
     when 'roles'
       return false unless user.logged? && project
+
       user_role_ids = user.roles_for_project(project).map(&:id)
-      (role_ids & user_role_ids).any?
+      (assigned_role_ids & user_role_ids).any?
     else
       false
     end
@@ -68,21 +73,45 @@ class TagCloud < ActiveRecord::Base
 
   def position_in(project)
     return nil unless project
+
     tag_cloud_projects.find_by(project_id: project.id)&.position
   end
 
   def linked_to?(project)
     return false unless project
+
     tag_cloud_projects.exists?(project_id: project.id)
   end
 
-  # Convenience: tag ids when tag_filter is enabled
+  # Role ids including in-memory assignment (new records before save).
+  def assigned_role_ids
+    if association(:roles).loaded? || (new_record? && roles.target.any?)
+      roles.map(&:id)
+    elsif association(:tag_cloud_roles).loaded?
+      tag_cloud_roles.map(&:role_id)
+    else
+      tag_cloud_roles.pluck(:role_id)
+    end
+  end
+
+  # Tag ids including in-memory assignment.
+  def assigned_tag_ids
+    if association(:tags).loaded? || (new_record? && tags.target.any?)
+      tags.map(&:id)
+    elsif association(:tag_cloud_tags).loaded?
+      tag_cloud_tags.map(&:tag_id)
+    else
+      tag_cloud_tags.pluck(:tag_id)
+    end
+  end
+
+  # Keep Aggregator / helpers API stable
   def tag_ids
-    tag_cloud_tags.pluck(:tag_id)
+    assigned_tag_ids
   end
 
   def role_ids
-    tag_cloud_roles.pluck(:role_id)
+    assigned_role_ids
   end
 
   private
@@ -95,7 +124,17 @@ class TagCloud < ActiveRecord::Base
     end
   end
 
-  # Name must be unique among clouds that share any common project
+  def normalize_owner_for_visibility
+    case visibility
+    when 'owner'
+      self.owner_id ||= User.current&.id
+    when 'all'
+      # keep owner if set historically; not required
+    when 'roles'
+      # owner not used for visibility decision
+    end
+  end
+
   def name_unique_within_projects
     return if name.blank?
     return if projects.empty? && tag_cloud_projects.empty?
@@ -120,7 +159,7 @@ class TagCloud < ActiveRecord::Base
 
   def roles_present_when_visibility_roles
     return unless visibility == 'roles'
-    return if tag_cloud_roles.any? || roles.any?
+    return if assigned_role_ids.any?
 
     errors.add(:roles, :blank)
   end

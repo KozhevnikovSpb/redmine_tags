@@ -2,8 +2,8 @@ requires_redmineup version_or_higher: '1.1.10' rescue raise "\n\033[31mRedmine r
 
 require 'redmine'
 
-TAGS_VERSION_NUMBER = '0.0.2-beta'
-TAGS_VERSION_TYPE = 'Beta'
+TAGS_VERSION_NUMBER = '0.0.3'
+TAGS_VERSION_TYPE = 'Stable'
 
 Redmine::Plugin.register :redmineup_tags do
   name "Redmine Multi Tags Clouds plugin (#{TAGS_VERSION_TYPE})"
@@ -16,7 +16,6 @@ Redmine::Plugin.register :redmineup_tags do
   requires_redmine version_or_higher: '7.0'
 
   settings default: {
-    # simple_cloud so sidebar shows tags out of the box for beta testing
     sidebar_tag_list_view: 'simple_cloud',
     issues_show_count: 1,
     issues_open_only: 0,
@@ -31,6 +30,9 @@ Redmine::Plugin.register :redmineup_tags do
     permission :edit_tags, {}
   end
 
+  # Module :tags — manage clouds (managers/members with role) and per-user visibility selection.
+  # manage_tag_clouds requires project membership (require: :member).
+  # select_tag_clouds is available to any role granted the permission (including non-managers).
   project_module :tags do
     permission :manage_tag_clouds, {
       tag_clouds: %i[index new create edit update destroy reorder]

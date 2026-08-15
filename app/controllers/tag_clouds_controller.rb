@@ -26,6 +26,7 @@ class TagCloudsController < ApplicationController
     @tag_cloud = TagCloud.new(tag_cloud_params)
     @tag_cloud.created_by = User.current
     @tag_cloud.visibility = 'all' if @tag_cloud.visibility.blank?
+    apply_join_ids!(@tag_cloud)
     @tag_cloud.tag_cloud_projects.build(project: @project, position: next_position)
 
     if @tag_cloud.save
@@ -41,7 +42,10 @@ class TagCloudsController < ApplicationController
   end
 
   def update
-    if @tag_cloud.update(tag_cloud_params)
+    @tag_cloud.assign_attributes(tag_cloud_params)
+    apply_join_ids!(@tag_cloud)
+
+    if @tag_cloud.save
       redirect_to settings_project_path(@project, tab: 'tags'), notice: l(:notice_tag_cloud_updated)
     else
       load_filter_options
@@ -87,6 +91,25 @@ class TagCloudsController < ApplicationController
     @statuses = IssueStatus.sorted
     @trackers = @project.trackers.sorted
     @versions = @project.versions.sorted
+    # Givable project roles (exclude built-in anonymous/non-member if present as non-givable)
+    @roles = Role.givable.sorted
+    @available_tags = project_available_tags
+  end
+
+  def project_available_tags
+    tags_table = Redmineup::Tag.table_name
+    taggings_table = Redmineup::Tagging.table_name
+    issues_table = Issue.table_name
+
+    Redmineup::Tag
+      .joins("INNER JOIN #{taggings_table} ON #{taggings_table}.tag_id = #{tags_table}.id")
+      .joins("INNER JOIN #{issues_table} ON #{issues_table}.id = #{taggings_table}.taggable_id")
+      .where("#{taggings_table}.taggable_type = ?", Issue.name)
+      .where("#{issues_table}.project_id = ?", @project.id)
+      .distinct
+      .order("#{tags_table}.name ASC")
+  rescue StandardError
+    Redmineup::Tag.none
   end
 
   def tag_cloud_params
@@ -104,9 +127,33 @@ class TagCloudsController < ApplicationController
     raw[:visible_by_default] = ActiveModel::Type::Boolean.new.cast(raw[:visible_by_default])
     raw[:tag_filter] = ActiveModel::Type::Boolean.new.cast(raw.fetch(:tag_filter, false))
     raw[:include_subprojects] = ActiveModel::Type::Boolean.new.cast(raw.fetch(:include_subprojects, false))
+    raw[:visibility] = raw[:visibility].to_s.presence_in(TagCloud::VISIBILITIES) || 'all'
     raw[:status_filter] = Array(raw[:status_filter])
     raw[:version_filter] = Array(raw[:version_filter])
     raw[:tracker_filter] = Array(raw[:tracker_filter])
     raw
+  end
+
+  # Sync has_many :through join rows from form params.
+  # Clears associations when the feature is disabled / not applicable.
+  def apply_join_ids!(cloud)
+    role_ids = Array(params.dig(:tag_cloud, :role_ids)).map(&:to_i).reject(&:zero?).uniq
+    tag_ids  = Array(params.dig(:tag_cloud, :tag_ids)).map(&:to_i).reject(&:zero?).uniq
+
+    if cloud.visibility == 'roles'
+      cloud.role_ids = role_ids
+    else
+      cloud.role_ids = []
+    end
+
+    if cloud.tag_filter
+      cloud.tag_ids = tag_ids
+    else
+      cloud.tag_ids = []
+    end
+
+    if cloud.visibility == 'owner'
+      cloud.owner ||= User.current
+    end
   end
 end
