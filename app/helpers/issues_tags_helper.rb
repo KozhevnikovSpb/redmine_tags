@@ -36,7 +36,6 @@ module IssuesTagsHelper
 
   def render_tag_cloud(cloud)
     open_only = RedmineupTags.settings['issues_open_only'].to_i == 1
-    # Aggregate against the cloud's home project so include_subprojects covers the tree
     home = cloud.home_project_for(@project) || @project
     tags = TagCloudAggregator.new(
       cloud,
@@ -44,6 +43,14 @@ module IssuesTagsHelper
       user: User.current,
       open_only: open_only
     ).tags.to_a
+
+    if tags.empty?
+      Rails.logger.info(
+        "[redmineup_tags] hide empty cloud id=#{cloud.id} name=#{cloud.name.inspect} " \
+        "view_project=#{@project&.id} home=#{home&.id} include_subprojects=#{cloud.include_subprojects?}"
+      )
+      return ''.html_safe
+    end
 
     render_tags_list(
       tags,
@@ -60,11 +67,9 @@ module IssuesTagsHelper
     return ''.html_safe if RedmineupTags.tag_list_view == :none
     return render_global_tags_sidebar unless @project
 
-    # Local + inherited (parent include_subprojects)
     custom_clouds = TagCloud.for_sidebar(@project)
     can_select_clouds = User.current.allowed_to?(:select_tag_clouds, @project)
 
-    # Stale prefs cleanup only for clouds linked to this project (not inherited)
     local_clouds = TagCloud.for_project(@project).to_a
     unless can_select_clouds
       clear_stale_tag_cloud_preferences!(User.current, local_clouds)
@@ -74,6 +79,12 @@ module IssuesTagsHelper
 
     visible_custom = custom_clouds.select { |c| c.visible_for?(User.current, project: @project) }
 
+    Rails.logger.info(
+      "[redmineup_tags] sidebar project=#{@project.id} " \
+      "clouds=#{custom_clouds.map(&:id)} visible=#{visible_custom.map(&:id)} " \
+      "can_select=#{can_select_clouds}"
+    )
+
     sections = []
 
     sections << tag_cloud_section(
@@ -82,7 +93,6 @@ module IssuesTagsHelper
       'sidebar-tag-cloud sidebar-tag-cloud-system'
     )
 
-    # Select modal only when there are local custom clouds
     if can_select_clouds && local_clouds.any?
       sections << content_tag(:div, class: 'sidebar-tag-cloud-controls') do
         link_to(
@@ -97,7 +107,6 @@ module IssuesTagsHelper
 
     visible_custom.each do |cloud|
       body = render_tag_cloud(cloud)
-      # Keep: hide cloud section when there are no tags to show
       next if body.blank?
 
       sections << tag_cloud_section(
@@ -166,7 +175,8 @@ module IssuesTagsHelper
     user_id = User.current&.id || 'anonymous'
     Rails.logger.error(
       "[redmineup_tags] Failed to render #{context} " \
-      "(project=#{project_id}, user=#{user_id}): #{error.class}: #{error.message}"
+      "(project=#{project_id}, user=#{user_id}): #{error.class}: #{error.message}\n" \
+      "#{error.backtrace&.first(8)&.join("\n")}"
     )
   end
 end
