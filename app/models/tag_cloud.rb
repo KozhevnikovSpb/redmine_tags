@@ -37,21 +37,19 @@ class TagCloud < ActiveRecord::Base
   before_validation :normalize_filters
   before_validation :normalize_owner_for_visibility
 
-  # Clouds linked to a given project, ordered by join position
   scope :for_project, lambda { |project|
     joins(:tag_cloud_projects)
       .where(tag_cloud_projects: { project_id: project.id })
       .order(Arel.sql('tag_cloud_projects.position ASC, tag_clouds.id ASC'))
   }
 
-  # Preference overrides everything. Otherwise apply visibility rule.
-  # - all: visible_by_default (unless user pref hides)
-  # - owner: only the owner (admins still need pref or ownership)
-  # - roles: intersection of cloud roles and user's project roles
+  # Personal preference overrides project defaults ONLY when the user still has
+  # :select_tag_clouds on the project. If the permission was revoked, ignore
+  # (and callers may purge) preferences — fall back to visibility rule.
   def visible_for?(user, project: nil)
     return false if user.nil?
 
-    if user.logged?
+    if user.logged? && project && user.allowed_to?(:select_tag_clouds, project)
       pref = preferences.find_by(user_id: user.id)
       return pref.visible? if pref
     end
@@ -83,7 +81,6 @@ class TagCloud < ActiveRecord::Base
     tag_cloud_projects.exists?(project_id: project.id)
   end
 
-  # Role ids including in-memory assignment (new records before save).
   def assigned_role_ids
     if association(:roles).loaded? || (new_record? && roles.target.any?)
       roles.map(&:id)
@@ -94,7 +91,6 @@ class TagCloud < ActiveRecord::Base
     end
   end
 
-  # Tag ids including in-memory assignment.
   def assigned_tag_ids
     if association(:tags).loaded? || (new_record? && tags.target.any?)
       tags.map(&:id)
@@ -105,7 +101,6 @@ class TagCloud < ActiveRecord::Base
     end
   end
 
-  # Keep Aggregator / helpers API stable
   def tag_ids
     assigned_tag_ids
   end
