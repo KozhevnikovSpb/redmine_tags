@@ -41,8 +41,6 @@ en:
   permission_manage_tag_clouds: Manage tag clouds
   permission_select_tag_clouds: Select visible tag clouds
 
-  project_module_tags: Tags
-
   label_tags_remove_tags: Remove tags
   tag_clouds: Tag Clouds
   label_none: None
@@ -66,7 +64,7 @@ en:
   button_collapse: Collapse
   text_tag_cloud_filters_empty_means_all: empty = Any / all
   text_tag_clouds_info: Tag clouds provide multiple analytical slices of issues with custom filters. The default Tags cloud preserves original plugin behavior and is always shown.
-  text_tag_clouds_permissions_info: "Permissions (Roles and permissions → project module Tags): Manage tag clouds — create/edit/delete clouds (requires membership). Select visible tag clouds — per-user sidebar visibility. Cloud visibility rule (All / Owner / Roles) further restricts who sees each custom cloud."
+  text_tag_clouds_permissions_info: "Permissions (Roles and permissions → Issue tracking): Manage tag clouds — create/edit/delete clouds (requires membership). Select visible tag clouds — per-user sidebar visibility and order. Cloud visibility rule (All / Owner / Roles) further restricts who sees each custom cloud."
   text_cannot_delete_system_cloud: The default Tags cloud is virtual and always visible; it cannot be deleted.
   notice_tag_cloud_created: Tag cloud was successfully created.
   notice_tag_cloud_updated: Tag cloud was successfully updated.
