@@ -36,9 +36,11 @@ module IssuesTagsHelper
 
   def render_tag_cloud(cloud)
     open_only = RedmineupTags.settings['issues_open_only'].to_i == 1
+    # Aggregate against the cloud's home project so include_subprojects covers the tree
+    home = cloud.home_project_for(@project) || @project
     tags = TagCloudAggregator.new(
       cloud,
-      project: @project,
+      project: home,
       user: User.current,
       open_only: open_only
     ).tags.to_a
@@ -58,15 +60,16 @@ module IssuesTagsHelper
     return ''.html_safe if RedmineupTags.tag_list_view == :none
     return render_global_tags_sidebar unless @project
 
-    custom_clouds = TagCloud.for_project(@project).to_a
+    # Local + inherited (parent include_subprojects)
+    custom_clouds = TagCloud.for_sidebar(@project)
     can_select_clouds = User.current.allowed_to?(:select_tag_clouds, @project)
 
-    # Permission revoked → drop personal prefs for this project's clouds (reset to defaults)
+    # Stale prefs cleanup only for clouds linked to this project (not inherited)
+    local_clouds = TagCloud.for_project(@project).to_a
     unless can_select_clouds
-      clear_stale_tag_cloud_preferences!(User.current, custom_clouds)
+      clear_stale_tag_cloud_preferences!(User.current, local_clouds)
     end
 
-    # Personal order only while the user may customize the sidebar
     custom_clouds = sort_tag_clouds_for_user(custom_clouds, User.current) if can_select_clouds
 
     visible_custom = custom_clouds.select { |c| c.visible_for?(User.current, project: @project) }
@@ -79,7 +82,8 @@ module IssuesTagsHelper
       'sidebar-tag-cloud sidebar-tag-cloud-system'
     )
 
-    if can_select_clouds && custom_clouds.any?
+    # Select modal only when there are local custom clouds
+    if can_select_clouds && local_clouds.any?
       sections << content_tag(:div, class: 'sidebar-tag-cloud-controls') do
         link_to(
           l(:label_select_visible_tag_clouds),
@@ -93,6 +97,7 @@ module IssuesTagsHelper
 
     visible_custom.each do |cloud|
       body = render_tag_cloud(cloud)
+      # Keep: hide cloud section when there are no tags to show
       next if body.blank?
 
       sections << tag_cloud_section(
@@ -111,7 +116,6 @@ module IssuesTagsHelper
 
   private
 
-  # Remove personal overrides when the user no longer has select_tag_clouds.
   def clear_stale_tag_cloud_preferences!(user, clouds)
     return if user.nil? || !user.logged? || clouds.blank?
 

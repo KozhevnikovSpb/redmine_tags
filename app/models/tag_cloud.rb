@@ -38,11 +38,51 @@ class TagCloud < ActiveRecord::Base
   before_validation :normalize_filters
   before_validation :normalize_owner_for_visibility
 
+  # Clouds directly linked to the project (settings + local sidebar).
   scope :for_project, lambda { |project|
     joins(:tag_cloud_projects)
       .where(tag_cloud_projects: { project_id: project.id })
       .order(Arel.sql('tag_cloud_projects.position ASC, tag_clouds.id ASC'))
   }
+
+  # Sidebar: local clouds + ancestor clouds marked include_subprojects.
+  # Order: root → … → parent (inherited), then local project order.
+  def self.for_sidebar(project)
+    return none unless project
+
+    clouds = []
+    seen = {}
+
+    chain = project.self_and_ancestors.to_a
+    # self_and_ancestors is usually root-first (by lft); ensure stable order
+    chain = chain.sort_by(&:lft)
+
+    chain.each do |p|
+      scope = for_project(p)
+      scope = scope.where(include_subprojects: true) if p.id != project.id
+      scope.each do |cloud|
+        next if seen[cloud.id]
+
+        clouds << cloud
+        seen[cloud.id] = true
+      end
+    end
+
+    clouds
+  end
+
+  # Project the cloud is attached to for the current view context
+  # (local link, else nearest ancestor link). Used for aggregation.
+  def home_project_for(view_project)
+    return nil unless view_project
+    return view_project if linked_to?(view_project)
+
+    view_project.ancestors.reorder(lft: :desc).each do |anc|
+      return anc if linked_to?(anc)
+    end
+
+    projects.first
+  end
 
   def visible_for?(user, project: nil)
     return false if user.nil?
@@ -103,7 +143,6 @@ class TagCloud < ActiveRecord::Base
     assigned_role_ids
   end
 
-  # Assign whitelist tag ids via join rows only (no Redmineup::Tag constant load required).
   def tag_ids=(ids)
     ids = Array(ids).map(&:to_i).reject(&:zero?).uniq
     if persisted?
