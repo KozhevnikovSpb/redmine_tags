@@ -202,8 +202,9 @@
 
   <p class="tag-cloud-subprojects-row">
     <%= f.check_box :include_subprojects, {}, '1', '0' %>
-    <%= f.label :include_subprojects, l(:label_tag_cloud_include_subprojects, default: 'Include subprojects') %>
+    <%= f.label :include_subprojects, l(:label_tag_cloud_include_subprojects) %>
   </p>
+  <p class="info"><%= l(:text_tag_cloud_include_subprojects_hint) %></p>
 </div>
 
 <p class="buttons">
