@@ -1,3 +1,5 @@
+<% can_manage = User.current.allowed_to?(:manage_tag_clouds, @project) %>
+
 <h3><%= l(:tag_clouds) %></h3>
 
 <% if @project.present? %>
@@ -11,11 +13,15 @@
       <th class="tag-cloud-col-filters"><%= l(:label_tag_cloud_filters) %></th>
       <th class="tag-cloud-col-visibility"><%= l(:label_tag_cloud_visibility_rule) %></th>
       <th class="tag-cloud-col-visible"><%= l(:label_tag_cloud_visible_by_default) %></th>
-      <th class="buttons"></th>
+      <% if can_manage %>
+        <th class="buttons"></th>
+      <% end %>
     </tr>
   </thead>
   <tbody id="tag-clouds-sortable-settings"
-         data-reorder-url="<%= reorder_project_tag_clouds_path(@project) %>">
+         <% if can_manage %>
+         data-reorder-url="<%= reorder_project_tag_clouds_path(@project) %>"
+         <% end %>>
     <%# Virtual Default / system cloud — always first, not in DB %>
     <tr id="tag-cloud-system" class="<%= cycle('odd', 'even') %> system" data-id="system">
       <td class="tag-cloud-col-name name">
@@ -25,7 +31,9 @@
       <td class="tag-cloud-col-filters"><%= l(:label_all) %></td>
       <td class="tag-cloud-col-visibility"><%= l(:label_tag_cloud_visibility_all) %></td>
       <td class="tag-cloud-col-visible">✓</td>
-      <td class="buttons"></td>
+      <% if can_manage %>
+        <td class="buttons"></td>
+      <% end %>
     </tr>
 
     <% if @tag_clouds && @tag_clouds.any? %>
@@ -37,32 +45,38 @@
           <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
           <td class="tag-cloud-col-visibility"><%= tag_cloud_visibility_summary(cloud) %></td>
           <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
-          <td class="buttons">
-            <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
-              <%= sprite_icon('reorder', '') %>
-            </span>
-            <%= link_to sprite_icon('edit', l(:button_edit)),
-                        edit_project_tag_cloud_path(@project, cloud),
-                        class: 'icon icon-edit',
-                        title: l(:button_edit) %>
-            <%= link_to sprite_icon('del', l(:button_delete)),
-                        project_tag_cloud_path(@project, cloud),
-                        method: :delete,
-                        data: { confirm: l(:text_are_you_sure) },
-                        class: 'icon icon-del',
-                        title: l(:button_delete) %>
-          </td>
+          <% if can_manage %>
+            <td class="buttons">
+              <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
+                <%= sprite_icon('reorder', '') %>
+              </span>
+              <%= link_to sprite_icon('edit', l(:button_edit)),
+                          edit_project_tag_cloud_path(@project, cloud),
+                          class: 'icon icon-edit',
+                          title: l(:button_edit) %>
+              <%= link_to sprite_icon('del', l(:button_delete)),
+                          project_tag_cloud_path(@project, cloud),
+                          method: :delete,
+                          data: { confirm: l(:text_are_you_sure) },
+                          class: 'icon icon-del',
+                          title: l(:button_delete) %>
+            </td>
+          <% end %>
         </tr>
       <% end %>
     <% end %>
   </tbody>
 </table>
 
-<p>
-  <%= link_to sprite_icon('add', l(:label_new_tag_cloud)),
-              new_project_tag_cloud_path(@project),
-              class: 'icon icon-add' %>
-</p>
+<% if can_manage %>
+  <p>
+    <%= link_to sprite_icon('add', l(:label_new_tag_cloud)),
+                new_project_tag_cloud_path(@project),
+                class: 'icon icon-add' %>
+  </p>
+<% end %>
 
 <p class="info"><%= l(:text_tag_clouds_info) %></p>
-<p class="info"><%= l(:text_tag_clouds_permissions_info) %></p>
+<% if can_manage %>
+  <p class="info"><%= l(:text_tag_clouds_permissions_info) %></p>
+<% end %>
