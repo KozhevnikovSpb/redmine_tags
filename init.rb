@@ -25,15 +25,12 @@ Redmine::Plugin.register :redmineup_tags do
     tags_suggestion_order: 'name'
   }, partial: 'tags/settings'
 
+  # All tag/cloud permissions under Issue tracking (same module as issues).
+  # manage_tag_clouds: project settings CRUD + reorder (require membership).
+  # select_tag_clouds: personal sidebar visibility/order only.
   project_module :issue_tracking do
     permission :create_tags, {}
     permission :edit_tags, {}
-  end
-
-  # Module :tags — manage clouds (managers/members with role) and per-user visibility selection.
-  # manage_tag_clouds requires project membership (require: :member).
-  # select_tag_clouds is available to any role granted the permission (including non-managers).
-  project_module :tags do
     permission :manage_tag_clouds, {
       tag_clouds: %i[index new create edit update destroy reorder]
     }, require: :member
@@ -63,7 +60,7 @@ module RedmineupTags
               tabs << {
                 name: 'tags',
                 action: :manage_tag_clouds,
-                module: :tags,
+                module: :issue_tracking,
                 partial: 'projects/settings/tags',
                 label: :tag_clouds
               }
