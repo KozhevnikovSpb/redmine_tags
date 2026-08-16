@@ -36,27 +36,22 @@ module IssuesTagsHelper
 
   def render_tag_cloud(cloud)
     open_only = RedmineupTags.settings['issues_open_only'].to_i == 1
-    home = cloud.home_project_for(@project) || @project
+    # Count against the current view project (issues list scope), not cloud home.
     tags = TagCloudAggregator.new(
       cloud,
-      project: home,
+      project: @project,
       user: User.current,
       open_only: open_only
     ).tags.to_a
 
-    if tags.empty?
-      Rails.logger.info(
-        "[redmineup_tags] hide empty cloud id=#{cloud.id} name=#{cloud.name.inspect} " \
-        "view_project=#{@project&.id} home=#{home&.id} include_subprojects=#{cloud.include_subprojects?}"
-      )
-      return ''.html_safe
-    end
+    return ''.html_safe if tags.empty?
 
     render_tags_list(
       tags,
       show_count: RedmineupTags.settings['issues_show_count'].to_i == 1,
       open_only: open_only,
-      style: RedmineupTags.tag_list_view
+      style: RedmineupTags.tag_list_view,
+      tag_cloud: cloud
     )
   rescue StandardError => e
     log_tag_sidebar_error(e, "custom cloud #{cloud.id}")
@@ -78,12 +73,6 @@ module IssuesTagsHelper
     custom_clouds = sort_tag_clouds_for_user(custom_clouds, User.current) if can_select_clouds
 
     visible_custom = custom_clouds.select { |c| c.visible_for?(User.current, project: @project) }
-
-    Rails.logger.info(
-      "[redmineup_tags] sidebar project=#{@project.id} " \
-      "clouds=#{custom_clouds.map(&:id)} visible=#{visible_custom.map(&:id)} " \
-      "can_select=#{can_select_clouds}"
-    )
 
     sections = []
 

@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-# Aggregates real RedmineUP tags for a TagCloud + Project context.
+# Aggregates real RedmineUP tags for a TagCloud + current issues view context.
 #
-# Rules:
-# - Only real tags from taggings on Issue.
-# - Empty status/version/tracker filter => no restriction.
-# - tag_filter=true and no tag_cloud_tags => empty result.
-# - include_subprojects:
-#     false → only the cloud home project (this level only)
-#     true  → home + descendants (never parents/siblings)
+# Counting scope (NOT include_subprojects):
+# - Same as the issues list / default Tags cloud:
+#   current project, and descendants if Setting.display_subprojects_issues?
+# - Then apply cloud filters: status / tracker / version / tag whitelist / open_only.
+#
+# include_subprojects on TagCloud only controls whether the cloud appears in
+# subproject sidebars (see TagCloud.for_sidebar) — it does not change counts.
 class TagCloudAggregator
   def initialize(tag_cloud, project:, user: User.current, open_only: false)
     @tag_cloud = tag_cloud
@@ -25,7 +25,7 @@ class TagCloudAggregator
       return empty_tags
     end
 
-    project_ids = scoped_project_ids
+    project_ids = view_project_ids
     if project_ids.empty?
       log_empty('no project_ids')
       return empty_tags
@@ -44,7 +44,6 @@ class TagCloudAggregator
     issues = issues.where(tracker_id: tracker_ids) if tracker_ids.any?
     issues = issues.where(fixed_version_id: version_ids) if version_ids.any?
 
-    # pluck avoids broken IN (SELECT ...) from Issue.visible default order/distinct
     issue_ids = issues.unscope(:order, :select).distinct.pluck(:id)
     if issue_ids.empty?
       log_empty("no visible issues in project_ids=#{project_ids.inspect} open_only=#{@open_only}")
@@ -76,9 +75,7 @@ class TagCloudAggregator
     end
 
     result = scope.select(select_cols.join(', ')).group(group_cols)
-    if result.to_a.empty?
-      log_empty("issues=#{issue_ids.size} but no taggings matched")
-    end
+    log_empty("issues=#{issue_ids.size} but no taggings matched") if result.to_a.empty?
     result
   rescue StandardError => e
     Rails.logger.error(
@@ -94,14 +91,15 @@ class TagCloudAggregator
     Redmineup::Tag.none
   end
 
-  def scoped_project_ids
+  # Same project set as issues list / default Tags cloud for this view.
+  def view_project_ids
     return [] unless @project
 
-    if @tag_cloud.include_subprojects?
-      @project.self_and_descendants.pluck(:id)
-    else
-      [@project.id]
+    ids = [@project.id]
+    if Setting.display_subprojects_issues?
+      ids.concat(@project.descendants.pluck(:id))
     end
+    ids.uniq
   end
 
   def tag_has_color_column?
@@ -115,7 +113,7 @@ class TagCloudAggregator
   def log_empty(reason)
     Rails.logger.info(
       "[redmineup_tags] TagCloudAggregator empty cloud_id=#{@tag_cloud&.id} " \
-      "project_id=#{@project&.id} include_subprojects=#{@tag_cloud&.include_subprojects?} " \
+      "project_id=#{@project&.id} display_subprojects=#{Setting.display_subprojects_issues?} " \
       "reason=#{reason}"
     )
   end

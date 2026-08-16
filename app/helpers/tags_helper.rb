@@ -2,9 +2,7 @@ module TagsHelper
   include Redmineup::TagsHelper
 
   def render_issue_tag_link(tag, options = {})
-    filters = []
-    filters << ['status_id', 'o', ''] if options[:open_only]
-    filters << ['issue_tags', '=', tag.name]
+    filters = issue_filters_for_tag_link(tag, options)
 
     content =
       if options[:use_search]
@@ -15,6 +13,33 @@ module TagsHelper
     content << content_tag('span', "(#{tag.count})", class: 'tag-count') if options[:show_count]
     style = RedmineupTags.use_colors? ? { class: 'tag-label-color', style: "background-color: #{tag.color}" } : { class: 'tag-label' }
     content_tag('span', content, style)
+  end
+
+  # Filters applied when clicking a tag in the sidebar.
+  # For custom clouds: cloud status/tracker/version + tag (+ open_only if no status filter).
+  def issue_filters_for_tag_link(tag, options = {})
+    filters = []
+    cloud = options[:tag_cloud]
+
+    if cloud
+      status_ids = Array(cloud.status_filter).map(&:to_i).reject(&:zero?)
+      tracker_ids = Array(cloud.tracker_filter).map(&:to_i).reject(&:zero?)
+      version_ids = Array(cloud.version_filter).map(&:to_i).reject(&:zero?)
+
+      if status_ids.any?
+        filters << ['status_id', '=', status_ids]
+      elsif options[:open_only]
+        filters << ['status_id', 'o', '']
+      end
+
+      filters << ['tracker_id', '=', tracker_ids] if tracker_ids.any?
+      filters << ['fixed_version_id', '=', version_ids] if version_ids.any?
+    elsif options[:open_only]
+      filters << ['status_id', 'o', '']
+    end
+
+    filters << ['issue_tags', '=', tag.name]
+    filters
   end
 
   def render_tags_list(tags, options = {})
@@ -103,7 +128,7 @@ module TagsHelper
     end
 
     if tag_cloud.include_subprojects
-      parts << content_tag(:span, l(:label_subproject_plural, default: 'Subprojects'))
+      parts << content_tag(:span, l(:label_tag_cloud_show_in_subprojects, default: 'Show in subprojects'))
     end
 
     safe_join(parts, tag.br)
