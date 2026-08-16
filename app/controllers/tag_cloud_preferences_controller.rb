@@ -9,7 +9,7 @@ class TagCloudPreferencesController < ApplicationController
   before_action :find_tag_cloud, only: :toggle
 
   def edit
-    load_custom_tag_clouds
+    load_custom_tag_clouds_for_user
     @visible_ids = @tag_clouds.select { |c| c.visible_for?(User.current, project: @project) }.map(&:id)
 
     respond_to do |format|
@@ -18,18 +18,25 @@ class TagCloudPreferencesController < ApplicationController
   end
 
   def update
-    load_custom_tag_clouds
+    load_custom_tag_clouds_for_user
     selected_ids = Array(params[:visible_tag_cloud_ids]).map(&:to_i)
     order_ids = Array(params[:tag_cloud_order]).map(&:to_i)
 
     TagCloudPreference.transaction do
-      @tag_clouds.each do |cloud|
-        preference = cloud.preferences.find_or_initialize_by(user: User.current)
-        preference.visible = selected_ids.include?(cloud.id)
+      # Visibility + personal order: ONLY TagCloudPreference for current user.
+      # Never touch tag_cloud_projects.position here (that is project-wide Settings).
+      ordered = order_ids.select { |id| @tag_clouds.any? { |c| c.id == id } }.uniq
+      ordered += @tag_clouds.map(&:id) - ordered
+
+      ordered.each_with_index do |cloud_id, index|
+        cloud = @tag_clouds.find { |c| c.id == cloud_id }
+        next unless cloud
+
+        preference = cloud.preferences.find_or_initialize_by(user_id: User.current.id)
+        preference.visible = selected_ids.include?(cloud_id)
+        preference.position = index
         preference.save!
       end
-
-      apply_cloud_order(order_ids) if order_ids.any?
     end
 
     redirect_back fallback_location: project_issues_path(@project)
@@ -40,7 +47,7 @@ class TagCloudPreferencesController < ApplicationController
   end
 
   def toggle
-    preference = @tag_cloud.preferences.find_or_initialize_by(user: User.current)
+    preference = @tag_cloud.preferences.find_or_initialize_by(user_id: User.current.id)
     current = preference.persisted? ? preference.visible? : @tag_cloud.visible_by_default?
     preference.visible = !current
     preference.save!
@@ -58,20 +65,22 @@ class TagCloudPreferencesController < ApplicationController
     @tag_cloud = TagCloud.for_project(@project).find(params[:tag_cloud_id])
   end
 
-  def load_custom_tag_clouds
-    @tag_clouds = TagCloud.for_project(@project).to_a
+  # Project default order, then re-sort by this user's preference.position when present.
+  def load_custom_tag_clouds_for_user
+    clouds = TagCloud.for_project(@project).to_a
+    @tag_clouds = sort_clouds_for_user(clouds, User.current)
   end
 
-  def apply_cloud_order(order_ids)
-    links = @project.tag_cloud_projects.where(tag_cloud_id: order_ids).index_by(&:tag_cloud_id)
-    ordered = order_ids.select { |id| links.key?(id) }.uniq
-    ordered += @tag_clouds.map(&:id) - ordered
+  def sort_clouds_for_user(clouds, user)
+    return clouds if user.nil? || !user.logged? || clouds.empty?
 
-    ordered.each_with_index do |id, index|
-      link = links[id] || @project.tag_cloud_projects.find_by(tag_cloud_id: id)
-      next unless link
+    prefs = TagCloudPreference.where(user_id: user.id, tag_cloud_id: clouds.map(&:id)).index_by(&:tag_cloud_id)
+    return clouds if prefs.empty? || prefs.values.none? { |p| !p.position.nil? }
 
-      link.update!(position: index) if link.position != index
+    clouds.sort_by.with_index do |cloud, idx|
+      pref = prefs[cloud.id]
+      # Personal position if set; otherwise keep relative project order far after personal ones
+      [pref&.position.nil? ? 1_000_000 + idx : pref.position, idx]
     end
   end
 end

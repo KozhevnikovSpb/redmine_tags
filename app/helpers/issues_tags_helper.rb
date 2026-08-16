@@ -58,7 +58,11 @@ module IssuesTagsHelper
     return ''.html_safe if RedmineupTags.tag_list_view == :none
     return render_global_tags_sidebar unless @project
 
+    # Project default order from tag_cloud_projects.position
     custom_clouds = TagCloud.for_project(@project).to_a
+    # Personal order from TagCloudPreference.position (does not change project settings)
+    custom_clouds = sort_tag_clouds_for_user(custom_clouds, User.current)
+
     can_select_clouds = User.current.allowed_to?(:select_tag_clouds, @project)
     visible_custom = custom_clouds.select { |c| c.visible_for?(User.current, project: @project) }
 
@@ -102,6 +106,19 @@ module IssuesTagsHelper
   end
 
   private
+
+  # Order by user preference.position when set; otherwise keep project order.
+  def sort_tag_clouds_for_user(clouds, user)
+    return clouds if user.nil? || !user.logged? || clouds.blank?
+
+    prefs = TagCloudPreference.where(user_id: user.id, tag_cloud_id: clouds.map(&:id)).index_by(&:tag_cloud_id)
+    return clouds if prefs.empty? || prefs.values.none? { |p| !p.position.nil? }
+
+    clouds.sort_by.with_index do |cloud, idx|
+      pref = prefs[cloud.id]
+      [pref&.position.nil? ? 1_000_000 + idx : pref.position, idx]
+    end
+  end
 
   def render_global_tags_sidebar
     tag_cloud_section(
