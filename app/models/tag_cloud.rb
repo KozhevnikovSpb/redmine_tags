@@ -10,7 +10,8 @@ class TagCloud < ActiveRecord::Base
   has_many :projects, through: :tag_cloud_projects
 
   has_many :tag_cloud_tags, dependent: :destroy
-  has_many :tags, through: :tag_cloud_tags, class_name: 'Redmineup::Tag', source: :tag
+  # Absolute :: path — relative 'Redmineup::Tag' resolves as TagCloud::Redmineup::Tag under Zeitwerk/Ruby 3.4
+  has_many :tags, through: :tag_cloud_tags, class_name: '::Redmineup::Tag', source: :tag
 
   has_many :tag_cloud_roles, dependent: :destroy
   has_many :roles, through: :tag_cloud_roles
@@ -43,9 +44,6 @@ class TagCloud < ActiveRecord::Base
       .order(Arel.sql('tag_cloud_projects.position ASC, tag_clouds.id ASC'))
   }
 
-  # Personal preference overrides project defaults ONLY when the user still has
-  # :select_tag_clouds on the project. If the permission was revoked, ignore
-  # (and callers may purge) preferences — fall back to visibility rule.
   def visible_for?(user, project: nil)
     return false if user.nil?
 
@@ -82,9 +80,7 @@ class TagCloud < ActiveRecord::Base
   end
 
   def assigned_role_ids
-    if association(:roles).loaded? || (new_record? && roles.target.any?)
-      roles.map(&:id)
-    elsif association(:tag_cloud_roles).loaded?
+    if association(:tag_cloud_roles).loaded? || (new_record? && tag_cloud_roles.target.any?)
       tag_cloud_roles.map(&:role_id)
     else
       tag_cloud_roles.pluck(:role_id)
@@ -92,9 +88,7 @@ class TagCloud < ActiveRecord::Base
   end
 
   def assigned_tag_ids
-    if association(:tags).loaded? || (new_record? && tags.target.any?)
-      tags.map(&:id)
-    elsif association(:tag_cloud_tags).loaded?
+    if association(:tag_cloud_tags).loaded? || (new_record? && tag_cloud_tags.target.any?)
       tag_cloud_tags.map(&:tag_id)
     else
       tag_cloud_tags.pluck(:tag_id)
@@ -107,6 +101,31 @@ class TagCloud < ActiveRecord::Base
 
   def role_ids
     assigned_role_ids
+  end
+
+  # Assign whitelist tag ids via join rows only (no Redmineup::Tag constant load required).
+  def tag_ids=(ids)
+    ids = Array(ids).map(&:to_i).reject(&:zero?).uniq
+    if persisted?
+      tag_cloud_tags.where.not(tag_id: ids).delete_all
+      existing = tag_cloud_tags.pluck(:tag_id)
+      (ids - existing).each { |tid| tag_cloud_tags.create!(tag_id: tid) }
+    else
+      tag_cloud_tags.target.clear
+      ids.each { |tid| tag_cloud_tags.build(tag_id: tid) }
+    end
+  end
+
+  def role_ids=(ids)
+    ids = Array(ids).map(&:to_i).reject(&:zero?).uniq
+    if persisted?
+      tag_cloud_roles.where.not(role_id: ids).delete_all
+      existing = tag_cloud_roles.pluck(:role_id)
+      (ids - existing).each { |rid| tag_cloud_roles.create!(role_id: rid) }
+    else
+      tag_cloud_roles.target.clear
+      ids.each { |rid| tag_cloud_roles.build(role_id: rid) }
+    end
   end
 
   private
