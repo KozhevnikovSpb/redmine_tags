@@ -2,12 +2,13 @@
 
 # Aggregates real RedmineUP tags for a TagCloud + Project context.
 #
-# Rules (V.0.0.2-beta):
+# Rules:
 # - Only real tags from taggings on Issue (never invent from tracker/status/version).
 # - Empty status/version/tracker filter => no restriction (all).
 # - tag_filter=true and no tag_cloud_tags => empty result.
-# - One issue may appear in several clouds (different filter sets).
-# - include_subprojects controls Issue.visible with_subprojects.
+# - include_subprojects:
+#     false → only issues of the cloud's home project (this level only)
+#     true  → home project + its descendants (never parent/sibling projects)
 class TagCloudAggregator
   def initialize(tag_cloud, project:, user: User.current, open_only: false)
     @tag_cloud = tag_cloud
@@ -17,14 +18,17 @@ class TagCloudAggregator
   end
 
   def tags
-    return Redmineup::Tag.none if @project.nil? || @tag_cloud.nil?
+    return empty_tags if @project.nil? || @tag_cloud.nil?
 
-    # Explicit tag whitelist enabled but empty → nothing to show
-    if @tag_cloud.tag_filter && @tag_cloud.tag_ids.empty?
-      return Redmineup::Tag.none
+    if @tag_cloud.tag_filter && Array(@tag_cloud.tag_ids).empty?
+      return empty_tags
     end
 
-    issues = Issue.visible(@user, project: @project, with_subprojects: @tag_cloud.include_subprojects)
+    project_ids = scoped_project_ids
+    return empty_tags if project_ids.empty?
+
+    issues = Issue.visible(@user).where(project_id: project_ids)
+
     if @open_only
       issues = issues.joins(:status).where(issue_statuses: { is_closed: false })
     end
@@ -50,5 +54,23 @@ class TagCloudAggregator
         "COUNT(DISTINCT #{taggings_table}.taggable_id) AS count"
       )
       .group("#{tags_table}.id, #{tags_table}.name, #{tags_table}.color")
+  end
+
+  private
+
+  def empty_tags
+    Redmineup::Tag.none
+  end
+
+  # Never includes parent projects. Subproject clouds stay at their own level
+  # (or own level + their descendants when include_subprojects is set).
+  def scoped_project_ids
+    return [] unless @project
+
+    if @tag_cloud.include_subprojects?
+      @project.self_and_descendants.pluck(:id)
+    else
+      [@project.id]
+    end
   end
 end
