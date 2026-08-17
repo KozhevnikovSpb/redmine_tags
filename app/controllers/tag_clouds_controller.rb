@@ -91,24 +91,39 @@ class TagCloudsController < ApplicationController
     @statuses = IssueStatus.sorted
     @trackers = @project.trackers.sorted
     @versions = @project.versions.sorted
-    # Givable project roles (exclude built-in anonymous/non-member if present as non-givable)
     @roles = Role.givable.sorted
     @available_tags = project_available_tags
   end
 
+  # Tags for whitelist UI: only tags used on OPEN issues of THIS project.
+  # - project_id = @project.id (no subprojects, no other projects)
+  # - exclude closed issues via issue_statuses.is_closed (not by status name)
   def project_available_tags
     tags_table = Redmineup::Tag.table_name
     taggings_table = Redmineup::Tagging.table_name
     issues_table = Issue.table_name
+    statuses_table = IssueStatus.table_name
+
+    open_issue_ids = Issue
+                     .joins(:status)
+                     .where(project_id: @project.id)
+                     .where("${statuses_table}.is_closed" => false)
+                     .unscope(:order, :select)
+                     .distinct
+                     .pluck(:id)
+
+    return Redmineup::Tag.none if open_issue_ids.empty?
 
     Redmineup::Tag
       .joins("INNER JOIN #{taggings_table} ON #{taggings_table}.tag_id = #{tags_table}.id")
-      .joins("INNER JOIN #{issues_table} ON #{issues_table}.id = #{taggings_table}.taggable_id")
       .where("#{taggings_table}.taggable_type = ?", Issue.name)
-      .where("#{issues_table}.project_id = ?", @project.id)
+      .where("#{taggings_table}.taggable_id" => open_issue_ids)
       .distinct
-      .order("#{tags_table}.name ASC")
-  rescue StandardError
+      .order(Arel.sql("#{tags_table}.name ASC"))
+  rescue StandardError => e
+    Rails.logger.error(
+      "[redmineup_tags] project_available_tags project=#{@project&.id}: #{e.class}: #{e.message}"
+    )
     Redmineup::Tag.none
   end
 
@@ -134,8 +149,6 @@ class TagCloudsController < ApplicationController
     raw
   end
 
-  # Sync has_many :through join rows from form params.
-  # Clears associations when the feature is disabled / not applicable.
   def apply_join_ids!(cloud)
     role_ids = Array(params.dig(:tag_cloud, :role_ids)).map(&:to_i).reject(&:zero?).uniq
     tag_ids  = Array(params.dig(:tag_cloud, :tag_ids)).map(&:to_i).reject(&:zero?).uniq
