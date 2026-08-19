@@ -1,0 +1,64 @@
+<%# Global list of all custom tag clouds across projects (admin plugin settings).
+    System Default Tags cloud is virtual and is not listed here.
+    No create / no reorder — only edit & delete. %>
+
+<%
+  links = TagCloudProject
+            .joins(:project, :tag_cloud)
+            .includes(:project, tag_cloud: [:owner])
+            .order(Arel.sql('projects.name ASC, tag_cloud_projects.position ASC, tag_clouds.name ASC'))
+%>
+
+<p class="info"><%= l(:text_tag_clouds_global_list_info) %></p>
+
+<table class="list tag-clouds-settings-table" id="tag-clouds-global-table">
+  <thead>
+    <tr>
+      <th class="tag-cloud-col-name"><%= l(:label_tag_cloud_name) %></th>
+      <th class="tag-cloud-col-project"><%= l(:label_project) %></th>
+      <th class="tag-cloud-col-filters"><%= l(:label_tag_cloud_filters) %></th>
+      <th class="tag-cloud-col-visibility"><%= l(:label_tag_cloud_visibility_rule) %></th>
+      <th class="tag-cloud-col-visible"><%= l(:label_tag_cloud_visible_by_default) %></th>
+      <th class="tag-cloud-col-subprojects"><%= l(:label_tag_cloud_include_subprojects) %></th>
+      <th class="buttons"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if links.any? %>
+      <% links.each do |link| %>
+        <% cloud = link.tag_cloud %>
+        <% project = link.project %>
+        <tr id="tag-cloud-global-<%= cloud.id %>-<%= project.id %>"
+            class="<%= cycle('odd', 'even') %>"
+            data-id="<%= cloud.id %>"
+            data-project-id="<%= project.id %>">
+          <td class="tag-cloud-col-name name"><%= h(cloud.name) %></td>
+          <td class="tag-cloud-col-project"><%= link_to_project(project) %></td>
+          <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
+          <td class="tag-cloud-col-visibility"><%= tag_cloud_visibility_summary(cloud) %></td>
+          <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
+          <td class="tag-cloud-col-subprojects"><%= cloud.include_subprojects ? '✓' : '—' %></td>
+          <td class="buttons">
+            <%= link_to sprite_icon('edit', l(:button_edit)),
+                        edit_project_tag_cloud_path(project, cloud),
+                        class: 'icon icon-edit',
+                        title: l(:button_edit) %>
+            <%= link_to sprite_icon('del', l(:button_delete)),
+                        project_tag_cloud_path(project, cloud),
+                        method: :delete,
+                        data: { confirm: l(:text_are_you_sure) },
+                        class: 'icon icon-del',
+                        title: l(:button_delete) %>
+          </td>
+        </tr>
+      <% end %>
+    <% else %>
+      <tr class="nodata">
+        <td colspan="7"><%= l(:label_no_data) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<p class="info"><%= l(:text_tag_clouds_info) %></p>
+<p class="info"><%= l(:text_cannot_delete_system_cloud) %></p>

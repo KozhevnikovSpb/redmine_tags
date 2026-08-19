@@ -2,7 +2,7 @@ requires_redmineup version_or_higher: '1.1.10' rescue raise "\n\033[31mRedmine r
 
 require 'redmine'
 
-TAGS_VERSION_NUMBER = '0.0.3'
+TAGS_VERSION_NUMBER = '0.0.4'
 TAGS_VERSION_TYPE = 'Stable'
 
 Redmine::Plugin.register :redmineup_tags do
@@ -28,6 +28,7 @@ Redmine::Plugin.register :redmineup_tags do
   # All tag/cloud permissions under Issue tracking (same module as issues).
   # manage_tag_clouds: project settings CRUD + reorder (require membership).
   # select_tag_clouds: personal sidebar visibility/order only.
+  # Admin can manage any cloud from plugin settings even without project membership.
   project_module :issue_tracking do
     permission :create_tags, {}
     permission :edit_tags, {}

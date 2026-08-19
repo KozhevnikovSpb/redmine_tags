@@ -4,6 +4,21 @@ Redmine Tags plugin - Tags board plugin for redmine
 Copyright (C) 2011-2026 Kirill Bezrukov (RedmineUP)
 http://www.redmineup.com/
 
+== 2026-08-19 v0.0.4
+
+Global Tag Clouds list in plugin settings (admin)
+Target: Redmine 7.0 / Ruby 3.4 / Rails 8.1
+Plugin ID: :redmineup_tags
+
+* New tab «Tag Clouds» on Administration → Plugins → redmineup_tags settings
+* Table of all custom tag clouds across all projects (one row per project link)
+* Columns: Name, Project, Filters, Visibility, Visible by default, Include subprojects
+* Actions: Edit and Delete only (no create, no drag-reorder)
+* Admin can edit/delete clouds without being a project member
+* After edit/delete from the global tab, redirect returns to the same settings tab
+* Locales EN/RU for the new info text
+* Version set to 0.0.4
+
 == 2026-08-15 v0.0.3
 
 Release: remaining logic + permissions (tag_filter UI, visibility UI)

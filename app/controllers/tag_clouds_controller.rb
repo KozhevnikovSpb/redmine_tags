@@ -5,7 +5,7 @@ class TagCloudsController < ApplicationController
   helper :issues_tags
 
   before_action :find_project_by_project_id
-  before_action :authorize
+  before_action :authorize_tag_clouds
   before_action :find_tag_cloud, only: %i[edit update destroy]
 
   def index
@@ -30,7 +30,7 @@ class TagCloudsController < ApplicationController
     @tag_cloud.tag_cloud_projects.build(project: @project, position: next_position)
 
     if @tag_cloud.save
-      redirect_to settings_project_path(@project, tab: 'tags'), notice: l(:notice_tag_cloud_created)
+      redirect_after_change l(:notice_tag_cloud_created)
     else
       load_filter_options
       render :new, status: :unprocessable_entity
@@ -46,7 +46,7 @@ class TagCloudsController < ApplicationController
     apply_join_ids!(@tag_cloud)
 
     if @tag_cloud.save
-      redirect_to settings_project_path(@project, tab: 'tags'), notice: l(:notice_tag_cloud_updated)
+      redirect_after_change l(:notice_tag_cloud_updated)
     else
       load_filter_options
       render :edit, status: :unprocessable_entity
@@ -58,7 +58,7 @@ class TagCloudsController < ApplicationController
     link&.destroy
     @tag_cloud.destroy! if @tag_cloud.tag_cloud_projects.reload.empty?
 
-    redirect_to settings_project_path(@project, tab: 'tags'), notice: l(:notice_tag_cloud_deleted)
+    redirect_after_change l(:notice_tag_cloud_deleted)
   end
 
   def reorder
@@ -78,6 +78,14 @@ class TagCloudsController < ApplicationController
   end
 
   private
+
+  # Admins can manage tag clouds from the global plugin settings page
+  # even if they are not a member of the project (require: :member).
+  def authorize_tag_clouds
+    return true if User.current.admin?
+
+    authorize
+  end
 
   def find_tag_cloud
     @tag_cloud = TagCloud.for_project(@project).find(params[:id])
@@ -166,5 +174,24 @@ class TagCloudsController < ApplicationController
     if cloud.visibility == 'owner'
       cloud.owner ||= User.current
     end
+  end
+
+  # Prefer returning to the global plugin settings tab when the action
+  # was initiated from Administration → Plugins → redmineup_tags.
+  def redirect_after_change(notice)
+    if from_plugin_settings?
+      redirect_to(
+        { controller: 'settings', action: 'plugin', id: 'redmineup_tags', tab: 'tag_clouds' },
+        notice: notice
+      )
+    else
+      redirect_to settings_project_path(@project, tab: 'tags'), notice: notice
+    end
+  end
+
+  def from_plugin_settings?
+    ref = request.referer.to_s
+    ref.include?('/settings/plugin/redmineup_tags') ||
+      ref.include?('settings/plugin') && ref.include?('redmineup_tags')
   end
 end
