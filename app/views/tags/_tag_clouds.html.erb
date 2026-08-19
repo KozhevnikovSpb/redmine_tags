@@ -9,8 +9,6 @@
             .order(Arel.sql('projects.name ASC, tag_cloud_projects.position ASC, tag_clouds.name ASC'))
 %>
 
-<p class="info"><%= l(:text_tag_clouds_global_list_info) %></p>
-
 <table class="list tag-clouds-settings-table" id="tag-clouds-global-table">
   <thead>
     <tr>
