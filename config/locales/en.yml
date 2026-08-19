@@ -65,10 +65,7 @@ en:
   label_tag_cloud_drag_to_reorder: Drag to change display order
   button_collapse: Collapse
   text_tag_cloud_filters_empty_means_all: empty = Any / all
-  text_tag_clouds_info: Tag clouds provide multiple analytical slices of issues with custom filters. The default Tags cloud preserves original plugin behavior and is always shown.
   text_tag_clouds_permissions_info: "Permissions (Roles and permissions → Issue tracking): Manage tag clouds — create/edit/delete clouds (requires membership). Select visible tag clouds — per-user sidebar visibility and order. Cloud visibility rule (All / Owner / Roles) further restricts who sees each custom cloud."
-  text_cannot_delete_system_cloud: The default Tags cloud is virtual and always visible; it cannot be deleted.
-  text_tag_clouds_global_list_info: This list shows all custom tag clouds across all projects. You can edit or delete them here. Creating new clouds and reordering is done in Project → Settings → Tag Clouds.
   notice_tag_cloud_created: Tag cloud was successfully created.
   notice_tag_cloud_updated: Tag cloud was successfully updated.
   notice_tag_cloud_deleted: Tag cloud was successfully deleted.
