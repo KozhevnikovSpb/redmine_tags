@@ -56,7 +56,7 @@ en:
   label_tag_cloud_version_filter: Version filter
   label_tag_cloud_tracker_filter: Tracker filter
   label_tag_cloud_visible_by_default: Visible by default
-  label_tag_cloud_include_subprojects: Show cloud in subprojects
+  label_tag_cloud_include_subprojects: Subprojects
   label_tag_cloud_show_in_subprojects: Shown in subprojects
   text_tag_cloud_include_subprojects_hint: Only controls whether this cloud appears in subproject sidebars. Tag counts always follow the issues list (including subprojects when Redmine «Display subprojects issues» is enabled).
   label_tag_cloud_position: Position
