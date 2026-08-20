@@ -11,6 +11,7 @@ class TagCloudPreferencesController < ApplicationController
   def edit
     load_custom_tag_clouds_for_user
     @visible_ids = @tag_clouds.select { |c| c.visible_for?(User.current, project: @project) }.map(&:id)
+    @issue_counts = load_issue_counts_for_clouds(@tag_clouds)
 
     respond_to do |format|
       format.js
@@ -81,6 +82,20 @@ class TagCloudPreferencesController < ApplicationController
       pref = prefs[cloud.id]
       # Personal position if set; otherwise keep relative project order far after personal ones
       [pref&.position.nil? ? 1_000_000 + idx : pref.position, idx]
+    end
+  end
+
+  def load_issue_counts_for_clouds(clouds)
+    return {} if clouds.blank?
+
+    open_only = RedmineupTags.settings['issues_open_only'].to_i == 1
+    clouds.each_with_object({}) do |cloud, hash|
+      hash[cloud.id] = TagCloudAggregator.new(
+        cloud,
+        project: @project,
+        user: User.current,
+        open_only: open_only
+      ).issue_count
     end
   end
 end

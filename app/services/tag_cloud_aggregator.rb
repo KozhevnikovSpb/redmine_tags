@@ -25,28 +25,9 @@ class TagCloudAggregator
       return empty_tags
     end
 
-    project_ids = view_project_ids
-    if project_ids.empty?
-      log_empty('no project_ids')
-      return empty_tags
-    end
-
-    issues = Issue.visible(@user).where(project_id: project_ids)
-    if @open_only
-      issues = issues.joins(:status).where(issue_statuses: { is_closed: false })
-    end
-
-    status_ids = Array(@tag_cloud.status_filter).map(&:to_i).reject(&:zero?)
-    version_ids = Array(@tag_cloud.version_filter).map(&:to_i).reject(&:zero?)
-    tracker_ids = Array(@tag_cloud.tracker_filter).map(&:to_i).reject(&:zero?)
-
-    issues = issues.where(status_id: status_ids) if status_ids.any?
-    issues = issues.where(tracker_id: tracker_ids) if tracker_ids.any?
-    issues = issues.where(fixed_version_id: version_ids) if version_ids.any?
-
-    issue_ids = issues.unscope(:order, :select).distinct.pluck(:id)
+    issue_ids = matching_issue_ids
     if issue_ids.empty?
-      log_empty("no visible issues in project_ids=#{project_ids.inspect} open_only=#{@open_only}")
+      log_empty("no visible issues open_only=#{@open_only}")
       return empty_tags
     end
 
@@ -85,10 +66,61 @@ class TagCloudAggregator
     empty_tags
   end
 
+  # Distinct issues matching cloud filters (status / tracker / version / open_only).
+  # When tag_filter is enabled — only issues that have at least one whitelist tag.
+  # Read-only helper for the Select visible tag clouds modal.
+  def issue_count
+    return 0 if @project.nil? || @tag_cloud.nil?
+
+    if @tag_cloud.tag_filter && Array(@tag_cloud.tag_ids).empty?
+      return 0
+    end
+
+    issue_ids = matching_issue_ids
+    return 0 if issue_ids.empty?
+
+    return issue_ids.size unless @tag_cloud.tag_filter
+
+    taggings_table = Redmineup::Tagging.table_name
+    Redmineup::Tagging
+      .where(taggable_type: Issue.name)
+      .where(taggable_id: issue_ids)
+      .where(tag_id: @tag_cloud.tag_ids)
+      .distinct
+      .count(:taggable_id)
+  rescue StandardError => e
+    Rails.logger.error(
+      "[redmineup_tags] TagCloudAggregator#issue_count cloud=#{@tag_cloud&.id} " \
+      "project=#{@project&.id}: #{e.class}: #{e.message}"
+    )
+    0
+  end
+
   private
 
   def empty_tags
     Redmineup::Tag.none
+  end
+
+  # Issues in the current view project set, with cloud status/tracker/version filters.
+  def matching_issue_ids
+    project_ids = view_project_ids
+    return [] if project_ids.empty?
+
+    issues = Issue.visible(@user).where(project_id: project_ids)
+    if @open_only
+      issues = issues.joins(:status).where(issue_statuses: { is_closed: false })
+    end
+
+    status_ids = Array(@tag_cloud.status_filter).map(&:to_i).reject(&:zero?)
+    version_ids = Array(@tag_cloud.version_filter).map(&:to_i).reject(&:zero?)
+    tracker_ids = Array(@tag_cloud.tracker_filter).map(&:to_i).reject(&:zero?)
+
+    issues = issues.where(status_id: status_ids) if status_ids.any?
+    issues = issues.where(tracker_id: tracker_ids) if tracker_ids.any?
+    issues = issues.where(fixed_version_id: version_ids) if version_ids.any?
+
+    issues.unscope(:order, :select).distinct.pluck(:id)
   end
 
   # Same project set as issues list / default Tags cloud for this view.

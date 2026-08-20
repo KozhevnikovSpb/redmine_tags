@@ -7,6 +7,7 @@
     <% else %>
       <ul class="tag-clouds-visibility-list" id="tag-clouds-sortable">
         <% @tag_clouds.each do |cloud| %>
+          <% count = (@issue_counts || {})[cloud.id].to_i %>
           <li class="tag-cloud-row" data-id="<%= cloud.id %>">
             <label for="visible_tag_cloud_<%= cloud.id %>">
               <%= check_box_tag 'visible_tag_cloud_ids[]',
@@ -15,6 +16,8 @@
                                 id: "visible_tag_cloud_#{cloud.id}" %>
               <span class="tag-cloud-name"><%= cloud.name %></span>
             </label>
+            <span class="tag-cloud-issue-count"
+                  title="<%= l(:label_issue_plural) %>"><%= count %></span>
             <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
               <%= sprite_icon('reorder', '') %>
             </span>
