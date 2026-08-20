@@ -13,25 +13,24 @@
 
 /* ---- Circular letter markers: system (S/С), inherited (R/К) ---- */
 .tag-cloud-marker {
-  display: inline-grid;
-  place-items: center;
-  width: 1.15em;
-  height: 1.15em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
   margin-left: 5px;
   padding: 0;
   border: 1px solid #333;
   border-radius: 50%;
   background: transparent;
   color: #333;
-  font-size: 0.72em;
+  font-size: 10px;
   font-weight: 600;
   line-height: 1;
   vertical-align: middle;
   flex-shrink: 0;
   box-sizing: border-box;
   letter-spacing: 0;
-  /* optical centering for capital glyphs */
-  padding-top: 0.08em;
 }
 
 .tag-cloud-marker-system,
@@ -42,9 +41,7 @@
 }
 
 #sidebar .sidebar-tag-cloud h3 .tag-cloud-marker {
-  vertical-align: -0.05em;
-  position: static;
-  top: auto;
+  vertical-align: middle;
 }
 
 /* ---- Project settings / Global admin: Tag Clouds table ---- */
