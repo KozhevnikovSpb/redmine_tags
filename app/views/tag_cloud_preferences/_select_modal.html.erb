@@ -14,10 +14,12 @@
                                 cloud.id,
                                 @visible_ids.include?(cloud.id),
                                 id: "visible_tag_cloud_#{cloud.id}" %>
-              <span class="tag-cloud-name"><%= cloud.name %></span>
+              <span class="tag-cloud-name"><%= h(cloud.name) %></span>
             </label>
             <span class="tag-cloud-issue-count"
-                  title="<%= l(:label_issue_plural) %>"><%= count %></span>
+                  title="<%= l(:label_tag_cloud_issue_count, count: count) %>">
+              <%= l(:label_tag_cloud_issue_count, count: count) %>
+            </span>
             <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
               <%= sprite_icon('reorder', '') %>
             </span>

@@ -90,6 +90,11 @@ ru:
   # Select visible tag clouds modal
   label_select_visible_tag_clouds: Выбрать видимые облака тегов
   label_tag_clouds_visibility: Видимые облака тегов
+  label_tag_cloud_issue_count:
+    one: "%{count} задача"
+    few: "%{count} задачи"
+    many: "%{count} задач"
+    other: "%{count} задач"
   text_select_visible_tag_clouds_hint: Выберите, какие пользовательские облака тегов показывать в боковой панели задач. Перетаскивайте строки, чтобы изменить порядок.
   notice_tag_cloud_preferences_updated: Настройки видимости облаков тегов обновлены.
   notice_failed_to_update_tag_cloud_preferences: Не удалось обновить настройки видимости облаков тегов.
