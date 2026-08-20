@@ -11,6 +11,40 @@
 .most_used_tag { cursor: pointer; color: #169; }
 .most_used_tag:hover { text-decoration: underline;}
 
+/* ---- Circular letter markers: system (S/С), inherited (R/К) ---- */
+.tag-cloud-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2em;
+  height: 1.2em;
+  margin-left: 5px;
+  border-radius: 50%;
+  font-size: 0.7em;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  letter-spacing: 0;
+}
+
+.tag-cloud-marker-system {
+  background: #628db6;
+  color: #fff;
+}
+
+.tag-cloud-marker-inherited {
+  background: #8b9aab;
+  color: #fff;
+}
+
+#sidebar .sidebar-tag-cloud h3 .tag-cloud-marker {
+  vertical-align: text-top;
+  position: relative;
+  top: 0.05em;
+}
+
 /* ---- Project settings / Global admin: Tag Clouds table ---- */
 .tag-clouds-settings-table .tag-cloud-col-drag {
   width: 28px;
@@ -47,9 +81,8 @@
   text-align: right;
 }
 
-.tag-clouds-settings-table .tag-cloud-system-badge {
+.tag-clouds-settings-table .tag-cloud-col-name .tag-cloud-marker {
   margin-left: 6px;
-  font-size: 0.75em;
   vertical-align: middle;
 }
 
