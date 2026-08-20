@@ -77,7 +77,7 @@ module IssuesTagsHelper
     sections = []
 
     sections << tag_cloud_section(
-      l(:tags),
+      system_tag_cloud_title,
       render_sidebar_tags,
       'sidebar-tag-cloud sidebar-tag-cloud-system'
     )
@@ -88,8 +88,7 @@ module IssuesTagsHelper
           l(:label_select_visible_tag_clouds),
           edit_project_tag_cloud_preferences_path(@project),
           remote: true,
-          class: 'icon icon-settings',
-          title: l(:label_select_visible_tag_clouds)
+          class: 'icon icon-settings'
         )
       end
     end
@@ -99,7 +98,7 @@ module IssuesTagsHelper
       next if body.blank?
 
       sections << tag_cloud_section(
-        cloud.name,
+        custom_tag_cloud_title(cloud),
         body,
         'sidebar-tag-cloud',
         data: { tag_cloud_id: cloud.id }
@@ -113,6 +112,19 @@ module IssuesTagsHelper
   end
 
   private
+
+  def system_tag_cloud_title
+    safe_join([l(:tags), ' '.html_safe, tag_cloud_letter_marker(:system)])
+  end
+
+  def custom_tag_cloud_title(cloud)
+    parts = [h(cloud.name)]
+    if @project && !cloud.linked_to?(@project)
+      parts << ' '.html_safe
+      parts << tag_cloud_letter_marker(:inherited)
+    end
+    safe_join(parts)
+  end
 
   def clear_stale_tag_cloud_preferences!(user, clouds)
     return if user.nil? || !user.logged? || clouds.blank?
@@ -140,7 +152,7 @@ module IssuesTagsHelper
 
   def render_global_tags_sidebar
     tag_cloud_section(
-      l(:tags),
+      system_tag_cloud_title,
       render_sidebar_tags,
       'sidebar-tag-cloud sidebar-tag-cloud-system sidebar-tag-cloud-global'
     )

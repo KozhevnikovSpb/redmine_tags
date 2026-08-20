@@ -48,7 +48,7 @@ en:
   # Tag Cloud management
   label_new_tag_cloud: New Tag Cloud
   label_edit_tag_cloud: Edit Tag Cloud
-  label_default_tag_cloud: Default Tags
+  label_default_tag_cloud: Tags
   label_hidden_tag_clouds: Hidden tag clouds
   label_tag_cloud_name: Name
   label_tag_cloud_filters: Filters
@@ -62,6 +62,10 @@ en:
   label_tag_cloud_position: Position
   label_tag_cloud_system: system
   label_tag_cloud_system_cloud: System cloud
+  label_tag_cloud_badge_system: S
+  label_tag_cloud_badge_inherited: R
+  label_tag_cloud_badge_system_title: System cloud
+  label_tag_cloud_badge_inherited_title: Inherited from parent project
   label_tag_cloud_drag_to_reorder: Drag to change display order
   button_collapse: Collapse
   text_tag_cloud_filters_empty_means_all: empty = Any / all
@@ -69,7 +73,7 @@ en:
   notice_tag_cloud_created: Tag cloud was successfully created.
   notice_tag_cloud_updated: Tag cloud was successfully updated.
   notice_tag_cloud_deleted: Tag cloud was successfully deleted.
-  alert_cannot_delete_system_cloud: Default Tags cloud cannot be deleted.
+  alert_cannot_delete_system_cloud: Tags cloud cannot be deleted.
 
   # Visibility
   label_tag_cloud_visibility_rule: Visibility

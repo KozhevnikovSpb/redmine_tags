@@ -157,6 +157,28 @@ module TagsHelper
     end
   end
 
+  # Circular letter marker: system (S/С) or inherited from parent (R/К).
+  def tag_cloud_letter_marker(kind)
+    case kind.to_sym
+    when :system
+      content_tag(
+        :span,
+        l(:label_tag_cloud_badge_system),
+        class: 'tag-cloud-marker tag-cloud-marker-system',
+        title: l(:label_tag_cloud_badge_system_title)
+      )
+    when :inherited
+      content_tag(
+        :span,
+        l(:label_tag_cloud_badge_inherited),
+        class: 'tag-cloud-marker tag-cloud-marker-inherited',
+        title: l(:label_tag_cloud_badge_inherited_title)
+      )
+    else
+      ''.html_safe
+    end
+  end
+
   private
 
   def safe_names(model, ids)

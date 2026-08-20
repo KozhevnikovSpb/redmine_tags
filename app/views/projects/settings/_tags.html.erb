@@ -22,11 +22,11 @@
          <% if can_manage %>
          data-reorder-url="<%= reorder_project_tag_clouds_path(@project) %>"
          <% end %>>
-    <%# Virtual Default / system cloud — always first, not in DB %>
+    <%# Virtual system cloud — always first, not in DB %>
     <tr id="tag-cloud-system" class="<%= cycle('odd', 'even') %> system" data-id="system">
       <td class="tag-cloud-col-name name">
-        <%= l(:label_default_tag_cloud) %>
-        <span class="badge badge-info tag-cloud-system-badge"><%= l(:label_tag_cloud_system) %></span>
+        <%= l(:tags) %>
+        <%= tag_cloud_letter_marker(:system) %>
       </td>
       <td class="tag-cloud-col-filters"><%= l(:label_all) %></td>
       <td class="tag-cloud-col-visibility"><%= l(:label_tag_cloud_visibility_all) %></td>
