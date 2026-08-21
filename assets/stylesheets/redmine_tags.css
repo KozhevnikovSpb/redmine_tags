@@ -187,7 +187,7 @@
   border-color: #e5e7eb;
 }
 
-/* Redmine-like filter table: field | operator | multi-select */
+/* Redmine-like filter table: field | operator | values | +/- */
 .tag-cloud-filters-table {
   border-collapse: collapse;
   width: auto;
@@ -197,7 +197,7 @@
 
 .tag-cloud-filters-table td {
   padding: 4px 8px 4px 0;
-  vertical-align: top;
+  vertical-align: middle;
   border: none;
 }
 
@@ -205,18 +205,27 @@
   font-weight: bold;
   white-space: nowrap;
   width: 120px;
-  padding-top: 6px !important;
 }
 
 .tag-cloud-filter-op {
   color: #666;
   white-space: nowrap;
   width: 3em;
-  padding-top: 6px !important;
 }
 
 .tag-cloud-filter-values {
-  padding-right: 0 !important;
+  padding-right: 4px !important;
+  min-width: 80px;
+}
+
+.tag-cloud-filter-summary {
+  color: #555;
+  font-size: 0.92em;
+}
+
+.tag-cloud-filter-summary[hidden],
+.tag-cloud-filter-select[hidden] {
+  display: none !important;
 }
 
 .tag-cloud-filter-select {
@@ -230,6 +239,43 @@
   border: 1px solid #ccc;
   border-radius: 2px;
   background: #fff;
+  vertical-align: middle;
+}
+
+.tag-cloud-filter-actions {
+  width: 28px;
+  padding-left: 4px !important;
+  vertical-align: middle;
+}
+
+.tag-cloud-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+  color: #169;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.tag-cloud-filter-toggle:hover {
+  background: #e8eef5;
+  border-color: #628db6;
+}
+
+.tag-cloud-filter-toggle.is-open {
+  background: #e8eef5;
+  border-color: #628db6;
+  color: #507aaa;
 }
 
 /* Visibility radios */

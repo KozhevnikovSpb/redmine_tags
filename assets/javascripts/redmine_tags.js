@@ -79,6 +79,30 @@ $(function () {
         initTagCloudsSettingsSortable();
     });
 
+    // ---- Tag cloud form: expand/collapse filter multi-selects ----
+    function setFilterOpen($row, open) {
+        var $btn = $row.find('.tag-cloud-filter-toggle');
+        var $select = $row.find('.tag-cloud-filter-select');
+        var $summary = $row.find('.tag-cloud-filter-summary');
+
+        $select.prop('hidden', !open);
+        $summary.prop('hidden', open);
+        $btn.toggleClass('is-open', open);
+        $btn.text(open ? '−' : '+');
+
+        // collapsing clears selection → empty = all
+        if (!open) {
+            $select.val(null);
+        }
+    }
+
+    $(document).on('click', '.tag-cloud-filter-toggle', function (e) {
+        e.preventDefault();
+        var $row = $(this).closest('.tag-cloud-filter-row');
+        var open = !$row.find('.tag-cloud-filter-select').prop('hidden');
+        setFilterOpen($row, !open);
+    });
+
     // tag_filter checkbox shows/hides tag whitelist panel
     $(document).on('change', '#tag_cloud_tag_filter', function () {
         var on = $(this).is(':checked');
