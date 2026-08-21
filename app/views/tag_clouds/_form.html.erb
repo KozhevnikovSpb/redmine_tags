@@ -18,7 +18,6 @@
 
   <fieldset class="tag-cloud-filters-fieldset">
     <legend><%= l(:label_tag_cloud_filters) %></legend>
-    <p class="info"><%= l(:text_tag_cloud_filters_empty_means_all) %></p>
 
     <table class="tag-cloud-filters-table">
       <%# ---- Status ---- %>
@@ -36,10 +35,7 @@
           </select>
         </td>
         <td class="tag-cloud-filter-actions">
-          <a href="#" class="icon-only tag-cloud-filter-toggle<%= ' is-open' unless status_selected.empty? %>">
-            <span class="tag-cloud-filter-icon-add"<%= ' hidden' unless status_selected.empty? %>><%= sprite_icon('add', '') %></span>
-            <span class="tag-cloud-filter-icon-close"<%= ' hidden' if status_selected.empty? %>><%= sprite_icon('close', '') %></span>
-          </a>
+          <a href="#" class="icon-only tag-cloud-filter-toggle <%= status_selected.empty? ? 'icon-add' : 'icon-close' %>"></a>
         </td>
       </tr>
 
@@ -58,10 +54,7 @@
           </select>
         </td>
         <td class="tag-cloud-filter-actions">
-          <a href="#" class="icon-only tag-cloud-filter-toggle<%= ' is-open' unless version_selected.empty? %>">
-            <span class="tag-cloud-filter-icon-add"<%= ' hidden' unless version_selected.empty? %>><%= sprite_icon('add', '') %></span>
-            <span class="tag-cloud-filter-icon-close"<%= ' hidden' if version_selected.empty? %>><%= sprite_icon('close', '') %></span>
-          </a>
+          <a href="#" class="icon-only tag-cloud-filter-toggle <%= version_selected.empty? ? 'icon-add' : 'icon-close' %>"></a>
         </td>
       </tr>
 
@@ -80,10 +73,7 @@
           </select>
         </td>
         <td class="tag-cloud-filter-actions">
-          <a href="#" class="icon-only tag-cloud-filter-toggle<%= ' is-open' unless tracker_selected.empty? %>">
-            <span class="tag-cloud-filter-icon-add"<%= ' hidden' unless tracker_selected.empty? %>><%= sprite_icon('add', '') %></span>
-            <span class="tag-cloud-filter-icon-close"<%= ' hidden' if tracker_selected.empty? %>><%= sprite_icon('close', '') %></span>
-          </a>
+          <a href="#" class="icon-only tag-cloud-filter-toggle <%= tracker_selected.empty? ? 'icon-add' : 'icon-close' %>"></a>
         </td>
       </tr>
     </table>
