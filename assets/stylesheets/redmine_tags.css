@@ -187,7 +187,7 @@
   border-color: #e5e7eb;
 }
 
-/* Redmine-like filter table: field | operator | values | (+) */
+/* Redmine-like filter table: field | operator | values | +/− */
 .tag-cloud-filters-table {
   border-collapse: collapse;
   width: auto;
@@ -243,20 +243,23 @@
 }
 
 .tag-cloud-filter-actions {
-  width: 2.5em;
-  padding-left: 2px !important;
+  width: 24px;
+  padding-left: 4px !important;
   vertical-align: middle;
 }
 
-/* Redmine-style filter toggle: plain (+) / (−) */
+/* Circular +/− like Redmine filter toggles */
 .tag-cloud-filter-toggle {
-  display: inline;
-  width: auto;
-  height: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
   padding: 0;
   margin: 0;
-  border: none;
-  background: transparent;
+  border: 1px solid #bbb;
+  border-radius: 50%;
+  background: #fff;
   color: #666;
   font-size: 13px;
   font-weight: normal;
@@ -265,13 +268,19 @@
   cursor: pointer;
   vertical-align: middle;
   box-shadow: none;
+  box-sizing: border-box;
 }
 
-.tag-cloud-filter-toggle:hover,
-.tag-cloud-filter-toggle.is-open {
+.tag-cloud-filter-toggle:hover {
+  border-color: #628db6;
   color: #169;
-  background: transparent;
-  border: none;
+  background: #f5f8fb;
+}
+
+.tag-cloud-filter-toggle.is-open {
+  border-color: #bbb;
+  color: #666;
+  background: #fff;
 }
 
 /* Visibility radios */
