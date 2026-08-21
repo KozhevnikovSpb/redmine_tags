@@ -88,8 +88,7 @@ $(function () {
         $select.prop('hidden', !open);
         $summary.prop('hidden', open);
         $btn.attr('data-open', open ? '1' : '0');
-        $btn.find('.tc-icon-add').css('display', open ? 'none' : 'inline');
-        $btn.find('.tc-icon-close').css('display', open ? 'inline' : 'none');
+        $btn.text(open ? '−' : '+');
 
         // collapsing clears selection → empty = all
         if (!open) {

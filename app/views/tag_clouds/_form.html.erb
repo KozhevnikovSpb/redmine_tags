@@ -35,10 +35,9 @@
           </select>
         </td>
         <td class="tag-cloud-filter-actions">
-          <a href="#" class="tag-cloud-filter-toggle" data-open="<%= status_selected.any? ? '1' : '0' %>">
-            <span class="tc-icon-add"<%= ' style="display:none"' unless status_selected.empty? %>><%= sprite_icon('add', '') %></span>
-            <span class="tc-icon-close"<%= ' style="display:none"' if status_selected.empty? %>><%= sprite_icon('close', '') %></span>
-          </a>
+          <button type="button" class="tag-cloud-filter-toggle" data-open="<%= status_selected.any? ? '1' : '0' %>">
+            <%= status_selected.empty? ? '+' : '−' %>
+          </button>
         </td>
       </tr>
 
@@ -57,10 +56,9 @@
           </select>
         </td>
         <td class="tag-cloud-filter-actions">
-          <a href="#" class="tag-cloud-filter-toggle" data-open="<%= version_selected.any? ? '1' : '0' %>">
-            <span class="tc-icon-add"<%= ' style="display:none"' unless version_selected.empty? %>><%= sprite_icon('add', '') %></span>
-            <span class="tc-icon-close"<%= ' style="display:none"' if version_selected.empty? %>><%= sprite_icon('close', '') %></span>
-          </a>
+          <button type="button" class="tag-cloud-filter-toggle" data-open="<%= version_selected.any? ? '1' : '0' %>">
+            <%= version_selected.empty? ? '+' : '−' %>
+          </button>
         </td>
       </tr>
 
@@ -79,10 +77,9 @@
           </select>
         </td>
         <td class="tag-cloud-filter-actions">
-          <a href="#" class="tag-cloud-filter-toggle" data-open="<%= tracker_selected.any? ? '1' : '0' %>">
-            <span class="tc-icon-add"<%= ' style="display:none"' unless tracker_selected.empty? %>><%= sprite_icon('add', '') %></span>
-            <span class="tc-icon-close"<%= ' style="display:none"' if tracker_selected.empty? %>><%= sprite_icon('close', '') %></span>
-          </a>
+          <button type="button" class="tag-cloud-filter-toggle" data-open="<%= tracker_selected.any? ? '1' : '0' %>">
+            <%= tracker_selected.empty? ? '+' : '−' %>
+          </button>
         </td>
       </tr>
     </table>

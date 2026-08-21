@@ -187,7 +187,7 @@
   border-color: #e5e7eb;
 }
 
-/* Redmine-like filter table: field | operator | values | icon */
+/* Redmine-like filter table: field | operator | values | [+] */
 .tag-cloud-filters-table {
   border-collapse: collapse;
   width: auto;
@@ -244,34 +244,37 @@
 
 .tag-cloud-filter-actions {
   width: 24px;
-  padding-left: 6px !important;
+  padding-left: 4px !important;
   vertical-align: middle;
 }
 
-/* Toggle: Redmine sprite_icon SVG (add / close) */
+/* Square +/− button like Redmine filter toggles */
 .tag-cloud-filter-toggle {
-  display: inline-block;
-  vertical-align: middle;
-  cursor: pointer;
-  text-decoration: none !important;
-  line-height: 1;
-  border: none;
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
   padding: 0;
   margin: 0;
-}
-
-.tag-cloud-filter-toggle .tc-icon-add,
-.tag-cloud-filter-toggle .tc-icon-close {
-  display: inline;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  background: #fff;
+  color: #555;
+  font-size: 14px;
+  font-weight: normal;
+  font-family: inherit;
   line-height: 1;
+  cursor: pointer;
+  vertical-align: middle;
+  box-sizing: border-box;
+  box-shadow: none;
 }
 
-.tag-cloud-filter-toggle svg {
-  width: 16px;
-  height: 16px;
-  vertical-align: middle;
-  display: inline-block;
+.tag-cloud-filter-toggle:hover {
+  border-color: #999;
+  color: #333;
+  background: #f5f5f5;
 }
 
 /* Visibility radios */
