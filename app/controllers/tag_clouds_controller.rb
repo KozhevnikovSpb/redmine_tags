@@ -77,6 +77,28 @@ class TagCloudsController < ApplicationController
     head :no_content
   end
 
+  # Live preview of tags matching current form filters (JSON).
+  def preview
+    cloud = TagCloud.new(
+      status_filter: Array(params[:status_filter]),
+      version_filter: Array(params[:version_filter]),
+      tracker_filter: Array(params[:tracker_filter]),
+      tag_filter: ActiveModel::Type::Boolean.new.cast(params[:tag_filter]),
+      visible_by_default: true,
+      visibility: 'all',
+      include_subprojects: false
+    )
+    cloud.tag_ids = Array(params[:tag_ids]) if cloud.tag_filter
+
+    tags = TagCloudAggregator.new(cloud, project: @project, user: User.current).tags.to_a
+    render json: {
+      tags: tags.map { |t| { id: t.id, name: t.name, count: t.count.to_i } }
+    }
+  rescue StandardError => e
+    Rails.logger.error("[redmineup_tags] preview project=#{@project&.id}: #{e.class}: #{e.message}")
+    render json: { tags: [], error: e.message }, status: :ok
+  end
+
   private
 
   # Admins can manage tag clouds from the global plugin settings page

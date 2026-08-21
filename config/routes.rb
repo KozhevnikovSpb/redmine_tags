@@ -18,6 +18,7 @@ RedmineApp::Application.routes.draw do
     resources :tag_clouds, only: %i[index new create edit update destroy] do
       collection do
         post :reorder
+        post :preview
       end
       resource :preference,
                only: [],
