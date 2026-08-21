@@ -50,10 +50,10 @@
               <span class="sort-handle tag-cloud-drag-handle">
                 <%= sprite_icon('reorder', '') %>
               </span>
-              <%= link_to sprite_icon('edit', ''),
+              <%= link_to sprite_icon('edit', l(:button_edit)),
                           edit_project_tag_cloud_path(@project, cloud),
                           class: 'icon icon-edit' %>
-              <%= link_to sprite_icon('del', ''),
+              <%= link_to sprite_icon('del', l(:button_delete)),
                           project_tag_cloud_path(@project, cloud),
                           method: :delete,
                           data: { confirm: l(:text_are_you_sure) },
