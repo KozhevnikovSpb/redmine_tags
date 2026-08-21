@@ -88,7 +88,8 @@ $(function () {
         $select.prop('hidden', !open);
         $summary.prop('hidden', open);
         $btn.toggleClass('is-open', open);
-        $btn.text(open ? '−' : '+');
+        $btn.find('.tag-cloud-filter-icon-add').prop('hidden', open);
+        $btn.find('.tag-cloud-filter-icon-close').prop('hidden', !open);
 
         // collapsing clears selection → empty = all
         if (!open) {

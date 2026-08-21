@@ -36,9 +36,10 @@
           </select>
         </td>
         <td class="tag-cloud-filter-actions">
-          <button type="button" class="tag-cloud-filter-toggle<%= ' is-open' unless status_selected.empty? %>">
-            <%= status_selected.empty? ? '+' : '−' %>
-          </button>
+          <a href="#" class="icon-only tag-cloud-filter-toggle<%= ' is-open' unless status_selected.empty? %>">
+            <span class="tag-cloud-filter-icon-add"<%= ' hidden' unless status_selected.empty? %>><%= sprite_icon('add', '') %></span>
+            <span class="tag-cloud-filter-icon-close"<%= ' hidden' if status_selected.empty? %>><%= sprite_icon('close', '') %></span>
+          </a>
         </td>
       </tr>
 
@@ -57,9 +58,10 @@
           </select>
         </td>
         <td class="tag-cloud-filter-actions">
-          <button type="button" class="tag-cloud-filter-toggle<%= ' is-open' unless version_selected.empty? %>">
-            <%= version_selected.empty? ? '+' : '−' %>
-          </button>
+          <a href="#" class="icon-only tag-cloud-filter-toggle<%= ' is-open' unless version_selected.empty? %>">
+            <span class="tag-cloud-filter-icon-add"<%= ' hidden' unless version_selected.empty? %>><%= sprite_icon('add', '') %></span>
+            <span class="tag-cloud-filter-icon-close"<%= ' hidden' if version_selected.empty? %>><%= sprite_icon('close', '') %></span>
+          </a>
         </td>
       </tr>
 
@@ -78,9 +80,10 @@
           </select>
         </td>
         <td class="tag-cloud-filter-actions">
-          <button type="button" class="tag-cloud-filter-toggle<%= ' is-open' unless tracker_selected.empty? %>">
-            <%= tracker_selected.empty? ? '+' : '−' %>
-          </button>
+          <a href="#" class="icon-only tag-cloud-filter-toggle<%= ' is-open' unless tracker_selected.empty? %>">
+            <span class="tag-cloud-filter-icon-add"<%= ' hidden' unless tracker_selected.empty? %>><%= sprite_icon('add', '') %></span>
+            <span class="tag-cloud-filter-icon-close"<%= ' hidden' if tracker_selected.empty? %>><%= sprite_icon('close', '') %></span>
+          </a>
         </td>
       </tr>
     </table>
