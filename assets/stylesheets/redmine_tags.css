@@ -44,6 +44,13 @@
   vertical-align: middle;
 }
 
+/* Empty custom tag cloud in sidebar */
+#sidebar .tag-cloud-empty {
+  margin: 0.35em 0 0.6em;
+  color: #888;
+  font-size: 0.9em;
+}
+
 /* ---- Project settings / Global admin: Tag Clouds table ---- */
 .tag-clouds-settings-table .tag-cloud-col-drag {
   width: 28px;
@@ -200,6 +207,7 @@
 .tag-cloud-filter-header {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   margin-bottom: 6px;
 }

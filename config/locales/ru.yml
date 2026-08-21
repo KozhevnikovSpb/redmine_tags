@@ -90,6 +90,7 @@ ru:
   label_tag_cloud_tag_filter_enable: Ограничить облако выбранными тегами
   text_tag_cloud_tag_filter_hint: Если включено, в облаке показываются только выбранные теги (с учётом фильтров статус/версия/трекер). Если включено и теги не выбраны — облако пустое.
   text_tag_cloud_no_tags_in_project: В задачах этого проекта пока нет тегов.
+  label_tag_cloud_empty: Нет подходящих тегов
 
   # Select visible tag clouds modal
   label_select_visible_tag_clouds: Выбрать видимые облака тегов

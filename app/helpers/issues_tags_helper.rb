@@ -44,7 +44,9 @@ module IssuesTagsHelper
       open_only: open_only
     ).tags.to_a
 
-    return ''.html_safe if tags.empty?
+    if tags.empty?
+      return content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
+    end
 
     render_tags_list(
       tags,
@@ -55,7 +57,7 @@ module IssuesTagsHelper
     )
   rescue StandardError => e
     log_tag_sidebar_error(e, "custom cloud #{cloud.id}")
-    ''.html_safe
+    content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
   end
 
   def render_tags_sidebar
@@ -95,7 +97,6 @@ module IssuesTagsHelper
 
     visible_custom.each do |cloud|
       body = render_tag_cloud(cloud)
-      next if body.blank?
 
       sections << tag_cloud_section(
         custom_tag_cloud_title(cloud),
