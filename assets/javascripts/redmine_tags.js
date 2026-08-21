@@ -88,7 +88,7 @@ $(function () {
         $select.prop('hidden', !open);
         $summary.prop('hidden', open);
         $btn.toggleClass('is-open', open);
-        $btn.text(open ? '−' : '+');
+        $btn.text(open ? '(−)' : '(+)');
 
         // collapsing clears selection → empty = all
         if (!open) {
