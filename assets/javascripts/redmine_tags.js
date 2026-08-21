@@ -87,7 +87,6 @@ $(function () {
     function syncFilterPanel($panel) {
         var filterName = $panel.data('filter');
         var $inputs = $panel.find('.tag-cloud-filter-inputs');
-        var $all = $panel.find('.tag-cloud-filter-all');
         var $count = $panel.find('.tag-cloud-filter-count');
         var count = $panel.find('.tag-cloud-filter-option.is-selected').length;
 
@@ -100,15 +99,11 @@ $(function () {
             }).appendTo($inputs);
         });
 
-        if ($all.length) {
-            $all.prop('hidden', count > 0);
-        }
-
         if ($count.length) {
             if (filterName === 'tag_ids' || filterName === 'role_ids') {
                 $count.text(count === 0 ? '· —' : '(' + count + ')');
             } else if (count === 0) {
-                $count.text('· ' + labelAll());
+                $count.text(labelAll());
             } else {
                 $count.text('(' + count + ')');
             }
