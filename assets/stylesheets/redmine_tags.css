@@ -187,17 +187,14 @@
   border-color: #e5e7eb;
 }
 
-/* Compact vertical filter rows (Redmine-like) */
+/* Compact vertical filter rows — content hugs left, no stretch */
 .tag-cloud-filters-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin-top: 2px;
-  max-width: 520px;
+  display: block;
+  margin-top: 4px;
 }
 
 .tag-cloud-filter-row {
-  padding: 4px 0;
+  padding: 5px 0;
   border-bottom: 1px solid #eee;
 }
 
@@ -209,17 +206,21 @@
   min-width: 0;
 }
 
+/* One tight row: Title  is  all  [+] */
 .tag-cloud-filter-header {
-  display: flex;
+  display: inline-flex;
   flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
   margin: 0;
   min-height: 26px;
+  max-width: 100%;
 }
 
 .tag-cloud-filter-title {
-  flex: 0 0 130px;
+  display: inline-block;
+  width: 120px;
+  flex: 0 0 120px;
   font-weight: bold;
   font-size: 0.92em;
   white-space: nowrap;
@@ -235,14 +236,11 @@
 }
 
 .tag-cloud-filter-count {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   font-weight: normal;
-  color: #6b7280;
+  color: #555;
   font-size: 0.88em;
-  min-width: 0;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .tag-cloud-filter-toggle {
@@ -262,6 +260,7 @@
   font-weight: bold;
   line-height: 1;
   cursor: pointer;
+  vertical-align: middle;
 }
 
 .tag-cloud-filter-toggle:hover {
@@ -277,13 +276,17 @@
 
 .tag-cloud-filter-list {
   list-style: none;
-  margin: 4px 0 2px 0;
+  margin: 4px 0 2px 128px;
   padding: 3px;
-  max-height: 180px;
+  width: 260px;
+  max-width: calc(100% - 128px);
+  max-height: 160px;
+  overflow-x: hidden;
   overflow-y: auto;
   border: 1px solid #d1d5db;
   border-radius: 3px;
   background: #fff;
+  box-sizing: border-box;
 }
 
 .tag-cloud-filter-list[hidden] {
@@ -292,8 +295,10 @@
 
 .tag-cloud-tags-panel .tag-cloud-filter-list,
 .tag-cloud-roles-panel .tag-cloud-filter-list {
+  margin-left: 0;
+  width: 280px;
+  max-width: 100%;
   max-height: 200px;
-  overflow-y: auto;
 }
 
 .tag-cloud-filter-option {
