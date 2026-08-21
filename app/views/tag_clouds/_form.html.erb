@@ -20,10 +20,10 @@
     <%= f.text_field :name, required: true, size: 60 %>
   </p>
 
-  <div class="tag-cloud-filters-with-preview">
-    <fieldset class="tag-cloud-filters-fieldset">
-      <legend><%= l(:label_tag_cloud_filters) %></legend>
+  <fieldset class="tag-cloud-filters-fieldset">
+    <legend><%= l(:label_tag_cloud_filters) %></legend>
 
+    <div class="tag-cloud-filters-with-preview">
       <table class="tag-cloud-filters-table">
         <%# ---- Status ---- %>
         <tr class="tag-cloud-filter-row" data-filter="status_filter">
@@ -88,15 +88,15 @@
           </td>
         </tr>
       </table>
-    </fieldset>
 
-    <div class="tag-cloud-preview-panel">
-      <div class="tag-cloud-preview-title"><%= l(:label_tag_cloud_matching_tags) %></div>
-      <div class="tag-cloud-preview-body" id="tag-cloud-preview-body">
-        <p class="tag-cloud-empty"><%= l(:label_tag_cloud_empty) %></p>
+      <div class="tag-cloud-preview-panel">
+        <div class="tag-cloud-preview-title"><%= l(:label_tag_cloud_matching_tags) %></div>
+        <div class="tag-cloud-preview-body" id="tag-cloud-preview-body">
+          <p class="tag-cloud-empty"><%= l(:label_tag_cloud_empty) %></p>
+        </div>
       </div>
     </div>
-  </div>
+  </fieldset>
 
   <%# ---- Tag whitelist (tag_filter) ---- %>
   <fieldset class="tag-cloud-tag-filter-fieldset">
