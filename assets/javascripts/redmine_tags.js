@@ -79,6 +79,34 @@ $(function () {
         initTagCloudsSettingsSortable();
     });
 
+    // Measure longest option text and set select width to fit
+    function fitSelectWidth($select) {
+        var el = $select[0];
+        if (!el || !el.options || !el.options.length) {
+            return;
+        }
+        var longest = '';
+        for (var i = 0; i < el.options.length; i++) {
+            var t = el.options[i].text || '';
+            if (t.length > longest.length) {
+                longest = t;
+            }
+        }
+        // temporary measure element with same font
+        var $probe = $('<span>').css({
+            position: 'absolute',
+            visibility: 'hidden',
+            whiteSpace: 'nowrap',
+            font: $select.css('font'),
+            fontSize: $select.css('font-size'),
+            fontFamily: $select.css('font-family'),
+            padding: '0 8px'
+        }).text(longest).appendTo('body');
+        var w = Math.max(200, Math.ceil($probe.outerWidth()) + 24);
+        $probe.remove();
+        $select.css('width', w + 'px');
+    }
+
     // ---- Tag cloud form: expand/collapse filter multi-selects ----
     function setFilterOpen($row, open) {
         var $btn = $row.find('.tag-cloud-filter-toggle');
@@ -90,8 +118,10 @@ $(function () {
         $btn.attr('data-open', open ? '1' : '0');
         $btn.text(open ? '−' : '+');
 
-        // collapsing clears selection → empty = all
-        if (!open) {
+        if (open) {
+            fitSelectWidth($select);
+        } else {
+            // collapsing clears selection → empty = all
             $select.val(null);
         }
     }
@@ -103,6 +133,11 @@ $(function () {
         setFilterOpen($row, !open);
     });
 
+    // Fit width for already-open selects on page load
+    $('.tag-cloud-form .tag-cloud-filter-select:not([hidden])').each(function () {
+        fitSelectWidth($(this));
+    });
+
     // tag_filter checkbox shows/hides tag whitelist panel
     $(document).on('change', '#tag_cloud_tag_filter', function () {
         var on = $(this).is(':checked');
@@ -110,6 +145,10 @@ $(function () {
         $panel.prop('hidden', !on);
         if (!on) {
             $panel.find('select').val(null);
+        } else {
+            $panel.find('.tag-cloud-filter-select').each(function () {
+                fitSelectWidth($(this));
+            });
         }
     });
 
@@ -121,6 +160,10 @@ $(function () {
         $panel.prop('hidden', !roles);
         if (!roles) {
             $panel.find('select').val(null);
+        } else {
+            $panel.find('.tag-cloud-filter-select').each(function () {
+                fitSelectWidth($(this));
+            });
         }
     }
 
