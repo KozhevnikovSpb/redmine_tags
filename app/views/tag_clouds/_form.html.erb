@@ -4,13 +4,12 @@
   tracker_selected = Array(@tag_cloud.tracker_filter).map(&:to_i).reject(&:zero?)
   role_selected    = Array(@tag_cloud.role_ids).map(&:to_i).reject(&:zero?)
   tag_selected     = Array(@tag_cloud.tag_ids).map(&:to_i).reject(&:zero?)
-  label_all = l(:label_all)
   visibility = @tag_cloud.visibility.presence || 'all'
   tag_filter_on = @tag_cloud.tag_filter
   filter_op = l(:label_tag_cloud_filter_is)
 %>
 
-<div class="box tag-cloud-form" data-label-all="<%= label_all %>">
+<div class="box tag-cloud-form">
   <p class="tag-cloud-name-row">
     <%= f.label :name, l(:label_tag_cloud_name) %>
     <%= f.text_field :name, required: true, size: 60 %>
@@ -18,77 +17,51 @@
 
   <fieldset class="tag-cloud-filters-fieldset">
     <legend><%= l(:label_tag_cloud_filters) %></legend>
+    <p class="info"><%= l(:text_tag_cloud_filters_empty_means_all) %></p>
 
-    <div class="tag-cloud-filters-list">
-      <%# ---- Status ---- %>
-      <div class="tag-cloud-filter-panel tag-cloud-filter-row" data-filter="status_filter">
-        <div class="tag-cloud-filter-header">
-          <span class="tag-cloud-filter-title"><%= l(:field_status) %></span>
-          <span class="tag-cloud-filter-op"><%= filter_op %></span>
-          <span class="tag-cloud-filter-count"><%= status_selected.empty? ? label_all : "(#{status_selected.size})" %></span>
-          <button type="button" class="tag-cloud-filter-toggle<%= ' is-open' unless status_selected.empty? %>">
-            <%= status_selected.empty? ? '+' : '−' %>
-          </button>
-        </div>
-        <ul class="tag-cloud-filter-list"<%= ' hidden' if status_selected.empty? %>>
-          <% @statuses.each do |s| %>
-            <li class="tag-cloud-filter-option<%= ' is-selected' if status_selected.include?(s.id) %>"
-                data-id="<%= s.id %>"><%= s.name %></li>
-          <% end %>
-        </ul>
-        <div class="tag-cloud-filter-inputs">
-          <% status_selected.each do |id| %>
-            <input type="hidden" name="tag_cloud[status_filter][]" value="<%= id %>">
-          <% end %>
-        </div>
-      </div>
+    <table class="tag-cloud-filters-table">
+      <tr class="tag-cloud-filter-row">
+        <td class="tag-cloud-filter-field"><%= l(:field_status) %></td>
+        <td class="tag-cloud-filter-op"><%= filter_op %></td>
+        <td class="tag-cloud-filter-values">
+          <select name="tag_cloud[status_filter][]" multiple="multiple"
+                  size="<%= [[@statuses.size, 6].min, 3].max %>"
+                  class="tag-cloud-filter-select">
+            <% @statuses.each do |s| %>
+              <option value="<%= s.id %>"<%= ' selected' if status_selected.include?(s.id) %>><%= s.name %></option>
+            <% end %>
+          </select>
+        </td>
+      </tr>
 
-      <%# ---- Version ---- %>
-      <div class="tag-cloud-filter-panel tag-cloud-filter-row" data-filter="version_filter">
-        <div class="tag-cloud-filter-header">
-          <span class="tag-cloud-filter-title"><%= l(:field_fixed_version) %></span>
-          <span class="tag-cloud-filter-op"><%= filter_op %></span>
-          <span class="tag-cloud-filter-count"><%= version_selected.empty? ? label_all : "(#{version_selected.size})" %></span>
-          <button type="button" class="tag-cloud-filter-toggle<%= ' is-open' unless version_selected.empty? %>">
-            <%= version_selected.empty? ? '+' : '−' %>
-          </button>
-        </div>
-        <ul class="tag-cloud-filter-list"<%= ' hidden' if version_selected.empty? %>>
-          <% @versions.each do |v| %>
-            <li class="tag-cloud-filter-option<%= ' is-selected' if version_selected.include?(v.id) %>"
-                data-id="<%= v.id %>"><%= v.name %></li>
-          <% end %>
-        </ul>
-        <div class="tag-cloud-filter-inputs">
-          <% version_selected.each do |id| %>
-            <input type="hidden" name="tag_cloud[version_filter][]" value="<%= id %>">
-          <% end %>
-        </div>
-      </div>
+      <tr class="tag-cloud-filter-row">
+        <td class="tag-cloud-filter-field"><%= l(:field_fixed_version) %></td>
+        <td class="tag-cloud-filter-op"><%= filter_op %></td>
+        <td class="tag-cloud-filter-values">
+          <select name="tag_cloud[version_filter][]" multiple="multiple"
+                  size="<%= [[@versions.size, 6].min, 3].max %>"
+                  class="tag-cloud-filter-select">
+            <% @versions.each do |v| %>
+              <option value="<%= v.id %>"<%= ' selected' if version_selected.include?(v.id) %>><%= v.name %></option>
+            <% end %>
+          </select>
+        </td>
+      </tr>
 
-      <%# ---- Tracker ---- %>
-      <div class="tag-cloud-filter-panel tag-cloud-filter-row" data-filter="tracker_filter">
-        <div class="tag-cloud-filter-header">
-          <span class="tag-cloud-filter-title"><%= l(:field_tracker) %></span>
-          <span class="tag-cloud-filter-op"><%= filter_op %></span>
-          <span class="tag-cloud-filter-count"><%= tracker_selected.empty? ? label_all : "(#{tracker_selected.size})" %></span>
-          <button type="button" class="tag-cloud-filter-toggle<%= ' is-open' unless tracker_selected.empty? %>">
-            <%= tracker_selected.empty? ? '+' : '−' %>
-          </button>
-        </div>
-        <ul class="tag-cloud-filter-list"<%= ' hidden' if tracker_selected.empty? %>>
-          <% @trackers.each do |t| %>
-            <li class="tag-cloud-filter-option<%= ' is-selected' if tracker_selected.include?(t.id) %>"
-                data-id="<%= t.id %>"><%= t.name %></li>
-          <% end %>
-        </ul>
-        <div class="tag-cloud-filter-inputs">
-          <% tracker_selected.each do |id| %>
-            <input type="hidden" name="tag_cloud[tracker_filter][]" value="<%= id %>">
-          <% end %>
-        </div>
-      </div>
-    </div>
+      <tr class="tag-cloud-filter-row">
+        <td class="tag-cloud-filter-field"><%= l(:field_tracker) %></td>
+        <td class="tag-cloud-filter-op"><%= filter_op %></td>
+        <td class="tag-cloud-filter-values">
+          <select name="tag_cloud[tracker_filter][]" multiple="multiple"
+                  size="<%= [[@trackers.size, 6].min, 3].max %>"
+                  class="tag-cloud-filter-select">
+            <% @trackers.each do |t| %>
+              <option value="<%= t.id %>"<%= ' selected' if tracker_selected.include?(t.id) %>><%= t.name %></option>
+            <% end %>
+          </select>
+        </td>
+      </tr>
+    </table>
   </fieldset>
 
   <%# ---- Tag whitelist (tag_filter) ---- %>
@@ -100,30 +73,26 @@
     </p>
     <p class="info tag-cloud-tag-filter-hint"><%= l(:text_tag_cloud_tag_filter_hint) %></p>
 
-    <div class="tag-cloud-filter-panel tag-cloud-tags-panel" data-filter="tag_ids" id="tag-cloud-tags-panel"<%= ' hidden' unless tag_filter_on %>>
-      <div class="tag-cloud-filter-header">
-        <span class="tag-cloud-filter-title">
-          <%= l(:tags) %>
-          <span class="tag-cloud-filter-count" id="tag-cloud-tags-count">
-            <%= tag_selected.empty? ? "· #{l(:label_none)}" : "(#{tag_selected.size})" %>
-          </span>
-        </span>
-      </div>
+    <div id="tag-cloud-tags-panel"<%= ' hidden' unless tag_filter_on %>>
       <% if @available_tags.blank? %>
         <p class="info"><%= l(:text_tag_cloud_no_tags_in_project) %></p>
       <% else %>
-        <ul class="tag-cloud-filter-list is-open">
-          <% @available_tags.each do |t| %>
-            <li class="tag-cloud-filter-option<%= ' is-selected' if tag_selected.include?(t.id) %>"
-                data-id="<%= t.id %>"><%= t.name %></li>
-          <% end %>
-        </ul>
+        <table class="tag-cloud-filters-table">
+          <tr class="tag-cloud-filter-row">
+            <td class="tag-cloud-filter-field"><%= l(:tags) %></td>
+            <td class="tag-cloud-filter-op"><%= filter_op %></td>
+            <td class="tag-cloud-filter-values">
+              <select name="tag_cloud[tag_ids][]" multiple="multiple"
+                      size="<%= [[@available_tags.size, 8].min, 3].max %>"
+                      class="tag-cloud-filter-select">
+                <% @available_tags.each do |t| %>
+                  <option value="<%= t.id %>"<%= ' selected' if tag_selected.include?(t.id) %>><%= t.name %></option>
+                <% end %>
+              </select>
+            </td>
+          </tr>
+        </table>
       <% end %>
-      <div class="tag-cloud-filter-inputs" id="tag-cloud-tag-ids-inputs">
-        <% tag_selected.each do |id| %>
-          <input type="hidden" name="tag_cloud[tag_ids][]" value="<%= id %>">
-        <% end %>
-      </div>
     </div>
   </fieldset>
 
@@ -153,26 +122,22 @@
       </p>
     <% end %>
 
-    <div class="tag-cloud-filter-panel tag-cloud-roles-panel" data-filter="role_ids" id="tag-cloud-roles-panel"<%= ' hidden' unless visibility == 'roles' %>>
-      <div class="tag-cloud-filter-header">
-        <span class="tag-cloud-filter-title">
-          <%= l(:label_role_plural) %>
-          <span class="tag-cloud-filter-count" id="tag-cloud-roles-count">
-            <%= role_selected.empty? ? "· #{l(:label_none)}" : "(#{role_selected.size})" %>
-          </span>
-        </span>
-      </div>
-      <ul class="tag-cloud-filter-list is-open">
-        <% (@roles || []).each do |r| %>
-          <li class="tag-cloud-filter-option<%= ' is-selected' if role_selected.include?(r.id) %>"
-              data-id="<%= r.id %>"><%= r.name %></li>
-        <% end %>
-      </ul>
-      <div class="tag-cloud-filter-inputs" id="tag-cloud-role-ids-inputs">
-        <% role_selected.each do |id| %>
-          <input type="hidden" name="tag_cloud[role_ids][]" value="<%= id %>">
-        <% end %>
-      </div>
+    <div id="tag-cloud-roles-panel"<%= ' hidden' unless visibility == 'roles' %>>
+      <table class="tag-cloud-filters-table">
+        <tr class="tag-cloud-filter-row">
+          <td class="tag-cloud-filter-field"><%= l(:label_role_plural) %></td>
+          <td class="tag-cloud-filter-op"><%= filter_op %></td>
+          <td class="tag-cloud-filter-values">
+            <select name="tag_cloud[role_ids][]" multiple="multiple"
+                    size="<%= [[(@roles || []).size, 6].min, 3].max %>"
+                    class="tag-cloud-filter-select">
+              <% (@roles || []).each do |r| %>
+                <option value="<%= r.id %>"<%= ' selected' if role_selected.include?(r.id) %>><%= r.name %></option>
+              <% end %>
+            </select>
+          </td>
+        </tr>
+      </table>
       <p class="info"><%= l(:text_tag_cloud_roles_required) %></p>
     </div>
   </fieldset>

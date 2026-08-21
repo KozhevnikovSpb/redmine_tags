@@ -187,155 +187,49 @@
   border-color: #e5e7eb;
 }
 
-/* Compact vertical filter rows — content hugs left, no stretch */
-.tag-cloud-filters-list {
-  display: block;
-  margin-top: 4px;
-}
-
-.tag-cloud-filter-row {
-  padding: 5px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.tag-cloud-filter-row:last-child {
-  border-bottom: none;
-}
-
-.tag-cloud-filter-panel {
-  min-width: 0;
-}
-
-/* One tight row: Title  is  all  [+] */
-.tag-cloud-filter-header {
-  display: inline-flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  min-height: 26px;
+/* Redmine-like filter table: field | operator | multi-select */
+.tag-cloud-filters-table {
+  border-collapse: collapse;
+  width: auto;
   max-width: 100%;
+  margin: 4px 0 0 0;
 }
 
-.tag-cloud-filter-title {
-  display: inline-block;
-  width: 120px;
-  flex: 0 0 120px;
+.tag-cloud-filters-table td {
+  padding: 4px 8px 4px 0;
+  vertical-align: top;
+  border: none;
+}
+
+.tag-cloud-filter-field {
   font-weight: bold;
-  font-size: 0.92em;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  width: 120px;
+  padding-top: 6px !important;
 }
 
 .tag-cloud-filter-op {
-  flex: 0 0 auto;
   color: #666;
-  font-size: 0.88em;
   white-space: nowrap;
+  width: 3em;
+  padding-top: 6px !important;
 }
 
-.tag-cloud-filter-count {
-  flex: 0 0 auto;
-  font-weight: normal;
-  color: #555;
-  font-size: 0.88em;
-  white-space: nowrap;
+.tag-cloud-filter-values {
+  padding-right: 0 !important;
 }
 
-.tag-cloud-filter-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 22px;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  margin: 0;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  background: #fff;
-  color: #169;
-  font-size: 15px;
-  font-weight: bold;
-  line-height: 1;
-  cursor: pointer;
-  vertical-align: middle;
-}
-
-.tag-cloud-filter-toggle:hover {
-  background: #e8eef5;
-  border-color: #628db6;
-}
-
-.tag-cloud-filter-toggle.is-open {
-  background: #e8eef5;
-  border-color: #628db6;
-  color: #507aaa;
-}
-
-.tag-cloud-filter-list {
-  list-style: none;
-  margin: 4px 0 2px 128px;
-  padding: 3px;
+.tag-cloud-filter-select {
+  min-width: 200px;
+  max-width: 320px;
   width: 260px;
-  max-width: calc(100% - 128px);
-  max-height: 160px;
-  overflow-x: hidden;
-  overflow-y: auto;
-  border: 1px solid #d1d5db;
-  border-radius: 3px;
-  background: #fff;
   box-sizing: border-box;
-}
-
-.tag-cloud-filter-list[hidden] {
-  display: none !important;
-}
-
-.tag-cloud-tags-panel .tag-cloud-filter-list,
-.tag-cloud-roles-panel .tag-cloud-filter-list {
-  margin-left: 0;
-  width: 280px;
-  max-width: 100%;
-  max-height: 200px;
-}
-
-.tag-cloud-filter-option {
-  margin: 1px 0;
-  padding: 3px 8px;
-  cursor: pointer;
+  font-size: 13px;
   line-height: 1.3;
-  font-size: 0.88em;
-  border-radius: 3px;
-  border: 1px solid transparent;
-  user-select: none;
-  background: transparent;
-  color: #333;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tag-cloud-filter-option:hover {
-  background: #eef2f7;
-  border-color: #d0d8e0;
-}
-
-.tag-cloud-filter-option.is-selected {
-  background: #628db6;
-  border-color: #507aaa;
-  color: #fff;
-  font-weight: 600;
-}
-
-.tag-cloud-filter-option.is-selected:hover {
-  background: #507aaa;
-  border-color: #406090;
-}
-
-.tag-cloud-filter-inputs {
-  display: none;
+  padding: 2px;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  background: #fff;
 }
 
 /* Visibility radios */

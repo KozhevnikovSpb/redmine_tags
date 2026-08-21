@@ -79,66 +79,13 @@ $(function () {
         initTagCloudsSettingsSortable();
     });
 
-    // ---- Tag cloud form: filter lists ----
-    function labelAll() {
-        return $('.tag-cloud-form').data('label-all') || 'all';
-    }
-
-    function syncFilterPanel($panel) {
-        var filterName = $panel.data('filter');
-        var $inputs = $panel.find('.tag-cloud-filter-inputs');
-        var $count = $panel.find('.tag-cloud-filter-count');
-        var count = $panel.find('.tag-cloud-filter-option.is-selected').length;
-
-        $inputs.empty();
-        $panel.find('.tag-cloud-filter-option.is-selected').each(function () {
-            $('<input>', {
-                type: 'hidden',
-                name: 'tag_cloud[' + filterName + '][]',
-                value: $(this).data('id')
-            }).appendTo($inputs);
-        });
-
-        if ($count.length) {
-            if (filterName === 'tag_ids' || filterName === 'role_ids') {
-                $count.text(count === 0 ? '· —' : '(' + count + ')');
-            } else if (count === 0) {
-                $count.text(labelAll());
-            } else {
-                $count.text('(' + count + ')');
-            }
-        }
-    }
-
-    function setToggleState($panel, open) {
-        var $btn = $panel.find('.tag-cloud-filter-toggle');
-        var $list = $panel.find('.tag-cloud-filter-list');
-        $list.prop('hidden', !open);
-        $btn.toggleClass('is-open', open);
-        $btn.text(open ? '−' : '+');
-    }
-
-    $(document).on('click', '.tag-cloud-filter-toggle', function (e) {
-        e.preventDefault();
-        var $panel = $(this).closest('.tag-cloud-filter-panel');
-        var $list = $panel.find('.tag-cloud-filter-list');
-        var open = $list.prop('hidden');
-        setToggleState($panel, open);
-    });
-
-    $(document).on('click', '.tag-cloud-filter-option', function (e) {
-        e.preventDefault();
-        $(this).toggleClass('is-selected');
-        syncFilterPanel($(this).closest('.tag-cloud-filter-panel'));
-    });
-
     // tag_filter checkbox shows/hides tag whitelist panel
     $(document).on('change', '#tag_cloud_tag_filter', function () {
         var on = $(this).is(':checked');
-        $('#tag-cloud-tags-panel').prop('hidden', !on);
+        var $panel = $('#tag-cloud-tags-panel');
+        $panel.prop('hidden', !on);
         if (!on) {
-            $('#tag-cloud-tags-panel .tag-cloud-filter-option.is-selected').removeClass('is-selected');
-            syncFilterPanel($('#tag-cloud-tags-panel'));
+            $panel.find('select').val(null);
         }
     });
 
@@ -146,10 +93,10 @@ $(function () {
     function syncVisibilityPanels() {
         var value = $('input[name="tag_cloud[visibility]"]:checked').val() || 'all';
         var roles = value === 'roles';
-        $('#tag-cloud-roles-panel').prop('hidden', !roles);
+        var $panel = $('#tag-cloud-roles-panel');
+        $panel.prop('hidden', !roles);
         if (!roles) {
-            $('#tag-cloud-roles-panel .tag-cloud-filter-option.is-selected').removeClass('is-selected');
-            syncFilterPanel($('#tag-cloud-roles-panel'));
+            $panel.find('select').val(null);
         }
     }
 
