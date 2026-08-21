@@ -77,7 +77,8 @@ class TagCloudsController < ApplicationController
     head :no_content
   end
 
-  # Live preview of tags matching current form filters (JSON).
+  # Live preview of tags matching current form filters.
+  # Renders the same HTML as the issues sidebar (style from global settings).
   def preview
     cloud = TagCloud.new(
       status_filter: Array(params[:status_filter]),
@@ -90,13 +91,32 @@ class TagCloudsController < ApplicationController
     )
     cloud.tag_ids = Array(params[:tag_ids]) if cloud.tag_filter
 
-    tags = TagCloudAggregator.new(cloud, project: @project, user: User.current).tags.to_a
-    render json: {
-      tags: tags.map { |t| { id: t.id, name: t.name, count: t.count.to_i } }
-    }
+    open_only = RedmineupTags.settings['issues_open_only'].to_i == 1
+    tags = TagCloudAggregator.new(
+      cloud,
+      project: @project,
+      user: User.current,
+      open_only: open_only
+    ).tags.to_a
+
+    if tags.empty?
+      render html: helpers.content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
+      return
+    end
+
+    style = RedmineupTags.tag_list_view
+    style = :cloud if style == :none
+
+    html = helpers.render_tags_list(
+      tags,
+      show_count: RedmineupTags.settings['issues_show_count'].to_i == 1,
+      open_only: open_only,
+      style: style
+    )
+    render html: html
   rescue StandardError => e
     Rails.logger.error("[redmineup_tags] preview project=#{@project&.id}: #{e.class}: #{e.message}")
-    render json: { tags: [], error: e.message }, status: :ok
+    render html: helpers.content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
   end
 
   private
@@ -126,8 +146,6 @@ class TagCloudsController < ApplicationController
   end
 
   # Tags for whitelist UI: only tags used on OPEN issues of THIS project.
-  # - project_id = @project.id (no subprojects, no other projects)
-  # - exclude closed issues via issue_statuses.is_closed
   def project_available_tags
     tags_table = Redmineup::Tag.table_name
     taggings_table = Redmineup::Tagging.table_name
@@ -198,8 +216,6 @@ class TagCloudsController < ApplicationController
     end
   end
 
-  # Prefer returning to the global plugin settings tab when the action
-  # was initiated from Administration → Plugins → redmineup_tags.
   def redirect_after_change(notice)
     if from_plugin_settings?
       redirect_to(

@@ -106,7 +106,7 @@ $(function () {
         $select.css('width', w + 'px');
     }
 
-    // ---- Live preview of matching tags ----
+    // ---- Live preview of matching tags (sidebar-style cloud HTML) ----
     var previewTimer = null;
 
     function selectedValues($select) {
@@ -129,37 +129,23 @@ $(function () {
         };
     }
 
-    function renderPreviewTags(tags) {
-        var $list = $('#tag-cloud-preview-list');
-        var emptyLabel = $('.tag-cloud-form').data('label-empty') || '—';
-        $list.empty();
-        if (!tags || !tags.length) {
-            $list.append($('<li>', { class: 'tag-cloud-preview-empty', text: emptyLabel }));
-            return;
-        }
-        $.each(tags, function (_i, t) {
-            var $li = $('<li>', { class: 'tag-cloud-preview-tag' });
-            $li.append($('<span>', { class: 'tag-cloud-preview-name', text: t.name }));
-            $li.append($('<span>', { class: 'tag-cloud-preview-count', text: '(' + t.count + ')' }));
-            $list.append($li);
-        });
-    }
-
     function refreshPreview() {
         var $form = $('.tag-cloud-form');
         var url = $form.data('preview-url');
-        if (!url || !$form.length) {
+        var $body = $('#tag-cloud-preview-body');
+        if (!url || !$form.length || !$body.length) {
             return;
         }
         $.ajax({
             url: url,
             type: 'POST',
-            dataType: 'json',
+            dataType: 'html',
             data: collectPreviewParams()
-        }).done(function (data) {
-            renderPreviewTags(data && data.tags ? data.tags : []);
+        }).done(function (html) {
+            $body.html(html || '');
         }).fail(function () {
-            renderPreviewTags([]);
+            var emptyLabel = $form.data('label-empty') || '—';
+            $body.html($('<p>', { class: 'tag-cloud-empty', text: emptyLabel }));
         });
     }
 

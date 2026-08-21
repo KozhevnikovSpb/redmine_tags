@@ -45,7 +45,8 @@
 }
 
 /* Empty custom tag cloud in sidebar */
-#sidebar .tag-cloud-empty {
+#sidebar .tag-cloud-empty,
+.tag-cloud-preview-body .tag-cloud-empty {
   margin: 0.35em 0 0.6em;
   color: #888;
   font-size: 0.9em;
@@ -202,9 +203,9 @@
 }
 
 .tag-cloud-preview-panel {
-  flex: 0 1 220px;
+  flex: 1 1 200px;
   min-width: 160px;
-  max-width: 280px;
+  max-width: 360px;
   padding: 10px 12px;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
@@ -218,40 +219,21 @@
   margin: 0 0 8px 0;
 }
 
-.tag-cloud-preview-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-height: 220px;
+.tag-cloud-preview-body {
+  max-height: 260px;
   overflow-y: auto;
 }
 
-.tag-cloud-preview-tag {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 2px 0;
-  font-size: 0.9em;
-  line-height: 1.35;
+/* Same tag cloud markup as sidebar */
+.tag-cloud-preview-body .tags-cloud {
+  margin: 0;
+  padding: 0;
 }
 
-.tag-cloud-preview-name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tag-cloud-preview-count {
-  flex: 0 0 auto;
-  color: #6b7280;
-  font-variant-numeric: tabular-nums;
-}
-
-.tag-cloud-preview-empty {
-  color: #888;
-  font-size: 0.9em;
-  font-style: italic;
+.tag-cloud-preview-body .tags-cloud .tag-label,
+.tag-cloud-preview-body .tags-cloud .tag-label-color {
+  display: inline-block;
+  margin: 2px 3px 2px 0;
 }
 
 /* Redmine-like filter table: field | operator | values | [+] */
