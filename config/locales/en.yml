@@ -55,6 +55,7 @@ en:
   label_tag_cloud_status_filter: Status filter
   label_tag_cloud_version_filter: Version filter
   label_tag_cloud_tracker_filter: Tracker filter
+  label_tag_cloud_filter_is: is
   label_tag_cloud_visible_by_default: Visible by default
   label_tag_cloud_include_subprojects: Subprojects
   label_tag_cloud_show_in_subprojects: Shown in subprojects

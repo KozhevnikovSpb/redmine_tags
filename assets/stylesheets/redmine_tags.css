@@ -187,17 +187,26 @@
   border-color: #e5e7eb;
 }
 
-.tag-cloud-filters-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 8px;
+/* Vertical Redmine-style filter rows */
+.tag-cloud-filters-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 4px;
 }
 
-@media (max-width: 900px) {
-  .tag-cloud-filters-grid {
-    grid-template-columns: 1fr;
-  }
+.tag-cloud-filter-row {
+  padding: 8px 0;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.tag-cloud-filter-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.tag-cloud-filter-row:first-child {
+  padding-top: 4px;
 }
 
 .tag-cloud-filter-panel {
@@ -207,30 +216,41 @@
 .tag-cloud-filter-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+  gap: 10px;
+  margin-bottom: 0;
+  min-height: 28px;
 }
 
 .tag-cloud-filter-title {
+  flex: 0 0 140px;
   font-weight: bold;
   font-size: 0.95em;
 }
 
+.tag-cloud-filter-op {
+  flex: 0 0 auto;
+  color: #666;
+  font-size: 0.9em;
+  min-width: 3em;
+}
+
 .tag-cloud-filter-count {
+  flex: 1 1 auto;
   font-weight: normal;
   color: #6b7280;
   font-size: 0.9em;
-  margin-left: 2px;
+  min-width: 0;
 }
 
 .tag-cloud-filter-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
   width: 22px;
   height: 22px;
   padding: 0;
-  margin: 0;
+  margin: 0 0 0 auto;
   border: 1px solid #ccc;
   border-radius: 3px;
   background: #fff;
@@ -254,7 +274,7 @@
 
 .tag-cloud-filter-list {
   list-style: none;
-  margin: 0;
+  margin: 6px 0 0 0;
   padding: 4px;
   max-height: none;
   overflow: visible;
@@ -307,9 +327,9 @@
 }
 
 .tag-cloud-filter-all {
-  margin: 0;
-  padding: 10px 12px;
-  min-height: 36px;
+  margin: 6px 0 0 0;
+  padding: 8px 12px;
+  min-height: 32px;
   box-sizing: border-box;
   border: 1px dashed #d1d5db;
   border-radius: 4px;

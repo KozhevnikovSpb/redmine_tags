@@ -55,6 +55,7 @@ ru:
   label_tag_cloud_status_filter: Фильтр по статусам
   label_tag_cloud_version_filter: Фильтр по версиям
   label_tag_cloud_tracker_filter: Фильтр по трекерам
+  label_tag_cloud_filter_is: равно
   label_tag_cloud_visible_by_default: Видимо по умолчанию
   label_tag_cloud_include_subprojects: Подпроекты
   label_tag_cloud_show_in_subprojects: Показ в подпроектах
