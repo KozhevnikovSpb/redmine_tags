@@ -87,7 +87,9 @@ $(function () {
 
         $select.prop('hidden', !open);
         $summary.prop('hidden', open);
-        $btn.toggleClass('icon-add', !open).toggleClass('icon-close', open);
+        $btn.attr('data-open', open ? '1' : '0');
+        $btn.find('.tc-icon-add').css('display', open ? 'none' : 'inline');
+        $btn.find('.tc-icon-close').css('display', open ? 'inline' : 'none');
 
         // collapsing clears selection → empty = all
         if (!open) {
@@ -98,7 +100,7 @@ $(function () {
     $(document).on('click', '.tag-cloud-filter-toggle', function (e) {
         e.preventDefault();
         var $row = $(this).closest('.tag-cloud-filter-row');
-        var open = !$row.find('.tag-cloud-filter-select').prop('hidden');
+        var open = $(this).attr('data-open') === '1';
         setFilterOpen($row, !open);
     });
 

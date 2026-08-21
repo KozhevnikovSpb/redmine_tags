@@ -244,34 +244,34 @@
 
 .tag-cloud-filter-actions {
   width: 24px;
-  padding-left: 4px !important;
+  padding-left: 6px !important;
   vertical-align: middle;
 }
 
-/* Native Redmine sprite icons (add / close) — same as issue filters */
+/* Toggle: Redmine sprite_icon SVG (add / close) */
 .tag-cloud-filter-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   vertical-align: middle;
   cursor: pointer;
   text-decoration: none !important;
+  line-height: 1;
   border: none;
   background: transparent;
   padding: 0;
   margin: 0;
-  line-height: 1;
 }
 
-.tag-cloud-filter-toggle .tag-cloud-filter-icon-add[hidden],
-.tag-cloud-filter-toggle .tag-cloud-filter-icon-close[hidden] {
-  display: none !important;
+.tag-cloud-filter-toggle .tc-icon-add,
+.tag-cloud-filter-toggle .tc-icon-close {
+  display: inline;
+  line-height: 1;
 }
 
 .tag-cloud-filter-toggle svg {
   width: 16px;
   height: 16px;
   vertical-align: middle;
+  display: inline-block;
 }
 
 /* Visibility radios */
