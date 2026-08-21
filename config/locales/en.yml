@@ -92,6 +92,7 @@ en:
   text_tag_cloud_tag_filter_hint: When enabled, only the selected tags appear in this cloud (still filtered by status/version/tracker). If enabled with no tags selected, the cloud is empty.
   text_tag_cloud_no_tags_in_project: No tags found on issues in this project yet.
   label_tag_cloud_empty: No matching tags
+  label_tag_cloud_matching_tags: Matching tags
 
   # Select visible tag clouds modal
   label_select_visible_tag_clouds: Select visible tag clouds
