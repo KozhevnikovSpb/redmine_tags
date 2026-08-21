@@ -66,7 +66,8 @@ class TagCloudAggregator
     empty_tags
   end
 
-  # Distinct issues matching cloud filters (status / tracker / version / open_only).
+  # Distinct tagged issues matching cloud filters (status / tracker / version / open_only).
+  # Always counts only issues that have at least one relevant tagging.
   # When tag_filter is enabled — only issues that have at least one whitelist tag.
   # Read-only helper for the Select visible tag clouds modal.
   def issue_count
@@ -79,15 +80,15 @@ class TagCloudAggregator
     issue_ids = matching_issue_ids
     return 0 if issue_ids.empty?
 
-    return issue_ids.size unless @tag_cloud.tag_filter
+    taggings = Redmineup::Tagging
+               .where(taggable_type: Issue.name)
+               .where(taggable_id: issue_ids)
 
-    taggings_table = Redmineup::Tagging.table_name
-    Redmineup::Tagging
-      .where(taggable_type: Issue.name)
-      .where(taggable_id: issue_ids)
-      .where(tag_id: @tag_cloud.tag_ids)
-      .distinct
-      .count(:taggable_id)
+    if @tag_cloud.tag_filter
+      taggings = taggings.where(tag_id: @tag_cloud.tag_ids)
+    end
+
+    taggings.distinct.count(:taggable_id)
   rescue StandardError => e
     Rails.logger.error(
       "[redmineup_tags] TagCloudAggregator#issue_count cloud=#{@tag_cloud&.id} " \
