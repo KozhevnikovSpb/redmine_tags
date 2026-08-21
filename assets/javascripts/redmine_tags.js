@@ -92,7 +92,6 @@ $(function () {
                 longest = t;
             }
         }
-        // temporary measure element with same font
         var $probe = $('<span>').css({
             position: 'absolute',
             visibility: 'hidden',
@@ -105,6 +104,70 @@ $(function () {
         var w = Math.max(200, Math.ceil($probe.outerWidth()) + 24);
         $probe.remove();
         $select.css('width', w + 'px');
+    }
+
+    // ---- Live preview of matching tags ----
+    var previewTimer = null;
+
+    function selectedValues($select) {
+        if (!$select.length || $select.prop('hidden')) {
+            return [];
+        }
+        return $select.val() || [];
+    }
+
+    function collectPreviewParams() {
+        var $form = $('.tag-cloud-form');
+        var tagFilterOn = $('#tag_cloud_tag_filter').is(':checked');
+        return {
+            status_filter: selectedValues($form.find('select[name="tag_cloud[status_filter][]"]')),
+            version_filter: selectedValues($form.find('select[name="tag_cloud[version_filter][]"]')),
+            tracker_filter: selectedValues($form.find('select[name="tag_cloud[tracker_filter][]"]')),
+            tag_filter: tagFilterOn ? '1' : '0',
+            tag_ids: tagFilterOn ? ($form.find('select[name="tag_cloud[tag_ids][]"]').val() || []) : [],
+            authenticity_token: $('meta[name="csrf-token"]').attr('content')
+        };
+    }
+
+    function renderPreviewTags(tags) {
+        var $list = $('#tag-cloud-preview-list');
+        var emptyLabel = $('.tag-cloud-form').data('label-empty') || '—';
+        $list.empty();
+        if (!tags || !tags.length) {
+            $list.append($('<li>', { class: 'tag-cloud-preview-empty', text: emptyLabel }));
+            return;
+        }
+        $.each(tags, function (_i, t) {
+            var $li = $('<li>', { class: 'tag-cloud-preview-tag' });
+            $li.append($('<span>', { class: 'tag-cloud-preview-name', text: t.name }));
+            $li.append($('<span>', { class: 'tag-cloud-preview-count', text: '(' + t.count + ')' }));
+            $list.append($li);
+        });
+    }
+
+    function refreshPreview() {
+        var $form = $('.tag-cloud-form');
+        var url = $form.data('preview-url');
+        if (!url || !$form.length) {
+            return;
+        }
+        $.ajax({
+            url: url,
+            type: 'POST',
+            dataType: 'json',
+            data: collectPreviewParams()
+        }).done(function (data) {
+            renderPreviewTags(data && data.tags ? data.tags : []);
+        }).fail(function () {
+            renderPreviewTags([]);
+        });
+    }
+
+    function schedulePreview() {
+        if (previewTimer) {
+            clearTimeout(previewTimer);
+        }
+        previewTimer = setTimeout(refreshPreview, 250);
     }
 
     // ---- Tag cloud form: expand/collapse filter multi-selects ----
@@ -121,8 +184,8 @@ $(function () {
         if (open) {
             fitSelectWidth($select);
         } else {
-            // collapsing clears selection → empty = all
             $select.val(null);
+            schedulePreview();
         }
     }
 
@@ -131,6 +194,10 @@ $(function () {
         var $row = $(this).closest('.tag-cloud-filter-row');
         var open = $(this).attr('data-open') === '1';
         setFilterOpen($row, !open);
+    });
+
+    $(document).on('change', '.tag-cloud-form select.tag-cloud-filter-select', function () {
+        schedulePreview();
     });
 
     // Fit width for already-open selects on page load
@@ -150,6 +217,7 @@ $(function () {
                 fitSelectWidth($(this));
             });
         }
+        schedulePreview();
     });
 
     // visibility radios show/hide roles panel
@@ -177,5 +245,6 @@ $(function () {
         if (!$('#tag_cloud_tag_filter').is(':checked')) {
             $('#tag-cloud-tags-panel').prop('hidden', true);
         }
+        refreshPreview();
     }
 });
