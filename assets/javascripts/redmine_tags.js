@@ -20,51 +20,59 @@ $(function () {
     });
 
     function initTagCloudsSettingsSortable() {
-        var $tbody = $('#tag-clouds-sortable-settings');
-        if (!$tbody.length || typeof $.fn.sortable !== 'function') {
-            return;
-        }
-        if ($tbody.data('ui-sortable')) {
-            return;
-        }
-
-        var reorderUrl = $tbody.data('reorder-url');
-
-        $tbody.sortable({
-            handle: '.tag-cloud-drag-handle',
-            axis: 'y',
-            items: 'tr.tag-cloud-local',
-            cancel: 'tr.system, tr.inherited, a, button',
-            helper: function (e, tr) {
-                var $originals = tr.children();
-                var $helper = tr.clone();
-                $helper.children().each(function (index) {
-                    $(this).width($originals.eq(index).outerWidth());
-                });
-                return $helper;
-            },
-            placeholder: 'tag-cloud-settings-placeholder',
-            tolerance: 'pointer',
-            update: function () {
-                var ids = $tbody.find('tr.tag-cloud-local[data-id]').map(function () {
-                    var id = $(this).data('id');
-                    return id ? id : null;
-                }).get().filter(function (id) { return id !== null; });
-
-                if (!reorderUrl || !ids.length) {
-                    return;
-                }
-
-                $.ajax({
-                    url: reorderUrl,
-                    type: 'POST',
-                    dataType: 'text',
-                    data: {
-                        tag_cloud_ids: ids,
-                        authenticity_token: $('meta[name="csrf-token"]').attr('content')
-                    }
-                });
+        $('.tag-clouds-sortable-settings').each(function () {
+            var $tbody = $(this);
+            if (!$tbody.length || typeof $.fn.sortable !== 'function') {
+                return;
             }
+            if ($tbody.data('ui-sortable')) {
+                return;
+            }
+
+            var reorderUrl = $tbody.data('reorder-url');
+            if (!reorderUrl) {
+                return;
+            }
+
+            var inherited = String($tbody.data('inherited') || '') === '1';
+
+            $tbody.sortable({
+                handle: '.tag-cloud-drag-handle',
+                axis: 'y',
+                items: 'tr[data-id]',
+                cancel: 'a, button',
+                helper: function (e, tr) {
+                    var $originals = tr.children();
+                    var $helper = tr.clone();
+                    $helper.children().each(function (index) {
+                        $(this).width($originals.eq(index).outerWidth());
+                    });
+                    return $helper;
+                },
+                placeholder: 'tag-cloud-settings-placeholder',
+                tolerance: 'pointer',
+                update: function () {
+                    var ids = $tbody.find('tr[data-id]').map(function () {
+                        var id = $(this).data('id');
+                        return id ? id : null;
+                    }).get().filter(function (id) { return id !== null && id !== 'system'; });
+
+                    if (!ids.length) {
+                        return;
+                    }
+
+                    $.ajax({
+                        url: reorderUrl,
+                        type: 'POST',
+                        dataType: 'text',
+                        data: {
+                            tag_cloud_ids: ids,
+                            inherited: inherited ? '1' : '0',
+                            authenticity_token: $('meta[name="csrf-token"]').attr('content')
+                        }
+                    });
+                }
+            });
         });
     }
 
