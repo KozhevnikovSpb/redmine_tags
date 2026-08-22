@@ -47,6 +47,7 @@ class TagCloud < ActiveRecord::Base
   validate :name_unique_within_projects
   validate :status_filter_exists
   validate :roles_present_when_visibility_roles
+  validate :owner_visibility_only_for_author
 
   before_validation :normalize_operators
   before_validation :normalize_filters
@@ -111,6 +112,18 @@ class TagCloud < ActiveRecord::Base
     projects.first
   end
 
+  def visibility_author
+    created_by || owner
+  end
+
+  def can_set_owner_visibility?(user = User.current)
+    return false unless user&.logged?
+    return true unless persisted?
+    return true if created_by_id.blank?
+
+    created_by_id == user.id
+  end
+
   def visible_for?(user, project: nil)
     return false if user.nil?
 
@@ -123,7 +136,8 @@ class TagCloud < ActiveRecord::Base
     when 'all'
       visible_by_default?
     when 'owner'
-      user.logged? && owner_id.present? && owner_id == user.id
+      author_id = created_by_id.presence || owner_id
+      user.logged? && author_id.present? && author_id == user.id
     when 'roles'
       return false unless user.logged? && project
 
@@ -265,10 +279,17 @@ class TagCloud < ActiveRecord::Base
   end
 
   def normalize_owner_for_visibility
-    case visibility
-    when 'owner'
-      self.owner_id ||= User.current&.id
-    end
+    return unless visibility == 'owner'
+
+    self.owner_id = created_by_id.presence || User.current&.id
+  end
+
+  def owner_visibility_only_for_author
+    return unless visibility == 'owner'
+    return if can_set_owner_visibility?(User.current)
+    return unless will_save_change_to_visibility?
+
+    errors.add(:visibility, :invalid)
   end
 
   def name_unique_within_projects
