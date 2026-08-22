@@ -10,6 +10,7 @@ module RedmineupTags
   # Usage:
   #   RedmineupTags::SchemaRepair.run!(verbose: true)           # soft ensure + reshape
   #   RedmineupTags::SchemaRepair.force_rebuild!(verbose: true) # wipe clouds, keep tags
+  #   RedmineupTags::SchemaRepair.ensure_operators!             # add operator columns only
   class SchemaRepair
     OUR_TABLES = %w[
       tag_cloud_preferences
@@ -32,6 +33,10 @@ module RedmineupTags
 
       def status!(verbose: true)
         new(verbose: verbose).report_status
+      end
+
+      def ensure_operators!(verbose: false)
+        new(verbose: verbose).ensure_operator_columns!
       end
     end
 
@@ -65,6 +70,23 @@ module RedmineupTags
       report_status
       log '=== FORCE REBUILD finished ==='
       true
+    end
+
+    def ensure_operator_columns!
+      return false unless table?(:tag_clouds)
+
+      added = false
+      %w[status_operator version_operator tracker_operator].each do |col|
+        next if column?(:tag_clouds, col)
+
+        log "ADD COLUMN tag_clouds.#{col}"
+        @connection.add_column :tag_clouds, col, :string, default: '*', null: false
+        added = true
+      end
+      added
+    rescue StandardError => e
+      log "WARNING: ensure_operator_columns: #{e.class}: #{e.message}"
+      false
     end
 
     def report_status
@@ -166,17 +188,6 @@ module RedmineupTags
         force_rebuild!
       end
       ensure_operator_columns!
-    end
-
-    def ensure_operator_columns!
-      return unless table?(:tag_clouds)
-
-      %w[status_operator version_operator tracker_operator].each do |col|
-        next if column?(:tag_clouds, col)
-
-        log "ADD COLUMN tag_clouds.#{col}"
-        @connection.add_column :tag_clouds, col, :string, default: '*', null: false
-      end
     end
 
     def create_target_schema!
