@@ -70,7 +70,6 @@ class TagCloudTest < ActiveSupport::TestCase
     assert cloud.save, cloud.errors.full_messages.inspect
     cloud.tag_cloud_projects.create!(project: @project, position: 0)
 
-    # users_002 is typically a member with a role on project 1 in fixtures
     member_roles = @user.roles_for_project(@project).map(&:id)
     if member_roles.include?(role.id)
       assert cloud.visible_for?(@user, project: @project)
@@ -78,7 +77,6 @@ class TagCloudTest < ActiveSupport::TestCase
       assert_not cloud.visible_for?(@user, project: @project)
     end
 
-    # Non-member anonymous
     assert_not cloud.visible_for?(User.anonymous, project: @project)
   end
 
@@ -98,8 +96,16 @@ class TagCloudTest < ActiveSupport::TestCase
   test 'tag_filter association stores tag ids' do
     cloud = TagCloud.create!(name: 'With tags', visibility: 'all', tag_filter: true)
     cloud.tag_cloud_projects.create!(project: @project, position: 0)
-    # Without real tags in fixtures for Redmineup::Tag, just ensure empty whitelist works
     assert_equal true, cloud.tag_filter
     assert_equal [], cloud.tag_ids
+  end
+
+  test 'operators match Redmine 7 Issue Query filter types' do
+    assert_equal %w[o = ! ev !ev cf c *], TagCloud::STATUS_OPERATORS
+    assert_equal %w[= ! ev !ev cf !* *], TagCloud::VERSION_OPERATORS
+    assert_equal %w[= ! ev !ev cf *], TagCloud::TRACKER_OPERATORS
+    %w[= ! ev !ev cf].each do |op|
+      assert_includes TagCloud::VALUE_OPERATORS, op
+    end
   end
 end

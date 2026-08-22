@@ -40,7 +40,6 @@ module RedmineupTags
       @connection = ActiveRecord::Base.connection
     end
 
-    # Soft path: ensure missing pieces, migrate legacy if present, drop legacy cols
     def run!
       log '=== SchemaRepair (soft) start ==='
       ensure_tags_tables
@@ -55,7 +54,6 @@ module RedmineupTags
       true
     end
 
-    # Hard path for V.0.0.2-beta: wipe our tables, recreate target, keep tags
     def force_rebuild!
       log '=== SchemaRepair FORCE REBUILD (V.0.0.2-beta) ==='
       log 'Preserved: tags, taggings'
@@ -77,7 +75,7 @@ module RedmineupTags
       if table?(:tag_clouds)
         cols = @connection.columns(:tag_clouds).map(&:name)
         legacy = (%w[project_id position is_system] & cols)
-        needed = (%w[tag_filter include_subprojects owner_id visibility name visible_by_default] - cols)
+        needed = (%w[tag_filter include_subprojects owner_id visibility name visible_by_default status_operator version_operator tracker_operator] - cols)
         log "  tag_clouds columns: #{cols.join(', ')}"
         log "  tag_clouds legacy left: #{legacy.empty? ? 'none' : legacy.join(', ')}"
         log "  tag_clouds missing: #{needed.empty? ? 'none' : needed.join(', ')}"
@@ -153,7 +151,6 @@ module RedmineupTags
     end
 
     def drop_our_tables!
-      # Order: children first (FK)
       OUR_TABLES.each do |t|
         next unless table?(t)
 
@@ -164,10 +161,21 @@ module RedmineupTags
 
     def ensure_target_schema
       create_target_schema! unless table?(:tag_clouds) && table?(:tag_cloud_projects)
-      # If tables exist but columns missing — still force for beta consistency
       if table?(:tag_clouds) && (!column?(:tag_clouds, :tag_filter) || !column?(:tag_clouds, :visibility))
         log 'Target columns incomplete → force rebuild'
         force_rebuild!
+      end
+      ensure_operator_columns!
+    end
+
+    def ensure_operator_columns!
+      return unless table?(:tag_clouds)
+
+      %w[status_operator version_operator tracker_operator].each do |col|
+        next if column?(:tag_clouds, col)
+
+        log "ADD COLUMN tag_clouds.#{col}"
+        @connection.add_column :tag_clouds, col, :string, default: '*', null: false
       end
     end
 
@@ -180,6 +188,9 @@ module RedmineupTags
           t.text    :status_filter
           t.text    :version_filter
           t.text    :tracker_filter
+          t.string  :status_operator, null: false, default: '*'
+          t.string  :version_operator, null: false, default: '*'
+          t.string  :tracker_operator, null: false, default: '*'
           t.boolean :tag_filter, null: false, default: false
           t.boolean :include_subprojects, null: false, default: false
           t.boolean :visible_by_default, null: false, default: true
@@ -245,6 +256,8 @@ module RedmineupTags
         add_fk_safe :tag_cloud_preferences, :tag_clouds, column: :tag_cloud_id, on_delete: :cascade
         add_fk_safe :tag_cloud_preferences, :users, column: :user_id, on_delete: :cascade
       end
+
+      ensure_operator_columns!
     end
 
     def add_fk_safe(from_table, to_table, column:, on_delete: :cascade)
