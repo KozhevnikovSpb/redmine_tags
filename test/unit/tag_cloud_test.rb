@@ -91,6 +91,7 @@ class TagCloudTest < ActiveSupport::TestCase
       name: 'Owner cloud',
       visibility: 'owner',
       owner: @admin,
+      created_by: @admin,
       visible_by_default: true
     )
     cloud.tag_cloud_projects.create!(project: @project, position: 0)
@@ -127,6 +128,23 @@ class TagCloudTest < ActiveSupport::TestCase
     cloud = TagCloud.new(name: 'Auto owner', visibility: 'owner')
     cloud.valid?
     assert_equal @admin.id, cloud.owner_id
+  end
+
+  test 'owner follows created_by not current user' do
+    User.stubs(:current).returns(@user)
+    cloud = TagCloud.new(name: 'Author owner', visibility: 'owner', created_by: @admin)
+    cloud.valid?
+    assert_equal @admin.id, cloud.owner_id
+    assert_equal @admin, cloud.visibility_author
+  end
+
+  test 'non author cannot switch visibility to owner' do
+    User.stubs(:current).returns(@admin)
+    cloud = TagCloud.create!(name: 'Admin cloud', visibility: 'all', created_by: @admin)
+    User.stubs(:current).returns(@user)
+    cloud.visibility = 'owner'
+    assert_not cloud.valid?
+    assert cloud.errors[:visibility].present?
   end
 
   test 'tag_filter association stores tag ids' do
