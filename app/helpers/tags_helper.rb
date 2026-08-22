@@ -8,7 +8,7 @@ module TagsHelper
       if options[:use_search]
         link_to(tag, controller: 'search', action: 'index', id: @project, q: tag.name, wiki_pages: true, issues: true)
       else
-        link_to_issue_filter(tag.name, filters)
+        link_to_issue_filter(tag, filters)
       end
     content << content_tag('span', "(#{tag.count})", class: 'tag-count') if options[:show_count]
     style = RedmineupTags.use_colors? ? { class: 'tag-label-color', style: "background-color: #{tag.color}" } : { class: 'tag-label' }
@@ -116,7 +116,6 @@ module TagsHelper
     { set_filter: 1, f: f, op: op, v: v }
   end
 
-  # Labels match Redmine core Issue List (label_equals = "is" / "равно").
   def tag_cloud_status_operator_options
     [
       [l(:label_open_issues), 'o'],
@@ -205,9 +204,9 @@ module TagsHelper
 
     case tag_cloud.visibility
     when 'owner'
-      owner_name = tag_cloud.owner&.name
-      if owner_name.present?
-        "#{l(:label_tag_cloud_visibility_owner)} (#{owner_name})"
+      author_name = tag_cloud.visibility_author&.name
+      if author_name.present?
+        "#{l(:label_tag_cloud_visibility_owner)} (#{author_name})"
       else
         l(:label_tag_cloud_visibility_owner)
       end
