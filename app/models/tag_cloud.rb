@@ -6,10 +6,13 @@
 class TagCloud < ActiveRecord::Base
   VISIBILITIES = %w[all owner roles].freeze
 
-  # Same operator codes as Redmine Issue Query
-  STATUS_OPERATORS  = %w[o = ! c * ev !ev cf].freeze
-  VERSION_OPERATORS = %w[= ! * !*].freeze
-  TRACKER_OPERATORS = %w[= ! *].freeze
+  # Same operator codes as Redmine 7 Issue Query
+  # status_id: list_status
+  # tracker_id: list_with_history (+ * = no extra filter, row always visible)
+  # fixed_version_id: list_optional_with_history (+ * = no extra filter)
+  STATUS_OPERATORS  = %w[o = ! ev !ev cf c *].freeze
+  VERSION_OPERATORS = %w[= ! ev !ev cf !* *].freeze
+  TRACKER_OPERATORS = %w[= ! ev !ev cf *].freeze
   VALUE_OPERATORS   = %w[= ! ev !ev cf].freeze
 
   has_many :tag_cloud_projects, dependent: :destroy, inverse_of: :tag_cloud
