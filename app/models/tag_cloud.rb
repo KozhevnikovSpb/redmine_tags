@@ -39,9 +39,9 @@ class TagCloud < ActiveRecord::Base
   validates :tag_filter, inclusion: { in: [true, false] }
   validates :include_subprojects, inclusion: { in: [true, false] }
   validates :visible_by_default, inclusion: { in: [true, false] }
-  validates :status_operator, inclusion: { in: STATUS_OPERATORS }, if: :operators_assignable?
-  validates :version_operator, inclusion: { in: VERSION_OPERATORS }, if: :operators_assignable?
-  validates :tracker_operator, inclusion: { in: TRACKER_OPERATORS }, if: :operators_assignable?
+  validates :status_operator, inclusion: { in: STATUS_OPERATORS }, if: :operator_columns?
+  validates :version_operator, inclusion: { in: VERSION_OPERATORS }, if: :operator_columns?
+  validates :tracker_operator, inclusion: { in: TRACKER_OPERATORS }, if: :operator_columns?
 
   validate :name_unique_within_projects
   validate :status_filter_exists
@@ -60,6 +60,18 @@ class TagCloud < ActiveRecord::Base
   def self.operator_columns?
     table_exists? && column_names.include?('status_operator')
   rescue StandardError
+    false
+  end
+
+  def self.ensure_operator_schema!
+    return true if operator_columns?
+    return false unless defined?(RedmineupTags::SchemaRepair)
+
+    RedmineupTags::SchemaRepair.ensure_operators!(verbose: false)
+    reset_column_information
+    operator_columns?
+  rescue StandardError => e
+    Rails.logger.warn("[redmineup_tags] ensure_operator_schema: #{e.class}: #{e.message}") if defined?(Rails) && Rails.logger
     false
   end
 
@@ -208,20 +220,12 @@ class TagCloud < ActiveRecord::Base
     self.class.operator_columns?
   end
 
-  def operators_assignable?
-    operator_columns? || respond_to?(:status_operator)
-  end
-
   private
 
   def read_filter_operator(name)
-    raw =
-      if operator_columns?
-        self[name]
-      elsif instance_variable_defined?("@#{name}")
-        instance_variable_get("@#{name}")
-      end
-    raw.to_s.presence || '*'
+    return '*' unless operator_columns?
+
+    self[name].to_s.presence || '*'
   rescue StandardError
     '*'
   end
@@ -232,11 +236,11 @@ class TagCloud < ActiveRecord::Base
   end
 
   def normalize_operators
-    return unless operators_assignable?
+    return unless operator_columns?
 
-    self.status_operator = normalized_status_operator if respond_to?(:status_operator=)
-    self.version_operator = normalized_version_operator if respond_to?(:version_operator=)
-    self.tracker_operator = normalized_tracker_operator if respond_to?(:tracker_operator=)
+    self.status_operator = normalized_status_operator
+    self.version_operator = normalized_version_operator
+    self.tracker_operator = normalized_tracker_operator
   rescue StandardError
     nil
   end
@@ -287,9 +291,4 @@ class TagCloud < ActiveRecord::Base
 
     errors.add(:roles, :blank)
   end
-end
-
-# In-memory operators when migrate 002 is not applied yet (preview / new form).
-unless TagCloud.operator_columns?
-  TagCloud.attr_accessor :status_operator, :version_operator, :tracker_operator
 end
