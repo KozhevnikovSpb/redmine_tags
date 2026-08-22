@@ -39,9 +39,9 @@ class TagCloud < ActiveRecord::Base
   validates :tag_filter, inclusion: { in: [true, false] }
   validates :include_subprojects, inclusion: { in: [true, false] }
   validates :visible_by_default, inclusion: { in: [true, false] }
-  validates :status_operator, inclusion: { in: STATUS_OPERATORS }, if: :operator_columns?
-  validates :version_operator, inclusion: { in: VERSION_OPERATORS }, if: :operator_columns?
-  validates :tracker_operator, inclusion: { in: TRACKER_OPERATORS }, if: :operator_columns?
+  validates :status_operator, inclusion: { in: STATUS_OPERATORS }, if: :operators_assignable?
+  validates :version_operator, inclusion: { in: VERSION_OPERATORS }, if: :operators_assignable?
+  validates :tracker_operator, inclusion: { in: TRACKER_OPERATORS }, if: :operators_assignable?
 
   validate :name_unique_within_projects
   validate :status_filter_exists
@@ -58,7 +58,9 @@ class TagCloud < ActiveRecord::Base
   }
 
   def self.operator_columns?
-    column_names.include?('status_operator')
+    table_exists? && column_names.include?('status_operator')
+  rescue StandardError
+    false
   end
 
   def self.for_sidebar(project)
@@ -206,12 +208,20 @@ class TagCloud < ActiveRecord::Base
     self.class.operator_columns?
   end
 
+  def operators_assignable?
+    operator_columns? || respond_to?(:status_operator)
+  end
+
   private
 
   def read_filter_operator(name)
-    return '*' unless operator_columns?
-
-    self[name].to_s.presence || '*'
+    raw =
+      if operator_columns?
+        self[name]
+      elsif instance_variable_defined?("@#{name}")
+        instance_variable_get("@#{name}")
+      end
+    raw.to_s.presence || '*'
   rescue StandardError
     '*'
   end
@@ -222,15 +232,13 @@ class TagCloud < ActiveRecord::Base
   end
 
   def normalize_operators
-    return unless operator_columns?
+    return unless operators_assignable?
 
-    self.status_operator = normalized_status_operator
-    self.version_operator = normalized_version_operator
-    self.tracker_operator = normalized_tracker_operator
+    self.status_operator = normalized_status_operator if respond_to?(:status_operator=)
+    self.version_operator = normalized_version_operator if respond_to?(:version_operator=)
+    self.tracker_operator = normalized_tracker_operator if respond_to?(:tracker_operator=)
   rescue StandardError
-    self.status_operator = '*' if has_attribute?(:status_operator) && status_operator.blank?
-    self.version_operator = '*' if has_attribute?(:version_operator) && version_operator.blank?
-    self.tracker_operator = '*' if has_attribute?(:tracker_operator) && tracker_operator.blank?
+    nil
   end
 
   def normalize_filters
@@ -279,4 +287,9 @@ class TagCloud < ActiveRecord::Base
 
     errors.add(:roles, :blank)
   end
+end
+
+# In-memory operators when migrate 002 is not applied yet (preview / new form).
+unless TagCloud.operator_columns?
+  TagCloud.attr_accessor :status_operator, :version_operator, :tracker_operator
 end

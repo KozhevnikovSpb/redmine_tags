@@ -26,14 +26,14 @@ Redmine::Plugin.register :redmineup_tags do
   }, partial: 'tags/settings'
 
   # All tag/cloud permissions under Issue tracking (same module as issues).
-  # manage_tag_clouds: project settings CRUD + reorder (require membership).
+  # manage_tag_clouds: project settings CRUD + reorder + live preview (require membership).
   # select_tag_clouds: personal sidebar visibility/order only.
   # Admin can manage any cloud from plugin settings even without project membership.
   project_module :issue_tracking do
     permission :create_tags, {}
     permission :edit_tags, {}
     permission :manage_tag_clouds, {
-      tag_clouds: %i[index new create edit update destroy reorder]
+      tag_clouds: %i[index new create edit update destroy reorder preview]
     }, require: :member
     permission :select_tag_clouds, {
       tag_cloud_preferences: %i[toggle edit update]

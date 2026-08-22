@@ -13,14 +13,14 @@ class TagCloudsController < ApplicationController
   end
 
   def new
-    @tag_cloud = TagCloud.new(
+    @tag_cloud = build_preview_cloud(
+      status_operator: '*',
+      version_operator: '*',
+      tracker_operator: '*',
       visible_by_default: true,
       visibility: 'all',
       tag_filter: false,
-      include_subprojects: false,
-      status_operator: '*',
-      version_operator: '*',
-      tracker_operator: '*'
+      include_subprojects: false
     )
     load_filter_options
   end
@@ -81,7 +81,7 @@ class TagCloudsController < ApplicationController
   end
 
   def preview
-    cloud = TagCloud.new(
+    cloud = build_preview_cloud(
       status_operator: params[:status_operator].presence || '*',
       version_operator: params[:version_operator].presence || '*',
       tracker_operator: params[:tracker_operator].presence || '*',
@@ -91,7 +91,7 @@ class TagCloudsController < ApplicationController
       tag_filter: ActiveModel::Type::Boolean.new.cast(params[:tag_filter]),
       visible_by_default: true,
       visibility: 'all',
-      include_subprojects: false
+      include_subprojects: ActiveModel::Type::Boolean.new.cast(params[:include_subprojects])
     )
     cloud.tag_ids = Array(params[:tag_ids]) if cloud.tag_filter
 
@@ -109,7 +109,7 @@ class TagCloudsController < ApplicationController
     end
 
     style = RedmineupTags.tag_list_view
-    style = :cloud if style == :none
+    style = :simple_cloud if style == :none || style.blank?
 
     html = helpers.render_tags_list(
       tags,
@@ -119,11 +119,30 @@ class TagCloudsController < ApplicationController
     )
     render html: html
   rescue StandardError => e
-    Rails.logger.error("[redmineup_tags] preview project=#{@project&.id}: #{e.class}: #{e.message}")
+    Rails.logger.error("[redmineup_tags] preview project=#{@project&.id}: #{e.class}: #{e.message}\n#{e.backtrace&.first(8)&.join("\n")}")
     render html: helpers.content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
   end
 
   private
+
+  def build_preview_cloud(attrs)
+    allowed = TagCloud.attribute_names.map(&:to_sym)
+    db_attrs = attrs.select { |key, _| allowed.include?(key.to_sym) }
+    cloud = TagCloud.new(db_attrs)
+    %i[status_operator version_operator tracker_operator].each do |key|
+      next unless attrs.key?(key)
+      next unless cloud.respond_to?("#{key}=")
+
+      cloud.public_send("#{key}=", attrs[key])
+    end
+    %i[status_filter version_filter tracker_filter tag_filter include_subprojects visibility visible_by_default].each do |key|
+      next unless attrs.key?(key)
+      next unless cloud.respond_to?("#{key}=")
+
+      cloud.public_send("#{key}=", attrs[key])
+    end
+    cloud
+  end
 
   def authorize_tag_clouds
     return true if User.current.admin?
@@ -214,6 +233,11 @@ class TagCloudsController < ApplicationController
     raw[:status_filter] = Array(raw[:status_filter])
     raw[:version_filter] = Array(raw[:version_filter])
     raw[:tracker_filter] = Array(raw[:tracker_filter])
+    unless TagCloud.operator_columns?
+      raw.delete(:status_operator)
+      raw.delete(:version_operator)
+      raw.delete(:tracker_operator)
+    end
     collapse_full_filters!(raw)
     raw
   end
