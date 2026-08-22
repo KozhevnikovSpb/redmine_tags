@@ -10,6 +10,7 @@
   preview_url = preview_project_tag_clouds_path(@project)
   can_select_owner = @tag_cloud.can_set_owner_visibility?(User.current)
   visibility_author = @tag_cloud.visibility_author || User.current
+  name_blank_message = l(:text_tag_cloud_name_blank)
 
   status_op  = @tag_cloud.respond_to?(:normalized_status_operator) ? @tag_cloud.normalized_status_operator : '*'
   version_op = @tag_cloud.respond_to?(:normalized_version_operator) ? @tag_cloud.normalized_version_operator : '*'
@@ -28,7 +29,15 @@
      data-label-empty="<%= l(:label_tag_cloud_empty) %>">
   <p class="tag-cloud-name-row">
     <%= f.label :name, l(:label_tag_cloud_name) %>
-    <%= f.text_field :name, required: true, size: 60, maxlength: TagCloud::NAME_MAX_LENGTH %>
+    <%= f.text_field :name,
+                     required: true,
+                     size: 60,
+                     maxlength: TagCloud::NAME_MAX_LENGTH,
+                     class: 'tag-cloud-name-input',
+                     title: name_blank_message,
+                     data: { blank_message: name_blank_message },
+                     oninvalid: "this.setCustomValidity(this.value ? '' : (this.getAttribute('data-blank-message') || ''))",
+                     oninput: "this.setCustomValidity('')" %>
   </p>
 
   <fieldset class="tag-cloud-filters-fieldset">
