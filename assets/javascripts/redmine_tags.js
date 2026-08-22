@@ -213,6 +213,7 @@ $(function () {
     $(document).on('change', '.tag-cloud-form select.tag-cloud-filter-operator', function () {
         var $row = $(this).closest('.tag-cloud-filter-row');
         syncOperatorRow($row);
+        fitSelectWidth($(this));
         schedulePreview();
     });
 
@@ -225,6 +226,10 @@ $(function () {
     });
 
     $('.tag-cloud-form .tag-cloud-filter-select:not([hidden])').each(function () {
+        fitSelectWidth($(this));
+    });
+
+    $('.tag-cloud-form .tag-cloud-filter-operator').each(function () {
         fitSelectWidth($(this));
     });
 
