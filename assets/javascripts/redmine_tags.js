@@ -33,8 +33,8 @@ $(function () {
         $tbody.sortable({
             handle: '.tag-cloud-drag-handle',
             axis: 'y',
-            items: 'tr:not(.system)',
-            cancel: 'tr.system, a, button',
+            items: 'tr.tag-cloud-local',
+            cancel: 'tr.system, tr.inherited, a, button',
             helper: function (e, tr) {
                 var $originals = tr.children();
                 var $helper = tr.clone();
@@ -46,14 +46,9 @@ $(function () {
             placeholder: 'tag-cloud-settings-placeholder',
             tolerance: 'pointer',
             update: function () {
-                var $system = $tbody.children('tr.system');
-                if ($system.length) {
-                    $tbody.prepend($system);
-                }
-
-                var ids = $tbody.find('tr[data-id]').map(function () {
+                var ids = $tbody.find('tr.tag-cloud-local[data-id]').map(function () {
                     var id = $(this).data('id');
-                    return (id && id !== 'system') ? id : null;
+                    return id ? id : null;
                 }).get().filter(function (id) { return id !== null; });
 
                 if (!reorderUrl || !ids.length) {
