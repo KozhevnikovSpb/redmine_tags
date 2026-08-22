@@ -8,6 +8,8 @@
   visibility = @tag_cloud.visibility.presence || 'all'
   tag_filter_on = @tag_cloud.tag_filter
   preview_url = preview_project_tag_clouds_path(@project)
+  can_select_owner = @tag_cloud.can_set_owner_visibility?(User.current)
+  visibility_author = @tag_cloud.visibility_author || User.current
 
   status_op  = @tag_cloud.respond_to?(:normalized_status_operator) ? @tag_cloud.normalized_status_operator : '*'
   version_op = @tag_cloud.respond_to?(:normalized_version_operator) ? @tag_cloud.normalized_version_operator : '*'
@@ -158,9 +160,14 @@
         <%= f.radio_button :visibility, 'all' %>
         <span><%= l(:label_tag_cloud_visibility_all) %></span>
       </label>
-      <label class="tag-cloud-visibility-option">
-        <%= f.radio_button :visibility, 'owner' %>
+      <label class="tag-cloud-visibility-option<%= ' disabled' unless can_select_owner %>">
+        <%= f.radio_button :visibility, 'owner', disabled: !can_select_owner %>
         <span><%= l(:label_tag_cloud_visibility_owner) %></span>
+        <% if !can_select_owner && visibility == 'owner' %>
+          <%= hidden_field_tag 'tag_cloud[visibility]', 'owner',
+                               class: 'tag-cloud-visibility-owner-fallback',
+                               id: nil %>
+        <% end %>
       </label>
       <label class="tag-cloud-visibility-option">
         <%= f.radio_button :visibility, 'roles' %>
@@ -168,27 +175,27 @@
       </label>
     </div>
 
-    <% if visibility == 'owner' && @tag_cloud.owner.present? %>
-      <p class="tag-cloud-owner-info">
-        <%= l(:label_tag_cloud_owner) %>: <%= h(@tag_cloud.owner.name) %>
-      </p>
+    <% unless can_select_owner %>
+      <p class="info tag-cloud-owner-only-hint"><%= l(:text_tag_cloud_owner_only_author) %></p>
     <% end %>
 
+    <p class="tag-cloud-owner-info"<%= ' hidden' unless visibility == 'owner' %>>
+      <%= l(:label_tag_cloud_owner) %>: <%= visibility_author ? h(visibility_author.name) : '—' %>
+    </p>
+
     <div id="tag-cloud-roles-panel"<%= ' hidden' unless visibility == 'roles' %>>
-      <table class="tag-cloud-filters-table">
-        <tr class="tag-cloud-filter-row">
-          <td class="tag-cloud-filter-field"><%= l(:label_role_plural) %></td>
-          <td class="tag-cloud-filter-values">
-            <select name="tag_cloud[role_ids][]" multiple="multiple"
-                    size="<%= [[(@roles || []).size, 6].min, 3].max %>"
-                    class="tag-cloud-filter-select">
-              <% (@roles || []).each do |r| %>
-                <option value="<%= r.id %>"<%= ' selected' if role_selected.include?(r.id) %>><%= r.name %></option>
-              <% end %>
-            </select>
-          </td>
-        </tr>
-      </table>
+      <% if (@roles || []).blank? %>
+        <p class="info"><%= l(:text_tag_cloud_no_roles) %></p>
+      <% else %>
+        <div class="tag-cloud-roles-list">
+          <% @roles.each do |role| %>
+            <label class="tag-cloud-role-option">
+              <%= check_box_tag 'tag_cloud[role_ids][]', role.id, role_selected.include?(role.id), id: nil %>
+              <span><%= role.name %></span>
+            </label>
+          <% end %>
+        </div>
+      <% end %>
       <p class="info"><%= l(:text_tag_cloud_roles_required) %></p>
     </div>
   </fieldset>
