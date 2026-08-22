@@ -162,7 +162,7 @@
 
   <fieldset class="tag-cloud-visibility-fieldset">
     <legend><%= l(:label_tag_cloud_visibility_rule) %></legend>
-    <p class="info"><%= l(:text_tag_cloud_visibility_hint) %></p>
+    <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_visibility_hint) %></p>
 
     <div class="tag-cloud-visibility-options">
       <label class="tag-cloud-visibility-option">
@@ -191,7 +191,7 @@
 
     <div id="tag-cloud-roles-panel"<%= ' hidden' unless visibility == 'roles' %>>
       <% if (@roles || []).blank? %>
-        <p class="info"><%= l(:text_tag_cloud_no_roles) %></p>
+        <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_no_roles) %></p>
       <% else %>
         <div class="tag-cloud-roles-list">
           <% @roles.each do |role| %>
@@ -202,7 +202,7 @@
           <% end %>
         </div>
       <% end %>
-      <p class="info"><%= l(:text_tag_cloud_roles_required) %></p>
+      <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_roles_required) %></p>
     </div>
   </fieldset>
 
@@ -216,7 +216,7 @@
     <%= f.check_box :include_subprojects, {}, '1', '0' %>
     <%= f.label :include_subprojects, l(:label_tag_cloud_include_subprojects) %>
   </p>
-  <p class="info"><%= l(:text_tag_cloud_include_subprojects_hint) %></p>
+  <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_include_subprojects_hint) %></p>
 </div>
 
 <p class="buttons">
