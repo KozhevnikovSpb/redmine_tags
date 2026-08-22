@@ -30,16 +30,17 @@ module TagsHelper
       case sop
       when 'o', 'c'
         filters << ['status_id', sop, '']
-      when '=', '!'
+      when '=', '!', 'ev', '!ev', 'cf'
         filters << ['status_id', sop, status_ids] if status_ids.any?
       when '*'
         filters << ['status_id', 'o', ''] if options[:open_only]
-      else
-        filters << ['status_id', '=', status_ids] if status_ids.any?
       end
 
-      filters << ['tracker_id', top, tracker_ids] if %w[= !].include?(top) && tracker_ids.any?
-      if %w[= !].include?(vop) && version_ids.any?
+      if %w[= ! ev !ev cf].include?(top) && tracker_ids.any?
+        filters << ['tracker_id', top, tracker_ids]
+      end
+
+      if %w[= ! ev !ev cf].include?(vop) && version_ids.any?
         filters << ['fixed_version_id', vop, version_ids]
       elsif vop == '!='
         filters << ['fixed_version_id', '!*', '']
@@ -115,40 +116,58 @@ module TagsHelper
     { set_filter: 1, f: f, op: op, v: v }
   end
 
+  # Labels match Redmine core Issue List (label_equals = "is" / "равно").
   def tag_cloud_status_operator_options
     [
-      [l(:label_tag_cloud_op_open), 'o'],
+      [l(:label_open_issues), 'o'],
       [l(:label_equals), '='],
       [l(:label_not_equals), '!'],
-      [l(:label_tag_cloud_op_has_been), 'ev'],
-      [l(:label_tag_cloud_op_never), '!ev'],
-      [l(:label_tag_cloud_op_changed_from), 'cf'],
-      [l(:label_tag_cloud_op_closed), 'c'],
+      [l(:label_has_been), 'ev'],
+      [l(:label_has_never_been), '!ev'],
+      [l(:label_changed_from), 'cf'],
+      [l(:label_closed_issues), 'c'],
+      [l(:label_any), '*']
+    ]
+  end
+
+  def tag_cloud_tracker_operator_options
+    [
+      [l(:label_equals), '='],
+      [l(:label_not_equals), '!'],
+      [l(:label_has_been), 'ev'],
+      [l(:label_has_never_been), '!ev'],
+      [l(:label_changed_from), 'cf'],
+      [l(:label_any), '*']
+    ]
+  end
+
+  def tag_cloud_version_operator_options
+    [
+      [l(:label_equals), '='],
+      [l(:label_not_equals), '!'],
+      [l(:label_has_been), 'ev'],
+      [l(:label_has_never_been), '!ev'],
+      [l(:label_changed_from), 'cf'],
+      [l(:label_none), '!*'],
       [l(:label_any), '*']
     ]
   end
 
   def tag_cloud_list_operator_options(with_none: false)
-    opts = [
-      [l(:label_equals), '='],
-      [l(:label_not_equals), '!'],
-      [l(:label_any), '*']
-    ]
-    opts.insert(2, [l(:label_none), '!*']) if with_none
-    opts
+    with_none ? tag_cloud_version_operator_options : tag_cloud_tracker_operator_options
   end
 
   def tag_cloud_operator_label(operator)
     case operator.to_s
-    when 'o' then l(:label_tag_cloud_op_open)
-    when 'c' then l(:label_tag_cloud_op_closed)
+    when 'o' then l(:label_open_issues)
+    when 'c' then l(:label_closed_issues)
     when '=' then l(:label_equals)
     when '!' then l(:label_not_equals)
     when '*' then l(:label_any)
     when '!=' then l(:label_none)
-    when 'ev' then l(:label_tag_cloud_op_has_been)
-    when '!ev' then l(:label_tag_cloud_op_never)
-    when 'cf' then l(:label_tag_cloud_op_changed_from)
+    when 'ev' then l(:label_has_been)
+    when '!ev' then l(:label_has_never_been)
+    when 'cf' then l(:label_changed_from)
     else l(:label_any)
     end
   end
