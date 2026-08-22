@@ -3,6 +3,7 @@
 <% if @project.present? %>
   <% @tag_clouds = TagCloud.for_project(@project).includes(:created_by).to_a %>
 <% end %>
+<% reset_cycle('tag_cloud_rows') %>
 
 <h3><%= l(:tag_clouds) %></h3>
 
@@ -30,7 +31,7 @@
   </thead>
   <tbody>
     <%# Virtual system cloud — always first, not in DB %>
-    <tr id="tag-cloud-system" class="<%= cycle('odd', 'even') %> system" data-id="system">
+    <tr id="tag-cloud-system" class="<%= cycle('even', 'odd', name: 'tag_cloud_rows') %> system" data-id="system">
       <td class="tag-cloud-col-name name">
         <%= l(:tags) %>
         <%= tag_cloud_letter_marker(:system) %>
@@ -53,7 +54,7 @@
          <% end %>>
     <% inherited_clouds.each do |cloud| %>
       <tr id="tag-cloud-inherited-<%= cloud.id %>"
-          class="<%= cycle('odd', 'even') %> inherited"
+          class="<%= cycle('even', 'odd', name: 'tag_cloud_rows') %> inherited"
           data-id="<%= cloud.id %>">
         <td class="tag-cloud-col-name name">
           <%= h(cloud.name) %>
@@ -92,7 +93,7 @@
     <% if @tag_clouds && @tag_clouds.any? %>
       <% @tag_clouds.each do |cloud| %>
         <tr id="tag-cloud-<%= cloud.id %>"
-            class="<%= cycle('odd', 'even') %> tag-cloud-local"
+            class="<%= cycle('even', 'odd', name: 'tag_cloud_rows') %> tag-cloud-local"
             data-id="<%= cloud.id %>">
           <td class="tag-cloud-col-name name"><%= h(cloud.name) %></td>
           <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
