@@ -9,6 +9,7 @@
             .order(Arel.sql('projects.name ASC, tag_cloud_projects.position ASC, tag_clouds.name ASC'))
 %>
 
+<div class="tag-clouds-settings-wrap">
 <table class="list tag-clouds-settings-table" id="tag-clouds-global-table">
   <thead>
     <tr>
@@ -59,3 +60,4 @@
     <% end %>
   </tbody>
 </table>
+</div>
