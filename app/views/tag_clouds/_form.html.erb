@@ -171,7 +171,12 @@
       </label>
       <label class="tag-cloud-visibility-option<%= ' disabled' unless can_select_owner %>">
         <%= f.radio_button :visibility, 'owner', disabled: !can_select_owner %>
-        <span><%= l(:label_tag_cloud_visibility_owner) %></span>
+        <span>
+          <%= l(:label_tag_cloud_visibility_owner) %>
+          <% if visibility_author %>
+            (<%= h(visibility_author.name) %>)
+          <% end %>
+        </span>
         <% if !can_select_owner && visibility == 'owner' %>
           <%= hidden_field_tag 'tag_cloud[visibility]', 'owner',
                                class: 'tag-cloud-visibility-owner-fallback',
@@ -183,14 +188,6 @@
         <span><%= l(:label_tag_cloud_visibility_roles) %></span>
       </label>
     </div>
-
-    <% unless can_select_owner %>
-      <p class="info tag-cloud-owner-only-hint"><%= l(:text_tag_cloud_owner_only_author) %></p>
-    <% end %>
-
-    <p class="tag-cloud-owner-info"<%= ' hidden' unless visibility == 'owner' %>>
-      <%= l(:label_tag_cloud_owner) %>: <%= visibility_author ? h(visibility_author.name) : '—' %>
-    </p>
 
     <div id="tag-cloud-roles-panel"<%= ' hidden' unless visibility == 'roles' %>>
       <% if (@roles || []).blank? %>
