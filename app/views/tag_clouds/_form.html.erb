@@ -11,6 +11,7 @@
   can_select_owner = @tag_cloud.can_set_owner_visibility?(User.current)
   visibility_author = @tag_cloud.visibility_author || User.current
   name_blank_message = l(:text_tag_cloud_name_blank)
+  available_tags = Array(@available_tags)
 
   status_op  = @tag_cloud.respond_to?(:normalized_status_operator) ? @tag_cloud.normalized_status_operator : '*'
   version_op = @tag_cloud.respond_to?(:normalized_version_operator) ? @tag_cloud.normalized_version_operator : '*'
@@ -138,17 +139,17 @@
     <p class="info tag-cloud-tag-filter-hint"><%= l(:text_tag_cloud_tag_filter_hint) %></p>
 
     <div id="tag-cloud-tags-panel"<%= ' hidden' unless tag_filter_on %>>
-      <% if @available_tags.blank? %>
+      <% if available_tags.blank? %>
         <p class="info"><%= l(:text_tag_cloud_no_tags_in_project) %></p>
       <% else %>
         <table class="tag-cloud-filters-table">
-          <tr class="tag-cloud-filter-row">
+          <tr class="tag-cloud-tag-ids-row">
             <td class="tag-cloud-filter-field"><%= l(:tags) %></td>
             <td class="tag-cloud-filter-values">
               <select name="tag_cloud[tag_ids][]" multiple="multiple"
-                      size="<%= [[@available_tags.size, 8].min, 3].max %>"
-                      class="tag-cloud-filter-select tag-cloud-tag-ids-select">
-                <% @available_tags.each do |t| %>
+                      size="<%= [[available_tags.size, 8].min, 3].max %>"
+                      class="tag-cloud-tag-ids-select">
+                <% available_tags.each do |t| %>
                   <option value="<%= t.id %>"<%= ' selected' if tag_selected.include?(t.id) %>><%= t.name %></option>
                 <% end %>
               </select>
