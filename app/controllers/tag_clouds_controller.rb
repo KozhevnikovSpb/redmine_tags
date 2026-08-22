@@ -17,7 +17,10 @@ class TagCloudsController < ApplicationController
       visible_by_default: true,
       visibility: 'all',
       tag_filter: false,
-      include_subprojects: false
+      include_subprojects: false,
+      status_operator: '*',
+      version_operator: '*',
+      tracker_operator: '*'
     )
     load_filter_options
   end
@@ -77,10 +80,11 @@ class TagCloudsController < ApplicationController
     head :no_content
   end
 
-  # Live preview of tags matching current form filters.
-  # Renders the same HTML as the issues sidebar (style from global settings).
   def preview
     cloud = TagCloud.new(
+      status_operator: params[:status_operator].presence || '*',
+      version_operator: params[:version_operator].presence || '*',
+      tracker_operator: params[:tracker_operator].presence || '*',
       status_filter: Array(params[:status_filter]),
       version_filter: Array(params[:version_filter]),
       tracker_filter: Array(params[:tracker_filter]),
@@ -121,8 +125,6 @@ class TagCloudsController < ApplicationController
 
   private
 
-  # Admins can manage tag clouds from the global plugin settings page
-  # even if they are not a member of the project (require: :member).
   def authorize_tag_clouds
     return true if User.current.admin?
 
@@ -140,12 +142,13 @@ class TagCloudsController < ApplicationController
   def load_filter_options
     @statuses = IssueStatus.sorted
     @trackers = @project.trackers.sorted
-    @versions = @project.versions.sorted
+    versions = @project.respond_to?(:shared_versions) ? @project.shared_versions : @project.versions
+    @versions = versions.where.not(status: 'closed')
+    @versions = @versions.sorted if @versions.respond_to?(:sorted)
     @roles = Role.givable.sorted
     @available_tags = project_available_tags
   end
 
-  # Tags for whitelist UI: only tags used on OPEN issues of THIS project.
   def project_available_tags
     tags_table = Redmineup::Tag.table_name
     taggings_table = Redmineup::Tagging.table_name
@@ -180,6 +183,9 @@ class TagCloudsController < ApplicationController
       :visibility,
       :tag_filter,
       :include_subprojects,
+      :status_operator,
+      :version_operator,
+      :tracker_operator,
       status_filter: [],
       version_filter: [],
       tracker_filter: []
@@ -189,6 +195,9 @@ class TagCloudsController < ApplicationController
     raw[:tag_filter] = ActiveModel::Type::Boolean.new.cast(raw.fetch(:tag_filter, false))
     raw[:include_subprojects] = ActiveModel::Type::Boolean.new.cast(raw.fetch(:include_subprojects, false))
     raw[:visibility] = raw[:visibility].to_s.presence_in(TagCloud::VISIBILITIES) || 'all'
+    raw[:status_operator] = raw[:status_operator].to_s.presence_in(TagCloud::STATUS_OPERATORS) || '*'
+    raw[:version_operator] = raw[:version_operator].to_s.presence_in(TagCloud::VERSION_OPERATORS) || '*'
+    raw[:tracker_operator] = raw[:tracker_operator].to_s.presence_in(TagCloud::TRACKER_OPERATORS) || '*'
     raw[:status_filter] = Array(raw[:status_filter])
     raw[:version_filter] = Array(raw[:version_filter])
     raw[:tracker_filter] = Array(raw[:tracker_filter])
@@ -196,20 +205,34 @@ class TagCloudsController < ApplicationController
     raw
   end
 
-  # After save: if every option of a filter was selected, store empty (= all).
-  # Not applied live in the form while editing.
   def collapse_full_filters!(raw)
-    status_ids = raw[:status_filter].map(&:to_i).reject(&:zero?).uniq.sort
-    all_status = IssueStatus.pluck(:id).sort
-    raw[:status_filter] = [] if status_ids.any? && !all_status.empty? && status_ids == all_status
+    if raw[:status_operator] == '=' && filter_covers_all?(raw[:status_filter], IssueStatus.pluck(:id))
+      raw[:status_operator] = '*'
+      raw[:status_filter] = []
+    end
 
-    version_ids = raw[:version_filter].map(&:to_i).reject(&:zero?).uniq.sort
-    all_version = @project.versions.pluck(:id).sort
-    raw[:version_filter] = [] if version_ids.any? && !all_version.empty? && version_ids == all_version
+    version_ids =
+      begin
+        scope = @project.respond_to?(:shared_versions) ? @project.shared_versions : @project.versions
+        scope.where.not(status: 'closed').pluck(:id)
+      rescue StandardError
+        @project.versions.where.not(status: 'closed').pluck(:id)
+      end
+    if raw[:version_operator] == '=' && filter_covers_all?(raw[:version_filter], version_ids)
+      raw[:version_operator] = '*'
+      raw[:version_filter] = []
+    end
 
-    tracker_ids = raw[:tracker_filter].map(&:to_i).reject(&:zero?).uniq.sort
-    all_tracker = @project.trackers.pluck(:id).sort
-    raw[:tracker_filter] = [] if tracker_ids.any? && !all_tracker.empty? && tracker_ids == all_tracker
+    if raw[:tracker_operator] == '=' && filter_covers_all?(raw[:tracker_filter], @project.trackers.pluck(:id))
+      raw[:tracker_operator] = '*'
+      raw[:tracker_filter] = []
+    end
+  end
+
+  def filter_covers_all?(selected, all_ids)
+    sel = Array(selected).map(&:to_i).reject(&:zero?).uniq.sort
+    all = Array(all_ids).map(&:to_i).reject(&:zero?).uniq.sort
+    sel.any? && all.any? && sel == all
   end
 
   def apply_join_ids!(cloud)
