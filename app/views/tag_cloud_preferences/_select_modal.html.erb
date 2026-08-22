@@ -15,28 +15,30 @@
           <span class="tag-cloud-name"><%= l(:button_check_all) %> / <%= l(:button_uncheck_all) %></span>
         </label>
       </div>
-      <ul class="tag-clouds-visibility-list" id="tag-clouds-sortable">
-        <% @tag_clouds.each do |cloud| %>
-          <% count = (@issue_counts || {})[cloud.id].to_i %>
-          <li class="tag-cloud-row" data-id="<%= cloud.id %>">
-            <label for="visible_tag_cloud_<%= cloud.id %>">
-              <%= check_box_tag 'visible_tag_cloud_ids[]',
-                                cloud.id,
-                                @visible_ids.include?(cloud.id),
-                                id: "visible_tag_cloud_#{cloud.id}" %>
-              <span class="tag-cloud-name"><%= h(cloud.name) %></span>
-            </label>
-            <span class="tag-cloud-issue-count"
-                  title="<%= l(:label_tag_cloud_issue_count, count: count) %>">
-              <%= l(:label_tag_cloud_issue_count, count: count) %>
-            </span>
-            <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
-              <%= sprite_icon('reorder', '') %>
-            </span>
-            <%= hidden_field_tag 'tag_cloud_order[]', cloud.id, class: 'tag-cloud-order-input', id: nil %>
-          </li>
-        <% end %>
-      </ul>
+
+      <% if @inherited_clouds.present? %>
+        <div class="tag-clouds-visibility-group">
+          <div class="tag-clouds-visibility-group-title"><%= l(:label_tag_cloud_group_inherited) %></div>
+          <ul class="tag-clouds-visibility-list" id="tag-clouds-sortable-inherited">
+            <% @inherited_clouds.each do |cloud| %>
+              <%= render partial: 'tag_cloud_preferences/visibility_row',
+                         locals: { cloud: cloud, inherited: true } %>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <% if @local_clouds.present? %>
+        <div class="tag-clouds-visibility-group">
+          <div class="tag-clouds-visibility-group-title"><%= l(:label_tag_cloud_group_local) %></div>
+          <ul class="tag-clouds-visibility-list" id="tag-clouds-sortable">
+            <% @local_clouds.each do |cloud| %>
+              <%= render partial: 'tag_cloud_preferences/visibility_row',
+                         locals: { cloud: cloud, inherited: false } %>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
     <% end %>
   </div>
 

@@ -1,10 +1,10 @@
 <% can_manage = User.current.allowed_to?(:manage_tag_clouds, @project) %>
-
-<h3><%= l(:tag_clouds) %></h3>
-
+<% inherited_clouds = @project ? TagCloud.inherited_for(@project) : [] %>
 <% if @project.present? %>
   <% @tag_clouds = TagCloud.for_project(@project).includes(:created_by).to_a %>
 <% end %>
+
+<h3><%= l(:tag_clouds) %></h3>
 
 <% if can_manage %>
   <p>
@@ -27,10 +27,7 @@
       <% end %>
     </tr>
   </thead>
-  <tbody id="tag-clouds-sortable-settings"
-         <% if can_manage %>
-         data-reorder-url="<%= reorder_project_tag_clouds_path(@project) %>"
-         <% end %>>
+  <tbody>
     <%# Virtual system cloud — always first, not in DB %>
     <tr id="tag-cloud-system" class="<%= cycle('odd', 'even') %> system" data-id="system">
       <td class="tag-cloud-col-name name">
@@ -46,12 +43,37 @@
       <% end %>
     </tr>
 
+    <% inherited_clouds.each do |cloud| %>
+      <tr id="tag-cloud-inherited-<%= cloud.id %>"
+          class="<%= cycle('odd', 'even') %> inherited"
+          data-id="inherited-<%= cloud.id %>">
+        <td class="tag-cloud-col-name name">
+          <%= h(cloud.name) %>
+          <%= tag_cloud_letter_marker(:inherited) %>
+        </td>
+        <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
+        <td class="tag-cloud-col-visibility"><%= tag_cloud_visibility_summary(cloud) %></td>
+        <td class="tag-cloud-col-author">
+          <%= cloud.created_by ? link_to_user(cloud.created_by) : '—' %>
+        </td>
+        <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
+        <% if can_manage %>
+          <td class="buttons"></td>
+        <% end %>
+      </tr>
+    <% end %>
+  </tbody>
+
+  <tbody id="tag-clouds-sortable-settings"
+         <% if can_manage %>
+         data-reorder-url="<%= reorder_project_tag_clouds_path(@project) %>"
+         <% end %>>
     <% if @tag_clouds && @tag_clouds.any? %>
       <% @tag_clouds.each do |cloud| %>
         <tr id="tag-cloud-<%= cloud.id %>"
-            class="<%= cycle('odd', 'even') %>"
+            class="<%= cycle('odd', 'even') %> tag-cloud-local"
             data-id="<%= cloud.id %>">
-          <td class="tag-cloud-col-name name"><%= cloud.name %></td>
+          <td class="tag-cloud-col-name name"><%= h(cloud.name) %></td>
           <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
           <td class="tag-cloud-col-visibility"><%= tag_cloud_visibility_summary(cloud) %></td>
           <td class="tag-cloud-col-author">
