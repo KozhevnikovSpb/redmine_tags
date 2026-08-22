@@ -99,7 +99,9 @@ $(function () {
             fontFamily: $select.css('font-family'),
             padding: '0 8px'
         }).text(longest).appendTo('body');
-        var w = Math.max(160, Math.ceil($probe.outerWidth()) + 24);
+        var multi = $select.is('[multiple]') || parseInt($select.attr('size'), 10) > 1;
+        var extra = multi ? 44 : 28;
+        var w = Math.max(160, Math.ceil($probe.outerWidth()) + extra);
         $probe.remove();
         $select.css('width', w + 'px');
     }
@@ -112,21 +114,63 @@ $(function () {
         return VALUE_OPS.indexOf(op) !== -1;
     }
 
-    function syncOperatorRow($row) {
+    function setToggleHidden($el, hidden) {
+        $el.prop('hidden', hidden);
+        if (hidden) {
+            $el.attr('hidden', 'hidden');
+        } else {
+            $el.removeAttr('hidden');
+        }
+    }
+
+    function setFilterOpen($row, open, opts) {
+        opts = opts || {};
+        var $btn = $row.find('.tag-cloud-filter-toggle');
+        var $select = $row.find('select.tag-cloud-filter-select').first();
+        var count = $select.find('option').length;
+        $btn.attr('data-open', open ? '1' : '0');
+        $btn.text(open ? '\u2212' : '+');
+        $row.toggleClass('is-open', !!open);
+        if (open) {
+            $select.attr('multiple', 'multiple');
+            $select.attr('size', Math.min(Math.max(count, 4), 6));
+        } else {
+            var val = $select.val();
+            $select.removeAttr('multiple');
+            $select.attr('size', 1);
+            if ($.isArray(val)) {
+                $select.val(val.length ? val[0] : null);
+            }
+        }
+        fitSelectWidth($select);
+        if (!opts.silent) {
+            schedulePreview();
+        }
+    }
+
+    function syncOperatorRow($row, opts) {
+        opts = opts || {};
         var needs = rowNeedsValues($row);
         var $select = $row.find('select.tag-cloud-filter-select').first();
         var $btn = $row.find('.tag-cloud-filter-toggle');
-        $select.prop('hidden', !needs);
-        $btn.prop('hidden', !needs);
+        $row.toggleClass('no-values', !needs);
         if (!needs) {
             $select.val(null);
+            setFilterOpen($row, false, { silent: true });
+            setToggleHidden($select, true);
+            setToggleHidden($btn, true);
         } else {
-            fitSelectWidth($select);
+            setToggleHidden($select, false);
+            setToggleHidden($btn, false);
+            setFilterOpen($row, $btn.attr('data-open') === '1', { silent: true });
+        }
+        if (!opts.silent) {
+            schedulePreview();
         }
     }
 
     function selectedValues($select) {
-        if (!$select.length || $select.prop('hidden')) {
+        if (!$select.length || $select.prop('hidden') || $select.is('[hidden]')) {
             return [];
         }
         var val = $select.val();
@@ -148,6 +192,7 @@ $(function () {
             tracker_filter: selectedValues($form.find('select[name="tag_cloud[tracker_filter][]"]')),
             tag_filter: tagFilterOn ? '1' : '0',
             tag_ids: tagFilterOn ? ($form.find('select[name="tag_cloud[tag_ids][]"]').val() || []) : [],
+            include_subprojects: $('#tag_cloud_include_subprojects').is(':checked') ? '1' : '0',
             authenticity_token: $('meta[name="csrf-token"]').attr('content')
         };
     }
@@ -167,7 +212,7 @@ $(function () {
         }).done(function (html) {
             $body.html(html || '');
         }).fail(function () {
-            var emptyLabel = $form.data('label-empty') || '—';
+            var emptyLabel = $form.data('label-empty') || '\u2014';
             $body.html($('<p>', { class: 'tag-cloud-empty', text: emptyLabel }));
         });
     }
@@ -179,29 +224,9 @@ $(function () {
         previewTimer = setTimeout(refreshPreview, 250);
     }
 
-    function setFilterOpen($row, open) {
-        var $btn = $row.find('.tag-cloud-filter-toggle');
-        var $select = $row.find('select.tag-cloud-filter-select').first();
-        var count = $select.find('option').length;
-        $btn.attr('data-open', open ? '1' : '0');
-        $btn.text(open ? '−' : '+');
-        if (open) {
-            $select.attr('multiple', 'multiple');
-            $select.attr('size', Math.min(Math.max(count, 3), 6));
-        } else {
-            var val = $select.val();
-            $select.removeAttr('multiple');
-            $select.attr('size', 1);
-            if ($.isArray(val)) {
-                $select.val(val.length ? val[0] : null);
-            }
-        }
-        fitSelectWidth($select);
-        schedulePreview();
-    }
-
     $(document).on('click', '.tag-cloud-filter-toggle', function (e) {
         e.preventDefault();
+        e.stopPropagation();
         var $row = $(this).closest('.tag-cloud-filter-row');
         if (!rowNeedsValues($row)) {
             return;
@@ -214,7 +239,6 @@ $(function () {
         var $row = $(this).closest('.tag-cloud-filter-row');
         syncOperatorRow($row);
         fitSelectWidth($(this));
-        schedulePreview();
     });
 
     $(document).on('change', '.tag-cloud-form select.tag-cloud-filter-select', function () {
@@ -222,7 +246,7 @@ $(function () {
     });
 
     $('.tag-cloud-form .tag-cloud-filter-row').each(function () {
-        syncOperatorRow($(this));
+        syncOperatorRow($(this), { silent: true });
     });
 
     $('.tag-cloud-form .tag-cloud-filter-select:not([hidden])').each(function () {
@@ -244,6 +268,10 @@ $(function () {
                 fitSelectWidth($(this));
             });
         }
+        schedulePreview();
+    });
+
+    $(document).on('change', '#tag_cloud_include_subprojects', function () {
         schedulePreview();
     });
 
