@@ -192,7 +192,24 @@ class TagCloudsController < ApplicationController
     raw[:status_filter] = Array(raw[:status_filter])
     raw[:version_filter] = Array(raw[:version_filter])
     raw[:tracker_filter] = Array(raw[:tracker_filter])
+    collapse_full_filters!(raw)
     raw
+  end
+
+  # After save: if every option of a filter was selected, store empty (= all).
+  # Not applied live in the form while editing.
+  def collapse_full_filters!(raw)
+    status_ids = raw[:status_filter].map(&:to_i).reject(&:zero?).uniq.sort
+    all_status = IssueStatus.pluck(:id).sort
+    raw[:status_filter] = [] if status_ids.any? && !all_status.empty? && status_ids == all_status
+
+    version_ids = raw[:version_filter].map(&:to_i).reject(&:zero?).uniq.sort
+    all_version = @project.versions.pluck(:id).sort
+    raw[:version_filter] = [] if version_ids.any? && !all_version.empty? && version_ids == all_version
+
+    tracker_ids = raw[:tracker_filter].map(&:to_i).reject(&:zero?).uniq.sort
+    all_tracker = @project.trackers.pluck(:id).sort
+    raw[:tracker_filter] = [] if tracker_ids.any? && !all_tracker.empty? && tracker_ids == all_tracker
   end
 
   def apply_join_ids!(cloud)

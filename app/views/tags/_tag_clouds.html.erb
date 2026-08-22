@@ -5,7 +5,7 @@
 <%
   links = TagCloudProject
             .joins(:project, :tag_cloud)
-            .includes(:project, tag_cloud: [:owner])
+            .includes(:project, tag_cloud: [:owner, :created_by])
             .order(Arel.sql('projects.name ASC, tag_cloud_projects.position ASC, tag_clouds.name ASC'))
 %>
 
@@ -16,6 +16,7 @@
       <th class="tag-cloud-col-project"><%= l(:label_project) %></th>
       <th class="tag-cloud-col-filters"><%= l(:label_tag_cloud_filters) %></th>
       <th class="tag-cloud-col-visibility"><%= l(:label_tag_cloud_visibility_rule) %></th>
+      <th class="tag-cloud-col-author"><%= l(:field_author) %></th>
       <th class="tag-cloud-col-visible"><%= l(:label_tag_cloud_visible_by_default) %></th>
       <th class="tag-cloud-col-subprojects"><%= l(:label_tag_cloud_include_subprojects) %></th>
       <th class="buttons"></th>
@@ -34,6 +35,9 @@
           <td class="tag-cloud-col-project"><%= link_to_project(project) %></td>
           <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
           <td class="tag-cloud-col-visibility"><%= tag_cloud_visibility_summary(cloud) %></td>
+          <td class="tag-cloud-col-author">
+            <%= cloud.created_by ? link_to_user(cloud.created_by) : '—' %>
+          </td>
           <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
           <td class="tag-cloud-col-subprojects"><%= cloud.include_subprojects ? '✓' : '—' %></td>
           <td class="buttons">
@@ -50,7 +54,7 @@
       <% end %>
     <% else %>
       <tr class="nodata">
-        <td colspan="7"><%= l(:label_no_data) %></td>
+        <td colspan="8"><%= l(:label_no_data) %></td>
       </tr>
     <% end %>
   </tbody>
