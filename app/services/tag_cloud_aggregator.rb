@@ -150,10 +150,14 @@ class TagCloudAggregator
       return issues unless ids.any?
 
       issues.where('issues.fixed_version_id IS NULL OR issues.fixed_version_id NOT IN (?)', ids)
-    when '!='
-      issues.where(fixed_version_id: nil)
-    else
+    when '*!'
       issues
+    else
+      if op.to_s == '!*'
+        issues.where(fixed_version_id: nil)
+      else
+        issues
+      end
     end
   end
 
