@@ -241,8 +241,26 @@ class TagCloudsController < ApplicationController
     @statuses = IssueStatus.sorted
     @trackers = trackers_for_filter
     @versions = active_versions_for_project
-    @roles = Role.givable.sorted
+    @roles = roles_for_filter
     @available_tags = project_available_tags
+  end
+
+  def roles_for_filter
+    roles = []
+    if defined?(Role)
+      roles = Role.givable.to_a if Role.respond_to?(:givable)
+      roles = Role.where(builtin: 0).to_a if roles.blank? && Role.respond_to?(:where)
+    end
+    extra_ids = Array(@tag_cloud&.role_ids).map(&:to_i).reject(&:zero?)
+    if extra_ids.any? && defined?(Role)
+      present = roles.map(&:id)
+      missing = extra_ids - present
+      roles.concat(Role.where(id: missing).to_a) if missing.any?
+    end
+    roles.sort_by { |role| [role.respond_to?(:position) ? role.position.to_i : 0, role.name.to_s] }
+  rescue StandardError => e
+    Rails.logger.warn("[redmineup_tags] roles_for_filter: #{e.class}: #{e.message}")
+    []
   end
 
   def cloud_scope_project
@@ -251,8 +269,6 @@ class TagCloudsController < ApplicationController
     @tag_cloud.home_project_for(@project) || @project
   end
 
-  # Root cloud must offer every tracker used in this project and descendants.
-  # Subprojects often enable extra trackers that the parent does not.
   def trackers_for_filter
     ids = self_and_descendant_project_ids
     scope =
@@ -293,7 +309,6 @@ class TagCloudsController < ApplicationController
     end
   end
 
-  # Active versions of the cloud home project, shared versions, and descendants.
   def active_versions_for_project
     scope_project = cloud_scope_project
     versions = []
@@ -423,10 +438,6 @@ class TagCloudsController < ApplicationController
       cloud.tag_ids = tag_ids
     else
       cloud.tag_ids = []
-    end
-
-    if cloud.visibility == 'owner'
-      cloud.owner ||= User.current
     end
   end
 
