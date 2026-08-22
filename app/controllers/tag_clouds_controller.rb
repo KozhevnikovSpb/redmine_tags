@@ -6,6 +6,7 @@ class TagCloudsController < ApplicationController
 
   before_action :find_project_by_project_id
   before_action :authorize_tag_clouds
+  before_action :ensure_operator_schema, only: %i[new create edit update preview]
   before_action :find_tag_cloud, only: %i[edit update destroy]
 
   def index
@@ -26,7 +27,7 @@ class TagCloudsController < ApplicationController
   end
 
   def create
-    @tag_cloud = TagCloud.new(tag_cloud_params)
+    @tag_cloud = TagCloud.new(safe_tag_cloud_params)
     @tag_cloud.created_by = User.current
     @tag_cloud.visibility = 'all' if @tag_cloud.visibility.blank?
     apply_join_ids!(@tag_cloud)
@@ -35,6 +36,20 @@ class TagCloudsController < ApplicationController
     if @tag_cloud.save
       redirect_after_change l(:notice_tag_cloud_created)
     else
+      log_save_failure('create')
+      load_filter_options
+      render :new, status: :unprocessable_entity
+    end
+  rescue ActiveModel::UnknownAttributeError => e
+    Rails.logger.error("[redmineup_tags] create unknown attribute: #{e.message}")
+    @tag_cloud = TagCloud.new(safe_tag_cloud_params(force_without_operators: true))
+    @tag_cloud.created_by = User.current
+    apply_join_ids!(@tag_cloud)
+    @tag_cloud.tag_cloud_projects.build(project: @project, position: next_position)
+    if @tag_cloud.save
+      redirect_after_change l(:notice_tag_cloud_created)
+    else
+      log_save_failure('create-retry')
       load_filter_options
       render :new, status: :unprocessable_entity
     end
@@ -45,12 +60,24 @@ class TagCloudsController < ApplicationController
   end
 
   def update
-    @tag_cloud.assign_attributes(tag_cloud_params)
+    @tag_cloud.assign_attributes(safe_tag_cloud_params)
     apply_join_ids!(@tag_cloud)
 
     if @tag_cloud.save
       redirect_after_change l(:notice_tag_cloud_updated)
     else
+      log_save_failure('update')
+      load_filter_options
+      render :edit, status: :unprocessable_entity
+    end
+  rescue ActiveModel::UnknownAttributeError => e
+    Rails.logger.error("[redmineup_tags] update unknown attribute: #{e.message}")
+    @tag_cloud.assign_attributes(safe_tag_cloud_params(force_without_operators: true))
+    apply_join_ids!(@tag_cloud)
+    if @tag_cloud.save
+      redirect_after_change l(:notice_tag_cloud_updated)
+    else
+      log_save_failure('update-retry')
       load_filter_options
       render :edit, status: :unprocessable_entity
     end
@@ -125,13 +152,24 @@ class TagCloudsController < ApplicationController
 
   private
 
+  def ensure_operator_schema
+    TagCloud.ensure_operator_schema!
+  end
+
+  def log_save_failure(action)
+    Rails.logger.warn(
+      "[redmineup_tags] tag_cloud #{action} failed project=#{@project&.id} " \
+      "errors=#{@tag_cloud.errors.full_messages.join(', ')}"
+    )
+  end
+
   def build_preview_cloud(attrs)
     allowed = TagCloud.attribute_names.map(&:to_sym)
     db_attrs = attrs.select { |key, _| allowed.include?(key.to_sym) }
     cloud = TagCloud.new(db_attrs)
     %i[status_operator version_operator tracker_operator].each do |key|
       next unless attrs.key?(key)
-      next unless cloud.respond_to?("#{key}=")
+      next unless cloud.respond_to?("#{key}=") && TagCloud.operator_columns?
 
       cloud.public_send("#{key}=", attrs[key])
     end
@@ -166,8 +204,6 @@ class TagCloudsController < ApplicationController
     @available_tags = project_available_tags
   end
 
-  # Issue List shows all versions; for tag-cloud filters we keep only active
-  # (open + locked). Closed versions are never offered.
   def active_versions_for_project
     scope = @project.respond_to?(:shared_versions) ? @project.shared_versions : @project.versions
     if scope.respond_to?(:where)
@@ -208,7 +244,11 @@ class TagCloudsController < ApplicationController
     Redmineup::Tag.none
   end
 
-  def tag_cloud_params
+  def safe_tag_cloud_params(force_without_operators: false)
+    tag_cloud_params(force_without_operators: force_without_operators)
+  end
+
+  def tag_cloud_params(force_without_operators: false)
     raw = params.fetch(:tag_cloud, {}).permit(
       :name,
       :visible_by_default,
@@ -233,7 +273,7 @@ class TagCloudsController < ApplicationController
     raw[:status_filter] = Array(raw[:status_filter])
     raw[:version_filter] = Array(raw[:version_filter])
     raw[:tracker_filter] = Array(raw[:tracker_filter])
-    unless TagCloud.operator_columns?
+    if force_without_operators || !TagCloud.operator_columns?
       raw.delete(:status_operator)
       raw.delete(:version_operator)
       raw.delete(:tracker_operator)
