@@ -115,11 +115,11 @@ class TagCloudAggregator
     when '!'
       ids.any? ? issues.where.not(status_id: ids) : issues
     when 'ev'
-      ids.any? ? issues.where(id: status_ever_issue_ids(ids)) : issues
+      ids.any? ? issues.where(id: attr_ever_issue_ids('status_id', ids, :status_id)) : issues
     when '!ev'
-      ids.any? ? issues.where.not(id: status_ever_issue_ids(ids)) : issues
+      ids.any? ? issues.where.not(id: attr_ever_issue_ids('status_id', ids, :status_id)) : issues
     when 'cf'
-      ids.any? ? issues.where(id: status_changed_from_issue_ids(ids)) : issues
+      ids.any? ? issues.where(id: attr_changed_from_issue_ids('status_id', ids)) : issues
     else
       issues
     end
@@ -134,6 +134,12 @@ class TagCloudAggregator
       ids.any? ? issues.where(tracker_id: ids) : issues
     when '!'
       ids.any? ? issues.where.not(tracker_id: ids) : issues
+    when 'ev'
+      ids.any? ? issues.where(id: attr_ever_issue_ids('tracker_id', ids, :tracker_id)) : issues
+    when '!ev'
+      ids.any? ? issues.where.not(id: attr_ever_issue_ids('tracker_id', ids, :tracker_id)) : issues
+    when 'cf'
+      ids.any? ? issues.where(id: attr_changed_from_issue_ids('tracker_id', ids)) : issues
     else
       issues
     end
@@ -150,14 +156,16 @@ class TagCloudAggregator
       return issues unless ids.any?
 
       issues.where('issues.fixed_version_id IS NULL OR issues.fixed_version_id NOT IN (?)', ids)
-    when '*!'
-      issues
+    when '!*'
+      issues.where(fixed_version_id: nil)
+    when 'ev'
+      ids.any? ? issues.where(id: attr_ever_issue_ids('fixed_version_id', ids, :fixed_version_id)) : issues
+    when '!ev'
+      ids.any? ? issues.where.not(id: attr_ever_issue_ids('fixed_version_id', ids, :fixed_version_id)) : issues
+    when 'cf'
+      ids.any? ? issues.where(id: attr_changed_from_issue_ids('fixed_version_id', ids)) : issues
     else
-      if op.to_s == '!*'
-        issues.where(fixed_version_id: nil)
-      else
-        issues
-      end
+      issues
     end
   end
 
@@ -172,33 +180,37 @@ class TagCloudAggregator
     Array(@tag_cloud.public_send(attr)).map(&:to_i).reject(&:zero?)
   end
 
-  def status_ever_issue_ids(ids)
+  def attr_ever_issue_ids(prop_key, ids, column)
     sids = ids.map(&:to_s)
-    current_ids = Issue.where(status_id: ids).unscope(:order, :select).distinct.pluck(:id)
-    historical_ids = Issue.joins(:journals).merge(
-      Journal.joins(:details).where(
-        journal_details: { property: 'attr', prop_key: 'status_id' }
-      ).where(
-        'journal_details.old_value IN (:s) OR journal_details.value IN (:s)',
-        s: sids
-      )
-    ).unscope(:order, :select).distinct.pluck(:id)
+    current_ids = Issue.where(column => ids).unscope(:order, :select).distinct.pluck(:id)
+    historical_ids = journal_issue_ids(prop_key, sids, old_or_new: true)
     (current_ids + historical_ids).uniq
   rescue StandardError => e
-    Rails.logger.warn("[redmineup_tags] status_ever_issue_ids: #{e.class}: #{e.message}")
-    Issue.where(status_id: ids).unscope(:order, :select).distinct.pluck(:id)
+    Rails.logger.warn("[redmineup_tags] attr_ever_issue_ids #{prop_key}: #{e.class}: #{e.message}")
+    Issue.where(column => ids).unscope(:order, :select).distinct.pluck(:id)
   end
 
-  def status_changed_from_issue_ids(ids)
-    sids = ids.map(&:to_s)
-    Issue.joins(:journals).merge(
-      Journal.joins(:details).where(
-        journal_details: { property: 'attr', prop_key: 'status_id', old_value: sids }
-      )
-    ).unscope(:order, :select).distinct.pluck(:id)
+  def attr_changed_from_issue_ids(prop_key, ids)
+    journal_issue_ids(prop_key, ids.map(&:to_s), old_or_new: false)
   rescue StandardError => e
-    Rails.logger.warn("[redmineup_tags] status_changed_from_issue_ids: #{e.class}: #{e.message}")
+    Rails.logger.warn("[redmineup_tags] attr_changed_from_issue_ids #{prop_key}: #{e.class}: #{e.message}")
     []
+  end
+
+  def journal_issue_ids(prop_key, sids, old_or_new:)
+    cond =
+      if old_or_new
+        ['journal_details.old_value IN (:s) OR journal_details.value IN (:s)', { s: sids }]
+      else
+        { journal_details: { old_value: sids } }
+      end
+
+    details = Journal.joins(:details).where(
+      journal_details: { property: 'attr', prop_key: prop_key }
+    )
+    details = old_or_new ? details.where(cond[0], cond[1]) : details.where(cond)
+
+    Issue.joins(:journals).merge(details).unscope(:order, :select).distinct.pluck(:id)
   end
 
   def view_project_ids
