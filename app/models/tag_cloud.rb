@@ -76,27 +76,28 @@ class TagCloud < ActiveRecord::Base
     false
   end
 
-  def self.for_sidebar(project)
-    return none unless project
+  # Ancestor clouds marked «include subprojects», root → nearest parent.
+  def self.inherited_for(project)
+    return [] unless project && project.respond_to?(:ancestors)
 
     clouds = []
     seen = {}
-
-    chain = project.self_and_ancestors.to_a
-    chain = chain.sort_by(&:lft)
-
-    chain.each do |p|
-      scope = for_project(p)
-      scope = scope.where(include_subprojects: true) if p.id != project.id
-      scope.each do |cloud|
+    project.ancestors.reorder(:lft).each do |ancestor|
+      for_project(ancestor).where(include_subprojects: true).each do |cloud|
         next if seen[cloud.id]
 
         clouds << cloud
         seen[cloud.id] = true
       end
     end
-
     clouds
+  end
+
+  # Sidebar containers: inherited (parent) then local. System cloud is virtual.
+  def self.for_sidebar(project)
+    return [] unless project
+
+    inherited_for(project) + for_project(project).to_a
   end
 
   def home_project_for(view_project)
@@ -143,6 +144,12 @@ class TagCloud < ActiveRecord::Base
     return false unless project
 
     tag_cloud_projects.exists?(project_id: project.id)
+  end
+
+  def inherited_in?(project)
+    return false unless project
+
+    include_subprojects? && !linked_to?(project)
   end
 
   def assigned_role_ids

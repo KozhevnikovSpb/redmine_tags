@@ -21,23 +21,12 @@ class TagCloudPreferencesController < ApplicationController
   def update
     load_custom_tag_clouds_for_user
     selected_ids = Array(params[:visible_tag_cloud_ids]).map(&:to_i)
-    order_ids = Array(params[:tag_cloud_order]).map(&:to_i)
+    inherited_order = Array(params[:inherited_tag_cloud_order]).map(&:to_i)
+    local_order = Array(params[:tag_cloud_order]).map(&:to_i)
 
     TagCloudPreference.transaction do
-      # Visibility + personal order: ONLY TagCloudPreference for current user.
-      # Never touch tag_cloud_projects.position here (that is project-wide Settings).
-      ordered = order_ids.select { |id| @tag_clouds.any? { |c| c.id == id } }.uniq
-      ordered += @tag_clouds.map(&:id) - ordered
-
-      ordered.each_with_index do |cloud_id, index|
-        cloud = @tag_clouds.find { |c| c.id == cloud_id }
-        next unless cloud
-
-        preference = cloud.preferences.find_or_initialize_by(user_id: User.current.id)
-        preference.visible = selected_ids.include?(cloud_id)
-        preference.position = index
-        preference.save!
-      end
+      save_group_preferences!(@inherited_clouds, inherited_order, selected_ids)
+      save_group_preferences!(@local_clouds, local_order, selected_ids)
     end
 
     redirect_back fallback_location: project_issues_path(@project)
@@ -63,13 +52,33 @@ class TagCloudPreferencesController < ApplicationController
   end
 
   def find_tag_cloud
-    @tag_cloud = TagCloud.for_project(@project).find(params[:tag_cloud_id])
+    id = params[:tag_cloud_id].to_i
+    @tag_cloud = (TagCloud.inherited_for(@project) + TagCloud.for_project(@project).to_a).find { |c| c.id == id }
+    raise ActiveRecord::RecordNotFound unless @tag_cloud
   end
 
-  # Project default order, then re-sort by this user's preference.position when present.
   def load_custom_tag_clouds_for_user
-    clouds = TagCloud.for_project(@project).to_a
-    @tag_clouds = sort_clouds_for_user(clouds, User.current)
+    @inherited_clouds = sort_clouds_for_user(TagCloud.inherited_for(@project), User.current)
+    @local_clouds = sort_clouds_for_user(TagCloud.for_project(@project).to_a, User.current)
+    @tag_clouds = @inherited_clouds + @local_clouds
+  end
+
+  def save_group_preferences!(clouds, order_ids, selected_ids)
+    return if clouds.blank?
+
+    allowed_ids = clouds.map(&:id)
+    ordered = order_ids.select { |id| allowed_ids.include?(id) }.uniq
+    ordered += allowed_ids - ordered
+
+    ordered.each_with_index do |cloud_id, index|
+      cloud = clouds.find { |c| c.id == cloud_id }
+      next unless cloud
+
+      preference = cloud.preferences.find_or_initialize_by(user_id: User.current.id)
+      preference.visible = selected_ids.include?(cloud_id)
+      preference.position = index
+      preference.save!
+    end
   end
 
   def sort_clouds_for_user(clouds, user)
@@ -80,7 +89,6 @@ class TagCloudPreferencesController < ApplicationController
 
     clouds.sort_by.with_index do |cloud, idx|
       pref = prefs[cloud.id]
-      # Personal position if set; otherwise keep relative project order far after personal ones
       [pref&.position.nil? ? 1_000_000 + idx : pref.position, idx]
     end
   end

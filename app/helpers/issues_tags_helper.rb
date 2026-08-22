@@ -64,17 +64,21 @@ module IssuesTagsHelper
     return ''.html_safe if RedmineupTags.tag_list_view == :none
     return render_global_tags_sidebar unless @project
 
-    custom_clouds = TagCloud.for_sidebar(@project)
+    inherited_clouds = TagCloud.inherited_for(@project)
+    local_clouds = TagCloud.for_project(@project).to_a
     can_select_clouds = User.current.allowed_to?(:select_tag_clouds, @project)
 
-    local_clouds = TagCloud.for_project(@project).to_a
     unless can_select_clouds
-      clear_stale_tag_cloud_preferences!(User.current, local_clouds)
+      clear_stale_tag_cloud_preferences!(User.current, inherited_clouds + local_clouds)
     end
 
-    custom_clouds = sort_tag_clouds_for_user(custom_clouds, User.current) if can_select_clouds
+    if can_select_clouds
+      inherited_clouds = sort_tag_clouds_for_user(inherited_clouds, User.current)
+      local_clouds = sort_tag_clouds_for_user(local_clouds, User.current)
+    end
 
-    visible_custom = custom_clouds.select { |c| c.visible_for?(User.current, project: @project) }
+    visible_inherited = inherited_clouds.select { |c| c.visible_for?(User.current, project: @project) }
+    visible_local = local_clouds.select { |c| c.visible_for?(User.current, project: @project) }
 
     sections = []
 
@@ -84,7 +88,7 @@ module IssuesTagsHelper
       'sidebar-tag-cloud sidebar-tag-cloud-system'
     )
 
-    if can_select_clouds && local_clouds.any?
+    if can_select_clouds && (inherited_clouds.any? || local_clouds.any?)
       sections << content_tag(:div, class: 'sidebar-tag-cloud-controls') do
         link_to(
           l(:label_select_visible_tag_clouds),
@@ -95,14 +99,21 @@ module IssuesTagsHelper
       end
     end
 
-    visible_custom.each do |cloud|
-      body = render_tag_cloud(cloud)
-
+    visible_inherited.each do |cloud|
       sections << tag_cloud_section(
         custom_tag_cloud_title(cloud),
-        body,
-        'sidebar-tag-cloud',
-        data: { tag_cloud_id: cloud.id }
+        render_tag_cloud(cloud),
+        'sidebar-tag-cloud sidebar-tag-cloud-inherited',
+        data: { tag_cloud_id: cloud.id, container: 'inherited' }
+      )
+    end
+
+    visible_local.each do |cloud|
+      sections << tag_cloud_section(
+        custom_tag_cloud_title(cloud),
+        render_tag_cloud(cloud),
+        'sidebar-tag-cloud sidebar-tag-cloud-local',
+        data: { tag_cloud_id: cloud.id, container: 'local' }
       )
     end
 
@@ -120,7 +131,7 @@ module IssuesTagsHelper
 
   def custom_tag_cloud_title(cloud)
     parts = [h(cloud.name)]
-    if @project && !cloud.linked_to?(@project)
+    if @project && cloud.inherited_in?(@project)
       parts << ' '.html_safe
       parts << tag_cloud_letter_marker(:inherited)
     end
