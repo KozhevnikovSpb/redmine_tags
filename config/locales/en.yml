@@ -92,6 +92,9 @@ en:
   text_tag_cloud_owner_only_author: Only the cloud author can choose «Author only».
   text_tag_cloud_no_roles: No assignable project roles were found.
   text_tag_cloud_visible_by_default_hint: When visibility is «All users», unchecked means hidden until the user enables it in Select visible tag clouds.
+  text_tag_cloud_name_blank: Please enter a name.
+  text_plugin_tag_display_options: plugin-wide tag display options (sidebar style, colors, sort).
+  text_tag_clouds_managed_per_project_html: "Tag clouds are managed per project: <strong>Project → Settings → %{tab}</strong>."
 
   label_tag_cloud_tag_filter: Tag whitelist
   label_tag_cloud_tag_filter_enable: Restrict cloud to selected tags only
@@ -108,3 +111,27 @@ en:
   text_select_visible_tag_clouds_hint: Choose which custom tag clouds to show in the issues sidebar. Inherited clouds stay above this project's clouds. Drag within a group to change order.
   notice_tag_cloud_preferences_updated: Visible tag clouds updated.
   notice_failed_to_update_tag_cloud_preferences: Failed to update visible tag clouds.
+
+  activerecord:
+    models:
+      tag_cloud: Tag cloud
+    attributes:
+      tag_cloud:
+        name: Name
+        visibility: Visibility
+        roles: Roles
+        tag_filter: Tag whitelist
+        include_subprojects: Subprojects
+        visible_by_default: Visible by default
+    errors:
+      models:
+        tag_cloud:
+          attributes:
+            name:
+              blank: cannot be blank
+              too_long: is too long (maximum is %{count} characters)
+              taken: has already been taken in this project
+            roles:
+              blank: select at least one role
+            visibility:
+              invalid: can be set to author-only only by the cloud author
