@@ -7,8 +7,17 @@
   label_all = l(:label_all)
   visibility = @tag_cloud.visibility.presence || 'all'
   tag_filter_on = @tag_cloud.tag_filter
-  filter_op = l(:label_tag_cloud_filter_is)
   preview_url = preview_project_tag_clouds_path(@project)
+
+  status_op  = @tag_cloud.respond_to?(:normalized_status_operator) ? @tag_cloud.normalized_status_operator : '*'
+  version_op = @tag_cloud.respond_to?(:normalized_version_operator) ? @tag_cloud.normalized_version_operator : '*'
+  tracker_op = @tag_cloud.respond_to?(:normalized_tracker_operator) ? @tag_cloud.normalized_tracker_operator : '*'
+  status_values  = TagCloud::VALUE_OPERATORS.include?(status_op)
+  version_values = TagCloud::VALUE_OPERATORS.include?(version_op)
+  tracker_values = TagCloud::VALUE_OPERATORS.include?(tracker_op)
+  status_multi  = status_selected.size > 1
+  version_multi = version_selected.size > 1
+  tracker_multi = tracker_selected.size > 1
 %>
 
 <div class="box tag-cloud-form"
@@ -25,65 +34,77 @@
 
     <div class="tag-cloud-filters-with-preview">
       <table class="tag-cloud-filters-table">
-        <%# ---- Status ---- %>
-        <tr class="tag-cloud-filter-row" data-filter="status_filter">
+        <tr class="tag-cloud-filter-row" data-filter="status_filter" data-value-ops="=,!,ev,!ev,cf">
           <td class="tag-cloud-filter-field"><%= l(:field_status) %></td>
-          <td class="tag-cloud-filter-op"><%= filter_op %></td>
+          <td class="tag-cloud-filter-op">
+            <%= select_tag 'tag_cloud[status_operator]',
+                           options_for_select(tag_cloud_status_operator_options, status_op),
+                           class: 'tag-cloud-filter-operator' %>
+          </td>
           <td class="tag-cloud-filter-values">
-            <span class="tag-cloud-filter-summary"<%= ' hidden' unless status_selected.empty? %>><%= label_all %></span>
-            <select name="tag_cloud[status_filter][]" multiple="multiple"
-                    size="<%= [[@statuses.size, 6].min, 3].max %>"
-                    class="tag-cloud-filter-select"<%= ' hidden' if status_selected.empty? %>>
+            <select name="tag_cloud[status_filter][]"
+                    class="tag-cloud-filter-select"
+                    <%= 'multiple="multiple"' if status_multi %>
+                    size="<%= status_multi ? [[@statuses.size, 6].min, 3].max : 1 %>"
+                    <%= 'hidden' unless status_values %>>
               <% @statuses.each do |s| %>
                 <option value="<%= s.id %>"<%= ' selected' if status_selected.include?(s.id) %>><%= s.name %></option>
               <% end %>
             </select>
           </td>
           <td class="tag-cloud-filter-actions">
-            <button type="button" class="tag-cloud-filter-toggle" data-open="<%= status_selected.any? ? '1' : '0' %>">
-              <%= status_selected.empty? ? '+' : '−' %>
+            <button type="button" class="tag-cloud-filter-toggle" data-open="<%= status_multi ? '1' : '0' %>"<%= ' hidden' unless status_values %>>
+              <%= status_multi ? '−' : '+' %>
             </button>
           </td>
         </tr>
 
-        <%# ---- Version ---- %>
-        <tr class="tag-cloud-filter-row" data-filter="version_filter">
+        <tr class="tag-cloud-filter-row" data-filter="version_filter" data-value-ops="=,">
           <td class="tag-cloud-filter-field"><%= l(:field_fixed_version) %></td>
-          <td class="tag-cloud-filter-op"><%= filter_op %></td>
+          <td class="tag-cloud-filter-op">
+            <%= select_tag 'tag_cloud[version_operator]',
+                           options_for_select(tag_cloud_list_operator_options(with_none: true), version_op),
+                           class: 'tag-cloud-filter-operator' %>
+          </td>
           <td class="tag-cloud-filter-values">
-            <span class="tag-cloud-filter-summary"<%= ' hidden' unless version_selected.empty? %>><%= label_all %></span>
-            <select name="tag_cloud[version_filter][]" multiple="multiple"
-                    size="<%= [[@versions.size, 6].min, 3].max %>"
-                    class="tag-cloud-filter-select"<%= ' hidden' if version_selected.empty? %>>
+            <select name="tag_cloud[version_filter][]"
+                    class="tag-cloud-filter-select"
+                    <%= 'multiple="multiple"' if version_multi %>
+                    size="<%= version_multi ? [[@versions.size, 6].min, 3].max : 1 %>"
+                    <%= 'hidden' unless version_values %>>
               <% @versions.each do |v| %>
                 <option value="<%= v.id %>"<%= ' selected' if version_selected.include?(v.id) %>><%= v.name %></option>
               <% end %>
             </select>
           </td>
           <td class="tag-cloud-filter-actions">
-            <button type="button" class="tag-cloud-filter-toggle" data-open="<%= version_selected.any? ? '1' : '0' %>">
-              <%= version_selected.empty? ? '+' : '−' %>
+            <button type="button" class="tag-cloud-filter-toggle" data-open="<%= version_multi ? '1' : '0' %>"<%= ' hidden' unless version_values %>>
+              <%= version_multi ? '−' : '+' %>
             </button>
           </td>
         </tr>
 
-        <%# ---- Tracker ---- %>
-        <tr class="tag-cloud-filter-row" data-filter="tracker_filter">
+        <tr class="tag-cloud-filter-row" data-filter="tracker_filter" data-value-ops="=,">
           <td class="tag-cloud-filter-field"><%= l(:field_tracker) %></td>
-          <td class="tag-cloud-filter-op"><%= filter_op %></td>
+          <td class="tag-cloud-filter-op">
+            <%= select_tag 'tag_cloud[tracker_operator]',
+                           options_for_select(tag_cloud_list_operator_options, tracker_op),
+                           class: 'tag-cloud-filter-operator' %>
+          </td>
           <td class="tag-cloud-filter-values">
-            <span class="tag-cloud-filter-summary"<%= ' hidden' unless tracker_selected.empty? %>><%= label_all %></span>
-            <select name="tag_cloud[tracker_filter][]" multiple="multiple"
-                    size="<%= [[@trackers.size, 6].min, 3].max %>"
-                    class="tag-cloud-filter-select"<%= ' hidden' if tracker_selected.empty? %>>
+            <select name="tag_cloud[tracker_filter][]"
+                    class="tag-cloud-filter-select"
+                    <%= 'multiple="multiple"' if tracker_multi %>
+                    size="<%= tracker_multi ? [[@trackers.size, 6].min, 3].max : 1 %>"
+                    <%= 'hidden' unless tracker_values %>>
               <% @trackers.each do |t| %>
                 <option value="<%= t.id %>"<%= ' selected' if tracker_selected.include?(t.id) %>><%= t.name %></option>
               <% end %>
             </select>
           </td>
           <td class="tag-cloud-filter-actions">
-            <button type="button" class="tag-cloud-filter-toggle" data-open="<%= tracker_selected.any? ? '1' : '0' %>">
-              <%= tracker_selected.empty? ? '+' : '−' %>
+            <button type="button" class="tag-cloud-filter-toggle" data-open="<%= tracker_multi ? '1' : '0' %>"<%= ' hidden' unless tracker_values %>>
+              <%= tracker_multi ? '−' : '+' %>
             </button>
           </td>
         </tr>
@@ -98,7 +119,6 @@
     </div>
   </fieldset>
 
-  <%# ---- Tag whitelist (tag_filter) ---- %>
   <fieldset class="tag-cloud-tag-filter-fieldset">
     <legend><%= l(:label_tag_cloud_tag_filter) %></legend>
     <p class="tag-cloud-tag-filter-toggle-row">
@@ -114,7 +134,6 @@
         <table class="tag-cloud-filters-table">
           <tr class="tag-cloud-filter-row">
             <td class="tag-cloud-filter-field"><%= l(:tags) %></td>
-            <td class="tag-cloud-filter-op"><%= filter_op %></td>
             <td class="tag-cloud-filter-values">
               <select name="tag_cloud[tag_ids][]" multiple="multiple"
                       size="<%= [[@available_tags.size, 8].min, 3].max %>"
@@ -130,7 +149,6 @@
     </div>
   </fieldset>
 
-  <%# ---- Visibility ---- %>
   <fieldset class="tag-cloud-visibility-fieldset">
     <legend><%= l(:label_tag_cloud_visibility_rule) %></legend>
     <p class="info"><%= l(:text_tag_cloud_visibility_hint) %></p>
@@ -160,7 +178,6 @@
       <table class="tag-cloud-filters-table">
         <tr class="tag-cloud-filter-row">
           <td class="tag-cloud-filter-field"><%= l(:label_role_plural) %></td>
-          <td class="tag-cloud-filter-op"><%= filter_op %></td>
           <td class="tag-cloud-filter-values">
             <select name="tag_cloud[role_ids][]" multiple="multiple"
                     size="<%= [[(@roles || []).size, 6].min, 3].max %>"
