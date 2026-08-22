@@ -14,6 +14,7 @@ class TagCloud < ActiveRecord::Base
   VERSION_OPERATORS = %w[= ! ev !ev cf !* *].freeze
   TRACKER_OPERATORS = %w[= ! ev !ev cf *].freeze
   VALUE_OPERATORS   = %w[= ! ev !ev cf].freeze
+  OPERATOR_COLUMNS  = %w[status_operator version_operator tracker_operator].freeze
 
   has_many :tag_cloud_projects, dependent: :destroy, inverse_of: :tag_cloud
   has_many :projects, through: :tag_cloud_projects
@@ -38,9 +39,9 @@ class TagCloud < ActiveRecord::Base
   validates :tag_filter, inclusion: { in: [true, false] }
   validates :include_subprojects, inclusion: { in: [true, false] }
   validates :visible_by_default, inclusion: { in: [true, false] }
-  validates :status_operator, inclusion: { in: STATUS_OPERATORS }
-  validates :version_operator, inclusion: { in: VERSION_OPERATORS }
-  validates :tracker_operator, inclusion: { in: TRACKER_OPERATORS }
+  validates :status_operator, inclusion: { in: STATUS_OPERATORS }, if: :operator_columns?
+  validates :version_operator, inclusion: { in: VERSION_OPERATORS }, if: :operator_columns?
+  validates :tracker_operator, inclusion: { in: TRACKER_OPERATORS }, if: :operator_columns?
 
   validate :name_unique_within_projects
   validate :status_filter_exists
@@ -55,6 +56,10 @@ class TagCloud < ActiveRecord::Base
       .where(tag_cloud_projects: { project_id: project.id })
       .order(Arel.sql('tag_cloud_projects.position ASC, tag_clouds.id ASC'))
   }
+
+  def self.operator_columns?
+    column_names.include?('status_operator')
+  end
 
   def self.for_sidebar(project)
     return none unless project
@@ -186,30 +191,46 @@ class TagCloud < ActiveRecord::Base
   end
 
   def normalized_status_operator
-    op = status_operator.to_s.presence || '*'
-    STATUS_OPERATORS.include?(op) ? op : '*'
+    normalize_operator_code(read_filter_operator(:status_operator), STATUS_OPERATORS)
   end
 
   def normalized_version_operator
-    op = version_operator.to_s.presence || '*'
-    VERSION_OPERATORS.include?(op) ? op : '*'
+    normalize_operator_code(read_filter_operator(:version_operator), VERSION_OPERATORS)
   end
 
   def normalized_tracker_operator
-    op = tracker_operator.to_s.presence || '*'
-    TRACKER_OPERATORS.include?(op) ? op : '*'
+    normalize_operator_code(read_filter_operator(:tracker_operator), TRACKER_OPERATORS)
+  end
+
+  def operator_columns?
+    self.class.operator_columns?
   end
 
   private
 
+  def read_filter_operator(name)
+    return '*' unless operator_columns?
+
+    self[name].to_s.presence || '*'
+  rescue StandardError
+    '*'
+  end
+
+  def normalize_operator_code(op, allowed)
+    code = op.to_s.presence || '*'
+    allowed.include?(code) ? code : '*'
+  end
+
   def normalize_operators
+    return unless operator_columns?
+
     self.status_operator = normalized_status_operator
     self.version_operator = normalized_version_operator
     self.tracker_operator = normalized_tracker_operator
   rescue StandardError
-    self.status_operator = '*' if status_operator.blank?
-    self.version_operator = '*' if version_operator.blank?
-    self.tracker_operator = '*' if tracker_operator.blank?
+    self.status_operator = '*' if has_attribute?(:status_operator) && status_operator.blank?
+    self.version_operator = '*' if has_attribute?(:version_operator) && version_operator.blank?
+    self.tracker_operator = '*' if has_attribute?(:tracker_operator) && tracker_operator.blank?
   end
 
   def normalize_filters
