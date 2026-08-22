@@ -43,7 +43,7 @@
       </td>
       <td class="tag-cloud-col-filters"><%= l(:label_all) %></td>
       <td class="tag-cloud-col-visibility"><%= l(:label_tag_cloud_visibility_all) %></td>
-      <td class="tag-cloud-col-author">-</td>
+      <td class="tag-cloud-col-author">—</td>
       <td class="tag-cloud-col-visible">✓</td>
       <% if can_manage %>
         <td class="buttons"></td>
@@ -68,9 +68,9 @@
         <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
         <td class="tag-cloud-col-visibility"><%= tag_cloud_visibility_summary(cloud) %></td>
         <td class="tag-cloud-col-author">
-          <%= cloud.created_by ? link_to_user(cloud.created_by) : '-' %>
+          <%= cloud.created_by ? link_to_user(cloud.created_by) : '—' %>
         </td>
-        <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '-' %></td>
+        <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
         <% if can_manage %>
           <td class="buttons">
             <span class="sort-handle tag-cloud-drag-handle">
@@ -104,9 +104,9 @@
           <td class="tag-cloud-col-filters"><%= tag_cloud_filters_summary(cloud) %></td>
           <td class="tag-cloud-col-visibility"><%= tag_cloud_visibility_summary(cloud) %></td>
           <td class="tag-cloud-col-author">
-            <%= cloud.created_by ? link_to_user(cloud.created_by) : '-' %>
+            <%= cloud.created_by ? link_to_user(cloud.created_by) : '—' %>
           </td>
-          <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '-' %></td>
+          <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
           <% if can_manage %>
             <td class="buttons">
               <span class="sort-handle tag-cloud-drag-handle">
