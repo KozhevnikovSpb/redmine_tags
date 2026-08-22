@@ -142,11 +142,24 @@ class TagCloudsController < ApplicationController
   def load_filter_options
     @statuses = IssueStatus.sorted
     @trackers = @project.trackers.sorted
-    versions = @project.respond_to?(:shared_versions) ? @project.shared_versions : @project.versions
-    @versions = versions.where.not(status: 'closed')
-    @versions = @versions.sorted if @versions.respond_to?(:sorted)
+    @versions = active_versions_for_project
     @roles = Role.givable.sorted
     @available_tags = project_available_tags
+  end
+
+  # Issue List shows all versions; for tag-cloud filters we keep only active
+  # (open + locked). Closed versions are never offered.
+  def active_versions_for_project
+    scope = @project.respond_to?(:shared_versions) ? @project.shared_versions : @project.versions
+    if scope.respond_to?(:where)
+      scope = scope.where(status: %w[open locked])
+      scope = scope.sorted if scope.respond_to?(:sorted)
+      scope
+    else
+      Array(scope).reject { |v| v.respond_to?(:closed?) ? v.closed? : v.status.to_s == 'closed' }
+    end
+  rescue StandardError
+    Array(@project.versions).reject { |v| v.status.to_s == 'closed' }
   end
 
   def project_available_tags
@@ -213,10 +226,9 @@ class TagCloudsController < ApplicationController
 
     version_ids =
       begin
-        scope = @project.respond_to?(:shared_versions) ? @project.shared_versions : @project.versions
-        scope.where.not(status: 'closed').pluck(:id)
+        Array(active_versions_for_project).map { |v| v.respond_to?(:id) ? v.id : v.to_i }
       rescue StandardError
-        @project.versions.where.not(status: 'closed').pluck(:id)
+        []
       end
     if raw[:version_operator] == '=' && filter_covers_all?(raw[:version_filter], version_ids)
       raw[:version_operator] = '*'
