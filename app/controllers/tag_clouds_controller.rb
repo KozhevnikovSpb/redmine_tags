@@ -337,28 +337,33 @@ class TagCloudsController < ApplicationController
     tags_table = Redmineup::Tag.table_name
     taggings_table = Redmineup::Tagging.table_name
     project_ids = self_and_descendant_project_ids
+    extra_ids = Array(@tag_cloud&.tag_ids).map(&:to_i).reject(&:zero?)
 
-    open_issue_ids = Issue
-                     .joins(:status)
-                     .where(project_id: project_ids)
-                     .where(issue_statuses: { is_closed: false })
-                     .unscope(:order, :select)
-                     .distinct
-                     .pluck(:id)
+    issue_ids = Issue.where(project_id: project_ids).unscope(:order, :select).distinct.pluck(:id)
+    records = []
 
-    return Redmineup::Tag.none if open_issue_ids.empty?
+    if issue_ids.any?
+      records = Redmineup::Tag
+                .joins("INNER JOIN #{taggings_table} ON #{taggings_table}.tag_id = #{tags_table}.id")
+                .where("#{taggings_table}.taggable_type = ?", Issue.name)
+                .where("#{taggings_table}.taggable_id" => issue_ids)
+                .distinct
+                .to_a
+    end
 
-    Redmineup::Tag
-      .joins("INNER JOIN #{taggings_table} ON #{taggings_table}.tag_id = #{tags_table}.id")
-      .where("#{taggings_table}.taggable_type = ?", Issue.name)
-      .where("#{taggings_table}.taggable_id" => open_issue_ids)
-      .distinct
-      .order(Arel.sql("#{tags_table}.name ASC"))
+    if extra_ids.any?
+      present = records.map(&:id)
+      missing = extra_ids - present
+      records.concat(Redmineup::Tag.where(id: missing).to_a) if missing.any?
+    end
+
+    records.uniq(&:id).sort_by { |tag| tag.name.to_s.downcase }
   rescue StandardError => e
     Rails.logger.error(
       "[redmineup_tags] project_available_tags project=#{@project&.id}: #{e.class}: #{e.message}"
     )
-    Redmineup::Tag.none
+    extra_ids = Array(@tag_cloud&.tag_ids).map(&:to_i).reject(&:zero?)
+    extra_ids.any? ? Redmineup::Tag.where(id: extra_ids).to_a : []
   end
 
   def safe_tag_cloud_params(force_without_operators: false)
