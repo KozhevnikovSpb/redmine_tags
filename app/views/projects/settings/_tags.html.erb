@@ -42,11 +42,18 @@
         <td class="buttons"></td>
       <% end %>
     </tr>
+  </tbody>
 
+  <tbody id="tag-clouds-sortable-inherited"
+         class="tag-clouds-sortable-settings"
+         <% if can_manage && inherited_clouds.any? %>
+         data-reorder-url="<%= reorder_project_tag_clouds_path(@project) %>"
+         data-inherited="1"
+         <% end %>>
     <% inherited_clouds.each do |cloud| %>
       <tr id="tag-cloud-inherited-<%= cloud.id %>"
           class="<%= cycle('odd', 'even') %> inherited"
-          data-id="inherited-<%= cloud.id %>">
+          data-id="<%= cloud.id %>">
         <td class="tag-cloud-col-name name">
           <%= h(cloud.name) %>
           <%= tag_cloud_letter_marker(:inherited) %>
@@ -58,13 +65,26 @@
         </td>
         <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
         <% if can_manage %>
-          <td class="buttons"></td>
+          <td class="buttons">
+            <span class="sort-handle tag-cloud-drag-handle">
+              <%= sprite_icon('reorder', '') %>
+            </span>
+            <%= link_to sprite_icon('edit', l(:button_edit)),
+                        edit_project_tag_cloud_path(@project, cloud),
+                        class: 'icon icon-edit' %>
+            <%= link_to sprite_icon('del', l(:button_delete)),
+                        project_tag_cloud_path(@project, cloud),
+                        method: :delete,
+                        data: { confirm: l(:text_are_you_sure) },
+                        class: 'icon icon-del' %>
+          </td>
         <% end %>
       </tr>
     <% end %>
   </tbody>
 
   <tbody id="tag-clouds-sortable-settings"
+         class="tag-clouds-sortable-settings"
          <% if can_manage %>
          data-reorder-url="<%= reorder_project_tag_clouds_path(@project) %>"
          <% end %>>
