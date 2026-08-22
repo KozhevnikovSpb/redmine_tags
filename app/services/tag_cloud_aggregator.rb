@@ -1,14 +1,5 @@
 # frozen_string_literal: true
 
-# Aggregates real RedmineUP tags for a TagCloud + current issues view context.
-#
-# Counting scope (NOT include_subprojects):
-# - Same as the issues list / default Tags cloud:
-#   current project, and descendants if Setting.display_subprojects_issues?
-# - Then apply cloud filters: status / tracker / version / tag whitelist / open_only.
-#
-# include_subprojects on TagCloud only controls whether the cloud appears in
-# subproject sidebars (see TagCloud.for_sidebar) — it does not change counts.
 class TagCloudAggregator
   def initialize(tag_cloud, project:, user: User.current, open_only: false)
     @tag_cloud = tag_cloud
@@ -68,10 +59,7 @@ class TagCloudAggregator
 
   def issue_count
     return 0 if @project.nil? || @tag_cloud.nil?
-
-    if @tag_cloud.tag_filter && Array(@tag_cloud.tag_ids).empty?
-      return 0
-    end
+    return 0 if @tag_cloud.tag_filter && Array(@tag_cloud.tag_ids).empty?
 
     issue_ids = matching_issue_ids
     return 0 if issue_ids.empty?
@@ -110,17 +98,14 @@ class TagCloudAggregator
     issues = apply_status_filter(issues)
     issues = apply_tracker_filter(issues)
     issues = apply_version_filter(issues)
-
     issues.unscope(:order, :select).distinct.pluck(:id)
   end
 
   def apply_status_filter(issues)
-    op = @tag_cloud.respond_to?(:normalized_status_operator) ? @tag_cloud.normalized_status_operator : '*'
-    ids = Array(@tag_cloud.status_filter).map(&:to_i).reject(&:zero?)
+    op = operator(:status)
+    ids = ids_for(:status_filter)
 
     case op
-    when '*'
-      issues
     when 'o'
       issues.joins(:status).where(issue_statuses: { is_closed: false })
     when 'c'
@@ -141,8 +126,8 @@ class TagCloudAggregator
   end
 
   def apply_tracker_filter(issues)
-    op = @tag_cloud.respond_to?(:normalized_tracker_operator) ? @tag_cloud.normalized_tracker_operator : '*'
-    ids = Array(@tag_cloud.tracker_filter).map(&:to_i).reject(&:zero?)
+    op = operator(:tracker)
+    ids = ids_for(:tracker_filter)
 
     case op
     when '='
@@ -155,8 +140,8 @@ class TagCloudAggregator
   end
 
   def apply_version_filter(issues)
-    op = @tag_cloud.respond_to?(:normalized_version_operator) ? @tag_cloud.normalized_version_operator : '*'
-    ids = Array(@tag_cloud.version_filter).map(&:to_i).reject(&:zero?)
+    op = operator(:version)
+    ids = ids_for(:version_filter)
 
     case op
     when '='
@@ -172,19 +157,29 @@ class TagCloudAggregator
     end
   end
 
+  def operator(kind)
+    method = "normalized_#{kind}_operator"
+    return @tag_cloud.public_send(method) if @tag_cloud.respond_to?(method)
+
+    '*'
+  end
+
+  def ids_for(attr)
+    Array(@tag_cloud.public_send(attr)).map(&:to_i).reject(&:zero?)
+  end
+
   def status_ever_issue_ids(ids)
     sids = ids.map(&:to_s)
-    current = Issue.where(status_id: ids).unscope(:order, :select).select(:id)
-    historical = Issue.joins(:journals).merge(
+    current_ids = Issue.where(status_id: ids).unscope(:order, :select).distinct.pluck(:id)
+    historical_ids = Issue.joins(:journals).merge(
       Journal.joins(:details).where(
         journal_details: { property: 'attr', prop_key: 'status_id' }
       ).where(
         'journal_details.old_value IN (:s) OR journal_details.value IN (:s)',
         s: sids
       )
-    ).unscope(:order, :select).select(:id)
-    Issue.from("(#{current.to_sql} UNION #{historical.to_sql}) AS status_ever_issues").select('status_ever_issues.id')
-    Issue.where(id: current).or(Issue.where(id: historical)).unscope(:order, :select).distinct.pluck(:id)
+    ).unscope(:order, :select).distinct.pluck(:id)
+    (current_ids + historical_ids).uniq
   rescue StandardError => e
     Rails.logger.warn("[redmineup_tags] status_ever_issue_ids: #{e.class}: #{e.message}")
     Issue.where(status_id: ids).unscope(:order, :select).distinct.pluck(:id)
@@ -206,9 +201,7 @@ class TagCloudAggregator
     return [] unless @project
 
     ids = [@project.id]
-    if Setting.display_subprojects_issues?
-      ids.concat(@project.descendants.pluck(:id))
-    end
+    ids.concat(@project.descendants.pluck(:id)) if Setting.display_subprojects_issues?
     ids.uniq
   end
 
