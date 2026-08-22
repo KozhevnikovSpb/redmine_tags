@@ -84,11 +84,13 @@ en:
 
   label_tag_cloud_visibility_rule: Visibility
   label_tag_cloud_visibility_all: All users
-  label_tag_cloud_visibility_owner: Owner only
+  label_tag_cloud_visibility_owner: Author only
   label_tag_cloud_visibility_roles: Selected roles
-  label_tag_cloud_owner: Owner
+  label_tag_cloud_owner: Author
   text_tag_cloud_visibility_hint: Controls who can see this cloud in the issues sidebar (before personal preference). Users with «Select visible tag clouds» can still override visibility for themselves.
   text_tag_cloud_roles_required: Select at least one role. Users must have one of these roles in the project to see the cloud.
+  text_tag_cloud_owner_only_author: Only the cloud author can choose «Author only».
+  text_tag_cloud_no_roles: No assignable project roles were found.
   text_tag_cloud_visible_by_default_hint: When visibility is «All users», unchecked means hidden until the user enables it in Select visible tag clouds.
 
   label_tag_cloud_tag_filter: Tag whitelist
