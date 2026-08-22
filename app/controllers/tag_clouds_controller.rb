@@ -198,21 +198,72 @@ class TagCloudsController < ApplicationController
 
   def load_filter_options
     @statuses = IssueStatus.sorted
-    @trackers = @project.trackers.sorted
+    @trackers = trackers_for_filter
     @versions = active_versions_for_project
     @roles = Role.givable.sorted
     @available_tags = project_available_tags
   end
 
-  def active_versions_for_project
-    scope = @project.respond_to?(:shared_versions) ? @project.shared_versions : @project.versions
-    if scope.respond_to?(:where)
-      scope = scope.where(status: %w[open locked])
-      scope = scope.sorted if scope.respond_to?(:sorted)
-      scope
-    else
-      Array(scope).reject { |v| v.respond_to?(:closed?) ? v.closed? : v.status.to_s == 'closed' }
+  # Root cloud must offer every tracker used in this project and descendants.
+  # Subprojects often enable extra trackers that the parent does not.
+  def trackers_for_filter
+    ids = self_and_descendant_project_ids
+    scope =
+      if defined?(Tracker) && Tracker.reflect_on_association(:projects)
+        Tracker.joins(:projects).where(projects: { id: ids }).distinct
+      else
+        @project.trackers
+      end
+    scope = scope.sorted if scope.respond_to?(:sorted)
+    merge_saved_records(scope, Tracker, Array(@tag_cloud&.tracker_filter))
+  rescue StandardError => e
+    Rails.logger.warn("[redmineup_tags] trackers_for_filter: #{e.class}: #{e.message}")
+    @project.trackers.respond_to?(:sorted) ? @project.trackers.sorted : @project.trackers
+  end
+
+  def self_and_descendant_project_ids
+    ids = [@project.id]
+    if @project.respond_to?(:descendants)
+      ids.concat(Array(@project.descendants.pluck(:id)))
     end
+    ids.uniq
+  end
+
+  def merge_saved_records(scope, model, saved_ids)
+    extra_ids = Array(saved_ids).map(&:to_i).reject(&:zero?)
+    records = scope.respond_to?(:to_a) ? scope.to_a : Array(scope)
+    if extra_ids.any?
+      present = records.map(&:id)
+      missing = extra_ids - present
+      records.concat(model.where(id: missing).to_a) if missing.any?
+    end
+    if records.first.respond_to?(:position)
+      records.sort_by { |r| [r.position.to_i, r.name.to_s] }
+    else
+      records.sort_by { |r| r.name.to_s }
+    end
+  end
+
+  # Active versions of this project, shared versions, and descendants.
+  def active_versions_for_project
+    versions = []
+    if @project.respond_to?(:rolled_up_versions)
+      versions.concat(Array(@project.rolled_up_versions))
+    end
+    if @project.respond_to?(:shared_versions)
+      versions.concat(Array(@project.shared_versions))
+    end
+    versions.concat(Array(@project.versions))
+    versions = versions.uniq(&:id)
+    versions.reject! { |v| v.respond_to?(:closed?) ? v.closed? : v.status.to_s == 'closed' }
+    extra_ids = Array(@tag_cloud&.version_filter).map(&:to_i).reject(&:zero?)
+    if extra_ids.any?
+      present = versions.map(&:id)
+      missing = extra_ids - present
+      versions.concat(Version.where(id: missing).to_a) if missing.any?
+      versions.uniq!(&:id)
+    end
+    versions.sort_by { |v| v.name.to_s }
   rescue StandardError
     Array(@project.versions).reject { |v| v.status.to_s == 'closed' }
   end
@@ -220,10 +271,11 @@ class TagCloudsController < ApplicationController
   def project_available_tags
     tags_table = Redmineup::Tag.table_name
     taggings_table = Redmineup::Tagging.table_name
+    project_ids = self_and_descendant_project_ids
 
     open_issue_ids = Issue
                      .joins(:status)
-                     .where(project_id: @project.id)
+                     .where(project_id: project_ids)
                      .where(issue_statuses: { is_closed: false })
                      .unscope(:order, :select)
                      .distinct
@@ -288,18 +340,14 @@ class TagCloudsController < ApplicationController
       raw[:status_filter] = []
     end
 
-    version_ids =
-      begin
-        Array(active_versions_for_project).map { |v| v.respond_to?(:id) ? v.id : v.to_i }
-      rescue StandardError
-        []
-      end
+    version_ids = Array(active_versions_for_project).map { |v| v.respond_to?(:id) ? v.id : v.to_i }
     if raw[:version_operator] == '=' && filter_covers_all?(raw[:version_filter], version_ids)
       raw[:version_operator] = '*'
       raw[:version_filter] = []
     end
 
-    if raw[:tracker_operator] == '=' && filter_covers_all?(raw[:tracker_filter], @project.trackers.pluck(:id))
+    tracker_ids = Array(trackers_for_filter).map { |t| t.respond_to?(:id) ? t.id : t.to_i }
+    if raw[:tracker_operator] == '=' && filter_covers_all?(raw[:tracker_filter], tracker_ids)
       raw[:tracker_operator] = '*'
       raw[:tracker_filter] = []
     end
