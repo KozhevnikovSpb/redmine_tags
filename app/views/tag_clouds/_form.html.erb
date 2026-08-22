@@ -59,11 +59,11 @@
           </td>
         </tr>
 
-        <tr class="tag-cloud-filter-row" data-filter="version_filter" data-value-ops="=,">
+        <tr class="tag-cloud-filter-row" data-filter="version_filter" data-value-ops="=,!,ev,!ev,cf">
           <td class="tag-cloud-filter-field"><%= l(:field_fixed_version) %></td>
           <td class="tag-cloud-filter-op">
             <%= select_tag 'tag_cloud[version_operator]',
-                           options_for_select(tag_cloud_list_operator_options(with_none: true), version_op),
+                           options_for_select(tag_cloud_version_operator_options, version_op),
                            class: 'tag-cloud-filter-operator' %>
           </td>
           <td class="tag-cloud-filter-values">
@@ -84,11 +84,11 @@
           </td>
         </tr>
 
-        <tr class="tag-cloud-filter-row" data-filter="tracker_filter" data-value-ops="=,">
+        <tr class="tag-cloud-filter-row" data-filter="tracker_filter" data-value-ops="=,!,ev,!ev,cf">
           <td class="tag-cloud-filter-field"><%= l(:field_tracker) %></td>
           <td class="tag-cloud-filter-op">
             <%= select_tag 'tag_cloud[tracker_operator]',
-                           options_for_select(tag_cloud_list_operator_options, tracker_op),
+                           options_for_select(tag_cloud_tracker_operator_options, tracker_op),
                            class: 'tag-cloud-filter-operator' %>
           </td>
           <td class="tag-cloud-filter-values">
