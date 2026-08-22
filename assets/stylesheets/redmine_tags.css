@@ -16,48 +16,71 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 15px;
-  height: 15px;
-  margin-left: 5px;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  margin: 0 0 0 6px;
   padding: 0;
-  border: 1px solid #333;
+  border: 1px solid #4b5563;
   border-radius: 50%;
-  background: transparent;
-  color: #333;
-  font-size: 10px;
-  font-weight: 600;
+  background: #fff;
+  color: #374151;
+  font-size: 9px;
+  font-weight: 700;
   line-height: 1;
   vertical-align: middle;
-  flex-shrink: 0;
+  flex: 0 0 auto;
   box-sizing: border-box;
   letter-spacing: 0;
+  text-transform: none;
 }
 
-.tag-cloud-marker-system,
+.tag-cloud-marker-system {
+  color: #1f4e79;
+  border-color: #1f4e79;
+}
+
 .tag-cloud-marker-inherited {
-  background: transparent;
-  color: #333;
-  border-color: #333;
+  color: #6b4f1d;
+  border-color: #8a6d3b;
 }
 
-#sidebar .sidebar-tag-cloud h3 .tag-cloud-marker {
-  vertical-align: middle;
-}
-
-/* Long names without spaces must wrap inside the sidebar column */
+/* ---- Sidebar: several clouds stacked as separate blocks ---- */
 #sidebar .sidebar-tag-cloud {
   max-width: 100%;
   min-width: 0;
+  margin: 0 0 10px;
+}
+
+#sidebar .sidebar-tag-cloud + .sidebar-tag-cloud {
+  margin-top: 12px;
 }
 
 #sidebar .sidebar-tag-cloud h3 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 2px;
   max-width: 100%;
   min-width: 0;
+  margin-bottom: 6px;
   white-space: normal !important;
   overflow-wrap: anywhere;
   word-wrap: break-word;
   word-break: break-word;
   line-height: 1.35;
+}
+
+#sidebar .sidebar-tag-cloud h3 .tag-cloud-marker {
+  margin-top: 1px;
+}
+
+#sidebar .sidebar-tag-cloud-controls {
+  margin: 2px 0 12px;
+}
+
+#sidebar .sidebar-tag-cloud-controls a {
+  font-size: 0.9em;
 }
 
 #sidebar .tags-cloud,
@@ -71,7 +94,6 @@
   word-break: break-word;
 }
 
-/* Empty custom tag cloud in sidebar */
 #sidebar .tag-cloud-empty,
 .tag-cloud-preview-body .tag-cloud-empty {
   margin: 0.35em 0 0.6em;
@@ -140,7 +162,6 @@
   vertical-align: middle;
 }
 
-/* Redmine-style sort handle (reorder icon) */
 .tag-clouds-settings-table .tag-cloud-drag-handle,
 #select-visible-tag-clouds-form .tag-cloud-drag-handle {
   display: inline-flex;
@@ -235,7 +256,6 @@
   border-color: #e5e7eb;
 }
 
-/* Filters table + matching tags inside the same fieldset */
 .tag-cloud-filters-with-preview {
   display: flex;
   flex-wrap: wrap;
@@ -269,7 +289,6 @@
   overflow-y: auto;
 }
 
-/* Same tag cloud markup as sidebar */
 .tag-cloud-preview-body .tags-cloud {
   margin: 0;
   padding: 0;
@@ -284,7 +303,6 @@
   word-break: break-word;
 }
 
-/* Redmine-like filter table: field | operator | values | [+] */
 .tag-cloud-filters-table {
   border-collapse: collapse;
   width: auto;
@@ -333,7 +351,8 @@
   display: none !important;
 }
 
-.tag-cloud-filter-select {
+.tag-cloud-filter-select,
+.tag-cloud-tag-ids-select {
   min-width: 200px;
   width: auto;
   max-width: none;
@@ -350,9 +369,9 @@
   -moz-appearance: auto;
 }
 
-/* Expanded listbox: keep native scrollbar arrows at the bottom */
 select.tag-cloud-filter-select[multiple],
-select.tag-cloud-filter-select[size]:not([size="1"]) {
+select.tag-cloud-filter-select[size]:not([size="1"]),
+select.tag-cloud-tag-ids-select {
   overflow-y: scroll !important;
   overflow-x: hidden;
   vertical-align: top;
@@ -364,7 +383,6 @@ select.tag-cloud-filter-select[size]:not([size="1"]) {
   vertical-align: middle;
 }
 
-/* Rounded square +/− like Redmine filter toggles */
 .tag-cloud-filter-toggle {
   display: inline-flex;
   align-items: center;
@@ -393,7 +411,6 @@ select.tag-cloud-filter-select[size]:not([size="1"]) {
   background: #f7f7f7;
 }
 
-/* Visibility radios */
 .tag-cloud-visibility-options {
   display: flex;
   flex-wrap: wrap;
@@ -412,10 +429,32 @@ select.tag-cloud-filter-select[size]:not([size="1"]) {
   cursor: pointer;
 }
 
+.tag-cloud-visibility-option.disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
 .tag-cloud-owner-info {
   margin: 0 0 8px;
   color: #555;
   font-size: 0.9em;
+}
+
+.tag-cloud-roles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 6px 0;
+}
+
+.tag-cloud-role-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  float: none;
+  width: auto;
+  font-weight: normal;
 }
 
 #tag-cloud-roles-panel[hidden],
@@ -423,15 +462,14 @@ select.tag-cloud-filter-select[size]:not([size="1"]) {
   display: none !important;
 }
 
-/* Select visible tag clouds — sidebar control */
-.sidebar-tag-cloud-controls {
-  margin: 6px 0 10px;
-}
-.sidebar-tag-cloud-controls a {
-  font-size: 0.9em;
+/* ---- Select visible tag clouds modal ---- */
+.ui-dialog:has(#select-visible-tag-clouds-form),
+.ui-dialog:has(.tag-clouds-visibility-box) {
+  width: 560px !important;
+  max-width: calc(100vw - 32px);
+  height: auto !important;
 }
 
-/* Modal: header bar in Redmine blue */
 .ui-dialog:has(#select-visible-tag-clouds-form) .ui-dialog-titlebar,
 .ui-dialog:has(.tag-clouds-visibility-box) .ui-dialog-titlebar {
   background: #628db6 !important;
@@ -439,6 +477,7 @@ select.tag-cloud-filter-select[size]:not([size="1"]) {
   border-color: #628db6 !important;
   color: #fff !important;
 }
+
 .ui-dialog:has(#select-visible-tag-clouds-form) .ui-dialog-titlebar .ui-dialog-title,
 .ui-dialog:has(.tag-clouds-visibility-box) .ui-dialog-titlebar .ui-dialog-title {
   color: #fff !important;
@@ -455,21 +494,19 @@ select.tag-cloud-filter-select[size]:not([size="1"]) {
 
 #ajax-modal:has(#select-visible-tag-clouds-form),
 #ajax-modal:has(.tag-clouds-visibility-box) {
+  width: auto !important;
   height: auto !important;
   min-height: 0 !important;
-  max-height: none !important;
+  max-height: min(70vh, 640px) !important;
+  overflow: auto;
   padding-bottom: 8px !important;
-}
-
-.ui-dialog:has(#select-visible-tag-clouds-form),
-.ui-dialog:has(.tag-clouds-visibility-box) {
-  height: auto !important;
+  box-sizing: border-box;
 }
 
 #select-visible-tag-clouds-form .tag-clouds-visibility-box {
   display: block;
   overflow: hidden;
-  padding: 8px 12px;
+  padding: 8px 10px;
   margin: 0;
 }
 
@@ -481,9 +518,9 @@ select.tag-cloud-filter-select[size]:not([size="1"]) {
 }
 
 #select-visible-tag-clouds-form .tag-clouds-visibility-group + .tag-clouds-visibility-group {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #e5e7eb;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #d7d7d7;
 }
 
 #select-visible-tag-clouds-form .tag-cloud-row {
@@ -500,9 +537,9 @@ select.tag-cloud-filter-select[size]:not([size="1"]) {
 }
 
 #select-visible-tag-clouds-form .tag-cloud-row-bulk {
-  margin: 0 0 4px 0;
-  padding: 4px 2px 8px;
-  border-bottom: 1px solid #e5e7eb;
+  margin: 0 0 6px 0;
+  padding: 2px 2px 8px;
+  border-bottom: 1px solid #d7d7d7;
   border-radius: 0;
 }
 
@@ -551,6 +588,9 @@ select.tag-cloud-filter-select[size]:not([size="1"]) {
 }
 
 #select-visible-tag-clouds-form .tag-cloud-row .tag-cloud-name {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
   margin-left: 6px;
   min-width: 0;
   flex: 1 1 auto;
@@ -559,6 +599,10 @@ select.tag-cloud-filter-select[size]:not([size="1"]) {
   word-wrap: break-word;
   word-break: break-word;
   line-height: 1.35;
+}
+
+#select-visible-tag-clouds-form .tag-cloud-row .tag-cloud-name .tag-cloud-marker {
+  margin-left: 6px;
 }
 
 #select-visible-tag-clouds-form .tag-cloud-issue-count {
