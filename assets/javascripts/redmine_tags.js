@@ -19,7 +19,6 @@ $(function () {
         });
     });
 
-    // Project settings: drag-and-drop reorder (custom clouds only; system fixed)
     function initTagCloudsSettingsSortable() {
         var $tbody = $('#tag-clouds-sortable-settings');
         if (!$tbody.length || typeof $.fn.sortable !== 'function') {
@@ -79,7 +78,6 @@ $(function () {
         initTagCloudsSettingsSortable();
     });
 
-    // Measure longest option text and set select width to fit
     function fitSelectWidth($select) {
         var el = $select[0];
         if (!el || !el.options || !el.options.length) {
@@ -101,25 +99,50 @@ $(function () {
             fontFamily: $select.css('font-family'),
             padding: '0 8px'
         }).text(longest).appendTo('body');
-        var w = Math.max(200, Math.ceil($probe.outerWidth()) + 24);
+        var w = Math.max(160, Math.ceil($probe.outerWidth()) + 24);
         $probe.remove();
         $select.css('width', w + 'px');
     }
 
-    // ---- Live preview of matching tags (sidebar-style cloud HTML) ----
+    var VALUE_OPS = ['=', '!', 'ev', '!ev', 'cf'];
     var previewTimer = null;
+
+    function rowNeedsValues($row) {
+        var op = $row.find('.tag-cloud-filter-operator').val();
+        return VALUE_OPS.indexOf(op) !== -1;
+    }
+
+    function syncOperatorRow($row) {
+        var needs = rowNeedsValues($row);
+        var $select = $row.find('select.tag-cloud-filter-select').first();
+        var $btn = $row.find('.tag-cloud-filter-toggle');
+        $select.prop('hidden', !needs);
+        $btn.prop('hidden', !needs);
+        if (!needs) {
+            $select.val(null);
+        } else {
+            fitSelectWidth($select);
+        }
+    }
 
     function selectedValues($select) {
         if (!$select.length || $select.prop('hidden')) {
             return [];
         }
-        return $select.val() || [];
+        var val = $select.val();
+        if (val == null || val === '') {
+            return [];
+        }
+        return $.isArray(val) ? val : [val];
     }
 
     function collectPreviewParams() {
         var $form = $('.tag-cloud-form');
         var tagFilterOn = $('#tag_cloud_tag_filter').is(':checked');
         return {
+            status_operator: $form.find('select[name="tag_cloud[status_operator]"]').val() || '*',
+            version_operator: $form.find('select[name="tag_cloud[version_operator]"]').val() || '*',
+            tracker_operator: $form.find('select[name="tag_cloud[tracker_operator]"]').val() || '*',
             status_filter: selectedValues($form.find('select[name="tag_cloud[status_filter][]"]')),
             version_filter: selectedValues($form.find('select[name="tag_cloud[version_filter][]"]')),
             tracker_filter: selectedValues($form.find('select[name="tag_cloud[tracker_filter][]"]')),
@@ -156,42 +179,55 @@ $(function () {
         previewTimer = setTimeout(refreshPreview, 250);
     }
 
-    // ---- Tag cloud form: expand/collapse filter multi-selects ----
     function setFilterOpen($row, open) {
         var $btn = $row.find('.tag-cloud-filter-toggle');
-        var $select = $row.find('.tag-cloud-filter-select');
-        var $summary = $row.find('.tag-cloud-filter-summary');
-
-        $select.prop('hidden', !open);
-        $summary.prop('hidden', open);
+        var $select = $row.find('select.tag-cloud-filter-select').first();
+        var count = $select.find('option').length;
         $btn.attr('data-open', open ? '1' : '0');
         $btn.text(open ? '−' : '+');
-
         if (open) {
-            fitSelectWidth($select);
+            $select.attr('multiple', 'multiple');
+            $select.attr('size', Math.min(Math.max(count, 3), 6));
         } else {
-            $select.val(null);
-            schedulePreview();
+            var val = $select.val();
+            $select.removeAttr('multiple');
+            $select.attr('size', 1);
+            if ($.isArray(val)) {
+                $select.val(val.length ? val[0] : null);
+            }
         }
+        fitSelectWidth($select);
+        schedulePreview();
     }
 
     $(document).on('click', '.tag-cloud-filter-toggle', function (e) {
         e.preventDefault();
         var $row = $(this).closest('.tag-cloud-filter-row');
+        if (!rowNeedsValues($row)) {
+            return;
+        }
         var open = $(this).attr('data-open') === '1';
         setFilterOpen($row, !open);
+    });
+
+    $(document).on('change', '.tag-cloud-form select.tag-cloud-filter-operator', function () {
+        var $row = $(this).closest('.tag-cloud-filter-row');
+        syncOperatorRow($row);
+        schedulePreview();
     });
 
     $(document).on('change', '.tag-cloud-form select.tag-cloud-filter-select', function () {
         schedulePreview();
     });
 
-    // Fit width for already-open selects on page load
+    $('.tag-cloud-form .tag-cloud-filter-row').each(function () {
+        syncOperatorRow($(this));
+    });
+
     $('.tag-cloud-form .tag-cloud-filter-select:not([hidden])').each(function () {
         fitSelectWidth($(this));
     });
 
-    // tag_filter checkbox shows/hides tag whitelist panel
     $(document).on('change', '#tag_cloud_tag_filter', function () {
         var on = $(this).is(':checked');
         var $panel = $('#tag-cloud-tags-panel');
@@ -206,7 +242,6 @@ $(function () {
         schedulePreview();
     });
 
-    // visibility radios show/hide roles panel
     function syncVisibilityPanels() {
         var value = $('input[name="tag_cloud[visibility]"]:checked').val() || 'all';
         var roles = value === 'roles';
@@ -225,7 +260,6 @@ $(function () {
         syncVisibilityPanels();
     });
 
-    // initial state on form load
     if ($('.tag-cloud-form').length) {
         syncVisibilityPanels();
         if (!$('#tag_cloud_tag_filter').is(':checked')) {

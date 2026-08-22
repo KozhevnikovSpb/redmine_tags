@@ -45,7 +45,6 @@ ru:
   tag_clouds: Облака тегов
   label_none: Нет
 
-  # Tag Cloud management
   label_new_tag_cloud: Новое облако тегов
   label_edit_tag_cloud: Редактировать облако тегов
   label_default_tag_cloud: Теги
@@ -56,6 +55,11 @@ ru:
   label_tag_cloud_version_filter: Фильтр по версиям
   label_tag_cloud_tracker_filter: Фильтр по трекерам
   label_tag_cloud_filter_is: равно
+  label_tag_cloud_op_open: открытые
+  label_tag_cloud_op_closed: закрытые
+  label_tag_cloud_op_has_been: был
+  label_tag_cloud_op_never: никогда не был
+  label_tag_cloud_op_changed_from: изменён с
   label_tag_cloud_visible_by_default: Видимо по умолчанию
   label_tag_cloud_include_subprojects: Подпроекты
   label_tag_cloud_show_in_subprojects: Показ в подпроектах
@@ -76,7 +80,6 @@ ru:
   notice_tag_cloud_deleted: Облако тегов успешно удалено.
   alert_cannot_delete_system_cloud: Облако «Теги» нельзя удалить.
 
-  # Visibility
   label_tag_cloud_visibility_rule: Видимость
   label_tag_cloud_visibility_all: Все пользователи
   label_tag_cloud_visibility_owner: Только владелец
@@ -86,7 +89,6 @@ ru:
   text_tag_cloud_roles_required: Выберите хотя бы одну роль. Пользователь должен иметь одну из этих ролей в проекте, чтобы видеть облако.
   text_tag_cloud_visible_by_default_hint: При видимости «Все пользователи» снятие галочки скрывает облако, пока пользователь не включит его в «Выбрать видимые облака».
 
-  # Tag filter whitelist
   label_tag_cloud_tag_filter: Белый список тегов
   label_tag_cloud_tag_filter_enable: Ограничить облако выбранными тегами
   text_tag_cloud_tag_filter_hint: Если включено, в облаке показываются только выбранные теги (с учётом фильтров статус/версия/трекер). Если включено и теги не выбраны — облако пустое.
@@ -94,7 +96,6 @@ ru:
   label_tag_cloud_empty: Нет подходящих тегов
   label_tag_cloud_matching_tags: Подходящие теги
 
-  # Select visible tag clouds modal
   label_select_visible_tag_clouds: Выбрать видимые облака тегов
   label_tag_clouds_visibility: Видимые облака тегов
   label_tag_cloud_issue_count:
