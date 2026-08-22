@@ -57,7 +57,8 @@ module RedmineupTags
 
           def project_settings_tabs
             tabs = project_settings_tabs_without_tags
-            unless tabs.any? { |tab| tab[:name] == 'tags' }
+            if User.current.allowed_to?(:manage_tag_clouds, @project) &&
+               !tabs.any? { |tab| tab[:name] == 'tags' }
               tabs << {
                 name: 'tags',
                 action: :manage_tag_clouds,
