@@ -84,24 +84,25 @@ class TagCloudsController < ApplicationController
   end
 
   def destroy
-    link = @tag_cloud.tag_cloud_projects.find_by(project_id: @project.id)
-    link&.destroy
-    @tag_cloud.destroy! if @tag_cloud.tag_cloud_projects.reload.empty?
+    if @tag_cloud.linked_to?(@project)
+      link = @tag_cloud.tag_cloud_projects.find_by(project_id: @project.id)
+      link&.destroy
+      @tag_cloud.destroy! if @tag_cloud.tag_cloud_projects.reload.empty?
+    else
+      @tag_cloud.destroy!
+    end
 
     redirect_after_change l(:notice_tag_cloud_deleted)
   end
 
   def reorder
     ids = Array(params[:tag_cloud_ids]).map { |v| Integer(v) rescue 0 }.reject(&:zero?)
-    links = @project.tag_cloud_projects.where(tag_cloud_id: ids).index_by(&:tag_cloud_id)
+    inherited = ActiveModel::Type::Boolean.new.cast(params[:inherited])
 
-    TagCloudProject.transaction do
-      ids.each_with_index do |id, index|
-        link = links[id]
-        next unless link
-
-        link.update!(position: index) if link.position != index
-      end
+    if inherited
+      reorder_inherited_clouds(ids)
+    else
+      reorder_local_clouds(ids)
     end
 
     head :no_content
@@ -189,11 +190,51 @@ class TagCloudsController < ApplicationController
   end
 
   def find_tag_cloud
-    @tag_cloud = TagCloud.for_project(@project).find(params[:id])
+    id = params[:id].to_i
+    @tag_cloud = TagCloud.for_project(@project).find_by(id: id)
+    @tag_cloud ||= TagCloud.inherited_for(@project).find { |cloud| cloud.id == id }
+    raise ActiveRecord::RecordNotFound unless @tag_cloud
   end
 
   def next_position
     (@project.tag_cloud_projects.maximum(:position) || -1) + 1
+  end
+
+  def reorder_local_clouds(ids)
+    links = @project.tag_cloud_projects.where(tag_cloud_id: ids).index_by(&:tag_cloud_id)
+
+    TagCloudProject.transaction do
+      ids.each_with_index do |id, index|
+        link = links[id]
+        next unless link
+
+        link.update!(position: index) if link.position != index
+      end
+    end
+  end
+
+  def reorder_inherited_clouds(ids)
+    clouds = TagCloud.inherited_for(@project)
+    by_id = clouds.index_by(&:id)
+    ids = ids.select { |id| by_id[id] }.uniq
+    return if ids.empty?
+
+    grouped = ids.group_by { |id| by_id[id].home_project_for(@project)&.id }
+    TagCloudProject.transaction do
+      grouped.each do |home_id, group_ids|
+        next unless home_id
+
+        links = TagCloudProject.where(project_id: home_id, tag_cloud_id: group_ids).index_by(&:tag_cloud_id)
+        slots = group_ids.map { |id| links[id]&.position }.compact.sort
+        group_ids.each_with_index do |id, index|
+          link = links[id]
+          next unless link
+
+          new_pos = slots[index] || index
+          link.update!(position: new_pos) if link.position != new_pos
+        end
+      end
+    end
   end
 
   def load_filter_options
@@ -204,6 +245,12 @@ class TagCloudsController < ApplicationController
     @available_tags = project_available_tags
   end
 
+  def cloud_scope_project
+    return @project unless @tag_cloud&.persisted?
+
+    @tag_cloud.home_project_for(@project) || @project
+  end
+
   # Root cloud must offer every tracker used in this project and descendants.
   # Subprojects often enable extra trackers that the parent does not.
   def trackers_for_filter
@@ -212,19 +259,21 @@ class TagCloudsController < ApplicationController
       if defined?(Tracker) && Tracker.reflect_on_association(:projects)
         Tracker.joins(:projects).where(projects: { id: ids }).distinct
       else
-        @project.trackers
+        cloud_scope_project.trackers
       end
     scope = scope.sorted if scope.respond_to?(:sorted)
     merge_saved_records(scope, Tracker, Array(@tag_cloud&.tracker_filter))
   rescue StandardError => e
     Rails.logger.warn("[redmineup_tags] trackers_for_filter: #{e.class}: #{e.message}")
-    @project.trackers.respond_to?(:sorted) ? @project.trackers.sorted : @project.trackers
+    trackers = cloud_scope_project.trackers
+    trackers.respond_to?(:sorted) ? trackers.sorted : trackers
   end
 
   def self_and_descendant_project_ids
-    ids = [@project.id]
-    if @project.respond_to?(:descendants)
-      ids.concat(Array(@project.descendants.pluck(:id)))
+    root = cloud_scope_project
+    ids = [root.id]
+    if root.respond_to?(:descendants)
+      ids.concat(Array(root.descendants.pluck(:id)))
     end
     ids.uniq
   end
@@ -244,16 +293,17 @@ class TagCloudsController < ApplicationController
     end
   end
 
-  # Active versions of this project, shared versions, and descendants.
+  # Active versions of the cloud home project, shared versions, and descendants.
   def active_versions_for_project
+    scope_project = cloud_scope_project
     versions = []
-    if @project.respond_to?(:rolled_up_versions)
-      versions.concat(Array(@project.rolled_up_versions))
+    if scope_project.respond_to?(:rolled_up_versions)
+      versions.concat(Array(scope_project.rolled_up_versions))
     end
-    if @project.respond_to?(:shared_versions)
-      versions.concat(Array(@project.shared_versions))
+    if scope_project.respond_to?(:shared_versions)
+      versions.concat(Array(scope_project.shared_versions))
     end
-    versions.concat(Array(@project.versions))
+    versions.concat(Array(scope_project.versions))
     versions = versions.uniq(&:id)
     versions.reject! { |v| v.respond_to?(:closed?) ? v.closed? : v.status.to_s == 'closed' }
     extra_ids = Array(@tag_cloud&.version_filter).map(&:to_i).reject(&:zero?)
@@ -265,7 +315,7 @@ class TagCloudsController < ApplicationController
     end
     versions.sort_by { |v| v.name.to_s }
   rescue StandardError
-    Array(@project.versions).reject { |v| v.status.to_s == 'closed' }
+    Array(cloud_scope_project.versions).reject { |v| v.status.to_s == 'closed' }
   end
 
   def project_available_tags
