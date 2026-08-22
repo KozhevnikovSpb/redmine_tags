@@ -5,6 +5,7 @@
 # Position lives in tag_cloud_projects (per project). Default system cloud is virtual (not stored).
 class TagCloud < ActiveRecord::Base
   VISIBILITIES = %w[all owner roles].freeze
+  NAME_MAX_LENGTH = 100
 
   # Same operator codes as Redmine 7 Issue Query
   # status_id: list_status
@@ -34,7 +35,7 @@ class TagCloud < ActiveRecord::Base
   serialize :version_filter, coder: YAML, type: Array
   serialize :tracker_filter, coder: YAML, type: Array
 
-  validates :name, presence: true
+  validates :name, presence: true, length: { maximum: NAME_MAX_LENGTH }
   validates :visibility, inclusion: { in: VISIBILITIES }
   validates :tag_filter, inclusion: { in: [true, false] }
   validates :include_subprojects, inclusion: { in: [true, false] }

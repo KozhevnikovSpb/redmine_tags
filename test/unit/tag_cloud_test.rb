@@ -26,6 +26,15 @@ class TagCloudTest < ActiveSupport::TestCase
     assert cloud2.errors[:name].present?
   end
 
+  test 'name is limited to 100 characters' do
+    cloud = TagCloud.new(name: 'a' * TagCloud::NAME_MAX_LENGTH, visibility: 'all')
+    assert cloud.valid?, cloud.errors.full_messages.inspect
+
+    cloud.name = 'a' * (TagCloud::NAME_MAX_LENGTH + 1)
+    assert_not cloud.valid?
+    assert cloud.errors[:name].present?
+  end
+
   test 'preference overrides default visibility' do
     cloud = TagCloud.create!(name: 'Hidden', visible_by_default: false, visibility: 'all')
     cloud.tag_cloud_projects.create!(project: @project, position: 0)
