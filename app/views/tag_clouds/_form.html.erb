@@ -34,7 +34,6 @@
                      size: 60,
                      maxlength: TagCloud::NAME_MAX_LENGTH,
                      class: 'tag-cloud-name-input',
-                     title: name_blank_message,
                      data: { blank_message: name_blank_message },
                      oninvalid: "this.setCustomValidity(this.value ? '' : (this.getAttribute('data-blank-message') || ''))",
                      oninput: "this.setCustomValidity('')" %>
