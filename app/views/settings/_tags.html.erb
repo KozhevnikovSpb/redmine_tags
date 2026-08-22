@@ -1,8 +1,7 @@
 <p>
   <%= link_to l(:label_settings), { controller: 'settings', action: 'plugin', id: 'redmineup_tags' } %>
-  — plugin-wide tag display options (sidebar style, colors, sort).
+  — <%= l(:text_plugin_tag_display_options) %>
 </p>
 <p>
-  Tag clouds are managed per project:
-  <strong>Project → Settings → <%= l(:tag_clouds) %></strong>.
+  <%= l(:text_tag_clouds_managed_per_project_html, tab: l(:tag_clouds)).html_safe %>
 </p>
