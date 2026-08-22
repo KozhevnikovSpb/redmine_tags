@@ -66,9 +66,6 @@ class TagCloudAggregator
     empty_tags
   end
 
-  # Distinct issues matching cloud filters (status / tracker / version / open_only).
-  # When tag_filter is enabled — only issues that have at least one whitelist tag.
-  # Read-only helper for the Select visible tag clouds modal.
   def issue_count
     return 0 if @project.nil? || @tag_cloud.nil?
 
@@ -78,7 +75,6 @@ class TagCloudAggregator
 
     issue_ids = matching_issue_ids
     return 0 if issue_ids.empty?
-
     return issue_ids.size unless @tag_cloud.tag_filter
 
     taggings_table = Redmineup::Tagging.table_name
@@ -102,7 +98,6 @@ class TagCloudAggregator
     Redmineup::Tag.none
   end
 
-  # Issues in the current view project set, with cloud status/tracker/version filters.
   def matching_issue_ids
     project_ids = view_project_ids
     return [] if project_ids.empty?
@@ -112,18 +107,101 @@ class TagCloudAggregator
       issues = issues.joins(:status).where(issue_statuses: { is_closed: false })
     end
 
-    status_ids = Array(@tag_cloud.status_filter).map(&:to_i).reject(&:zero?)
-    version_ids = Array(@tag_cloud.version_filter).map(&:to_i).reject(&:zero?)
-    tracker_ids = Array(@tag_cloud.tracker_filter).map(&:to_i).reject(&:zero?)
-
-    issues = issues.where(status_id: status_ids) if status_ids.any?
-    issues = issues.where(tracker_id: tracker_ids) if tracker_ids.any?
-    issues = issues.where(fixed_version_id: version_ids) if version_ids.any?
+    issues = apply_status_filter(issues)
+    issues = apply_tracker_filter(issues)
+    issues = apply_version_filter(issues)
 
     issues.unscope(:order, :select).distinct.pluck(:id)
   end
 
-  # Same project set as issues list / default Tags cloud for this view.
+  def apply_status_filter(issues)
+    op = @tag_cloud.respond_to?(:normalized_status_operator) ? @tag_cloud.normalized_status_operator : '*'
+    ids = Array(@tag_cloud.status_filter).map(&:to_i).reject(&:zero?)
+
+    case op
+    when '*'
+      issues
+    when 'o'
+      issues.joins(:status).where(issue_statuses: { is_closed: false })
+    when 'c'
+      issues.joins(:status).where(issue_statuses: { is_closed: true })
+    when '='
+      ids.any? ? issues.where(status_id: ids) : issues
+    when '!'
+      ids.any? ? issues.where.not(status_id: ids) : issues
+    when 'ev'
+      ids.any? ? issues.where(id: status_ever_issue_ids(ids)) : issues
+    when '!ev'
+      ids.any? ? issues.where.not(id: status_ever_issue_ids(ids)) : issues
+    when 'cf'
+      ids.any? ? issues.where(id: status_changed_from_issue_ids(ids)) : issues
+    else
+      issues
+    end
+  end
+
+  def apply_tracker_filter(issues)
+    op = @tag_cloud.respond_to?(:normalized_tracker_operator) ? @tag_cloud.normalized_tracker_operator : '*'
+    ids = Array(@tag_cloud.tracker_filter).map(&:to_i).reject(&:zero?)
+
+    case op
+    when '='
+      ids.any? ? issues.where(tracker_id: ids) : issues
+    when '!'
+      ids.any? ? issues.where.not(tracker_id: ids) : issues
+    else
+      issues
+    end
+  end
+
+  def apply_version_filter(issues)
+    op = @tag_cloud.respond_to?(:normalized_version_operator) ? @tag_cloud.normalized_version_operator : '*'
+    ids = Array(@tag_cloud.version_filter).map(&:to_i).reject(&:zero?)
+
+    case op
+    when '='
+      ids.any? ? issues.where(fixed_version_id: ids) : issues
+    when '!'
+      return issues unless ids.any?
+
+      issues.where('issues.fixed_version_id IS NULL OR issues.fixed_version_id NOT IN (?)', ids)
+    when '!='
+      issues.where(fixed_version_id: nil)
+    else
+      issues
+    end
+  end
+
+  def status_ever_issue_ids(ids)
+    sids = ids.map(&:to_s)
+    current = Issue.where(status_id: ids).unscope(:order, :select).select(:id)
+    historical = Issue.joins(:journals).merge(
+      Journal.joins(:details).where(
+        journal_details: { property: 'attr', prop_key: 'status_id' }
+      ).where(
+        'journal_details.old_value IN (:s) OR journal_details.value IN (:s)',
+        s: sids
+      )
+    ).unscope(:order, :select).select(:id)
+    Issue.from("(#{current.to_sql} UNION #{historical.to_sql}) AS status_ever_issues").select('status_ever_issues.id')
+    Issue.where(id: current).or(Issue.where(id: historical)).unscope(:order, :select).distinct.pluck(:id)
+  rescue StandardError => e
+    Rails.logger.warn("[redmineup_tags] status_ever_issue_ids: #{e.class}: #{e.message}")
+    Issue.where(status_id: ids).unscope(:order, :select).distinct.pluck(:id)
+  end
+
+  def status_changed_from_issue_ids(ids)
+    sids = ids.map(&:to_s)
+    Issue.joins(:journals).merge(
+      Journal.joins(:details).where(
+        journal_details: { property: 'attr', prop_key: 'status_id', old_value: sids }
+      )
+    ).unscope(:order, :select).distinct.pluck(:id)
+  rescue StandardError => e
+    Rails.logger.warn("[redmineup_tags] status_changed_from_issue_ids: #{e.class}: #{e.message}")
+    []
+  end
+
   def view_project_ids
     return [] unless @project
 

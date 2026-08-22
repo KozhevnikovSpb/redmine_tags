@@ -6,11 +6,16 @@
 class TagCloud < ActiveRecord::Base
   VISIBILITIES = %w[all owner roles].freeze
 
+  # Same operator codes as Redmine Issue Query
+  STATUS_OPERATORS  = %w[o = ! c * ev !ev cf].freeze
+  VERSION_OPERATORS = %w[= ! * !*].freeze
+  TRACKER_OPERATORS = %w[= ! *].freeze
+  VALUE_OPERATORS   = %w[= ! ev !ev cf].freeze
+
   has_many :tag_cloud_projects, dependent: :destroy, inverse_of: :tag_cloud
   has_many :projects, through: :tag_cloud_projects
 
   has_many :tag_cloud_tags, dependent: :destroy
-  # Absolute :: path — relative 'Redmineup::Tag' resolves as TagCloud::Redmineup::Tag under Zeitwerk/Ruby 3.4
   has_many :tags, through: :tag_cloud_tags, class_name: '::Redmineup::Tag', source: :tag
 
   has_many :tag_cloud_roles, dependent: :destroy
@@ -30,23 +35,24 @@ class TagCloud < ActiveRecord::Base
   validates :tag_filter, inclusion: { in: [true, false] }
   validates :include_subprojects, inclusion: { in: [true, false] }
   validates :visible_by_default, inclusion: { in: [true, false] }
+  validates :status_operator, inclusion: { in: STATUS_OPERATORS }
+  validates :version_operator, inclusion: { in: VERSION_OPERATORS }
+  validates :tracker_operator, inclusion: { in: TRACKER_OPERATORS }
 
   validate :name_unique_within_projects
   validate :status_filter_exists
   validate :roles_present_when_visibility_roles
 
+  before_validation :normalize_operators
   before_validation :normalize_filters
   before_validation :normalize_owner_for_visibility
 
-  # Clouds directly linked to the project (settings + local sidebar).
   scope :for_project, lambda { |project|
     joins(:tag_cloud_projects)
       .where(tag_cloud_projects: { project_id: project.id })
       .order(Arel.sql('tag_cloud_projects.position ASC, tag_clouds.id ASC'))
   }
 
-  # Sidebar: local clouds + ancestor clouds marked include_subprojects.
-  # Order: root → … → parent (inherited), then local project order.
   def self.for_sidebar(project)
     return none unless project
 
@@ -54,7 +60,6 @@ class TagCloud < ActiveRecord::Base
     seen = {}
 
     chain = project.self_and_ancestors.to_a
-    # self_and_ancestors is usually root-first (by lft); ensure stable order
     chain = chain.sort_by(&:lft)
 
     chain.each do |p|
@@ -71,8 +76,6 @@ class TagCloud < ActiveRecord::Base
     clouds
   end
 
-  # Project the cloud is attached to for the current view context
-  # (local link, else nearest ancestor link). Used for aggregation.
   def home_project_for(view_project)
     return nil unless view_project
     return view_project if linked_to?(view_project)
@@ -167,7 +170,44 @@ class TagCloud < ActiveRecord::Base
     end
   end
 
+  def status_needs_values?
+    VALUE_OPERATORS.include?(normalized_status_operator)
+  end
+
+  def version_needs_values?
+    VALUE_OPERATORS.include?(normalized_version_operator)
+  end
+
+  def tracker_needs_values?
+    VALUE_OPERATORS.include?(normalized_tracker_operator)
+  end
+
+  def normalized_status_operator
+    op = status_operator.to_s.presence || '*'
+    STATUS_OPERATORS.include?(op) ? op : '*'
+  end
+
+  def normalized_version_operator
+    op = version_operator.to_s.presence || '*'
+    VERSION_OPERATORS.include?(op) ? op : '*'
+  end
+
+  def normalized_tracker_operator
+    op = tracker_operator.to_s.presence || '*'
+    TRACKER_OPERATORS.include?(op) ? op : '*'
+  end
+
   private
+
+  def normalize_operators
+    self.status_operator = normalized_status_operator
+    self.version_operator = normalized_version_operator
+    self.tracker_operator = normalized_tracker_operator
+  rescue StandardError
+    self.status_operator = '*' if status_operator.blank?
+    self.version_operator = '*' if version_operator.blank?
+    self.tracker_operator = '*' if tracker_operator.blank?
+  end
 
   def normalize_filters
     %i[status_filter version_filter tracker_filter].each do |attr|
@@ -175,16 +215,15 @@ class TagCloud < ActiveRecord::Base
       values = values.split(/[,\s]+/) if values.is_a?(String)
       self[attr] = Array(values).map(&:to_i).uniq.reject(&:zero?)
     end
+    self.status_filter = [] unless status_needs_values?
+    self.version_filter = [] unless version_needs_values?
+    self.tracker_filter = [] unless tracker_needs_values?
   end
 
   def normalize_owner_for_visibility
     case visibility
     when 'owner'
       self.owner_id ||= User.current&.id
-    when 'all'
-      # keep owner if set historically; not required
-    when 'roles'
-      # owner not used for visibility decision
     end
   end
 
