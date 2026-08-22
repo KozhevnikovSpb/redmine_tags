@@ -76,7 +76,35 @@ $(function () {
     initTagCloudsSettingsSortable();
     $(document).on('ajax:complete', function () {
         initTagCloudsSettingsSortable();
+        syncTagCloudsCheckAll();
     });
+
+    function visibleTagCloudBoxes() {
+        return $('#select-visible-tag-clouds-form .tag-clouds-visibility-list input[type="checkbox"]');
+    }
+
+    function syncTagCloudsCheckAll() {
+        var $master = $('#tag-clouds-check-all');
+        var $boxes = visibleTagCloudBoxes();
+        if (!$master.length || !$boxes.length) {
+            return;
+        }
+        var total = $boxes.length;
+        var checked = $boxes.filter(':checked').length;
+        $master.prop('checked', checked === total);
+        $master.prop('indeterminate', checked > 0 && checked < total);
+    }
+
+    $(document).on('change', '#tag-clouds-check-all', function () {
+        visibleTagCloudBoxes().prop('checked', $(this).is(':checked'));
+        $(this).prop('indeterminate', false);
+    });
+
+    $(document).on('change', '#select-visible-tag-clouds-form .tag-clouds-visibility-list input[type="checkbox"]', function () {
+        syncTagCloudsCheckAll();
+    });
+
+    syncTagCloudsCheckAll();
 
     function fitSelectWidth($select) {
         var el = $select[0];

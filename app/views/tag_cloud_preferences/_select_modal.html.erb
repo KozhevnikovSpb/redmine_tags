@@ -5,6 +5,16 @@
     <% if @tag_clouds.blank? %>
       <p class="nodata"><%= l(:label_no_data) %></p>
     <% else %>
+      <% all_visible = @tag_clouds.all? { |cloud| @visible_ids.include?(cloud.id) } %>
+      <div class="tag-cloud-row tag-cloud-row-bulk">
+        <label for="tag-clouds-check-all">
+          <%= check_box_tag 'tag_clouds_check_all', '1', all_visible,
+                            id: 'tag-clouds-check-all',
+                            name: nil,
+                            class: 'tag-clouds-check-all' %>
+          <span class="tag-cloud-name"><%= l(:button_check_all) %> / <%= l(:button_uncheck_all) %></span>
+        </label>
+      </div>
       <ul class="tag-clouds-visibility-list" id="tag-clouds-sortable">
         <% @tag_clouds.each do |cloud| %>
           <% count = (@issue_counts || {})[cloud.id].to_i %>
