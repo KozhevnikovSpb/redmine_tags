@@ -92,6 +92,9 @@ ru:
   text_tag_cloud_owner_only_author: Режим «Только автор» может выбрать только автор облака.
   text_tag_cloud_no_roles: Не найдено ролей, которые можно назначать участникам проекта.
   text_tag_cloud_visible_by_default_hint: При видимости «Все пользователи» снятие галочки скрывает облако, пока пользователь не включит его в «Выбрать видимые облака».
+  text_tag_cloud_name_blank: Укажите название.
+  text_plugin_tag_display_options: общие настройки отображения тегов (сайдбар, цвета, сортировка).
+  text_tag_clouds_managed_per_project_html: "Облака тегов настраиваются в проекте: <strong>Проект → Настройки → %{tab}</strong>."
 
   label_tag_cloud_tag_filter: Белый список тегов
   label_tag_cloud_tag_filter_enable: Ограничить облако выбранными тегами
@@ -110,3 +113,27 @@ ru:
   text_select_visible_tag_clouds_hint: Выберите, какие пользовательские облака тегов показывать в боковой панели. Унаследованные облака всегда выше облаков этого проекта. Перетаскивайте строки внутри группы, чтобы изменить порядок.
   notice_tag_cloud_preferences_updated: Настройки видимости облаков тегов обновлены.
   notice_failed_to_update_tag_cloud_preferences: Не удалось обновить настройки видимости облаков тегов.
+
+  activerecord:
+    models:
+      tag_cloud: Облако тегов
+    attributes:
+      tag_cloud:
+        name: Название
+        visibility: Видимость
+        roles: Роли
+        tag_filter: Белый список тегов
+        include_subprojects: Подпроекты
+        visible_by_default: Видимо по умолчанию
+    errors:
+      models:
+        tag_cloud:
+          attributes:
+            name:
+              blank: не может быть пустым
+              too_long: слишком длинное (максимум %{count} символов)
+              taken: уже используется в этом проекте
+            roles:
+              blank: выберите хотя бы одну роль
+            visibility:
+              invalid: режим «только автор» может выбрать только автор облака
