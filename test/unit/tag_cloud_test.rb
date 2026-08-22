@@ -59,6 +59,33 @@ class TagCloudTest < ActiveSupport::TestCase
     assert_empty TagCloud.for_project(@project)
   end
 
+  test 'inherited_for includes ancestor clouds with include_subprojects' do
+    child = Project.where.not(parent_id: nil).first
+    skip 'Need a subproject fixture' unless child
+
+    parent = child.parent
+    inherited = TagCloud.create!(name: 'Root cloud', visibility: 'all', include_subprojects: true)
+    inherited.tag_cloud_projects.create!(project: parent, position: 0)
+
+    hidden = TagCloud.create!(name: 'Parent only', visibility: 'all', include_subprojects: false)
+    hidden.tag_cloud_projects.create!(project: parent, position: 1)
+
+    local = TagCloud.create!(name: 'Child cloud', visibility: 'all')
+    local.tag_cloud_projects.create!(project: child, position: 0)
+
+    ids = TagCloud.inherited_for(child).map(&:id)
+    assert_includes ids, inherited.id
+    assert_not_includes ids, hidden.id
+    assert_not_includes ids, local.id
+    assert inherited.inherited_in?(child)
+    assert_not local.inherited_in?(child)
+
+    sidebar_ids = TagCloud.for_sidebar(child).map(&:id)
+    assert_equal inherited.id, sidebar_ids.first
+    assert_includes sidebar_ids, local.id
+    assert sidebar_ids.index(inherited.id) < sidebar_ids.index(local.id)
+  end
+
   test 'visibility owner only owner sees cloud' do
     cloud = TagCloud.create!(
       name: 'Owner cloud',
