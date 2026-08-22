@@ -4,26 +4,49 @@ Redmine Tags plugin - Tags board plugin for redmine
 Copyright (C) 2011-2026 Kirill Bezrukov (RedmineUP)
 http://www.redmineup.com/
 
-== 2026-08-19 v0.0.4
+== 2026-08-22 v0.0.4
 
-Global Tag Clouds list in plugin settings (admin)
-Target: Redmine 7.0 / Ruby 3.4 / Rails 8.1
-Plugin ID: :redmineup_tags
+Stable freeze. Plugin ID: :redmineup_tags
+Target: Redmine 7.0.0 / Ruby 3.4 / Rails 8.1
+Version in init.rb: 0.0.4 (Stable)
 
-* New tab «Tag Clouds» on Administration → Plugins → redmineup_tags settings
-* Table of all custom tag clouds across all projects (one row per project link)
-* Columns: Name, Project, Filters, Visibility, Visible by default, Include subprojects
-* Actions: Edit and Delete only (no create, no drag-reorder)
-* Admin can edit/delete clouds without being a project member
-* After edit/delete from the global tab, redirect returns to the same settings tab
-* Locales EN/RU for the new info text
-* Version set to 0.0.4
-* Tag cloud filters match Redmine 7 Issue List operators:
-  status (open / is / is not / has been / has never been / changed from / closed / any),
-  tracker (is / is not / has been / has never been / changed from / any),
-  version (is / is not / has been / has never been / changed from / none / any)
-* Version value list: open + locked only (closed versions hidden)
-* History operators use issue journals like core Query
+Admin
+* Tab «Tag Clouds» on plugin settings — global list of custom clouds
+* Columns: Name, Project, Filters, Visibility, Author, Visible by default, Include subprojects
+* Edit/Delete only (no create, no reorder)
+* Admin bypasses project membership; redirect back to the settings tab
+
+Inherited clouds (parent → subproject)
+* Shown in subproject settings with R/К marker; system cloud with S/С
+* Edit / delete / reorder inherited clouds from the subproject (home-project positions)
+* Select visible modal: inherited and local groups, in-group sort, no group titles
+* Sidebar containers: system → inherited → local
+* Settings tab hidden without manage_tag_clouds
+
+Filters
+* Operators match Redmine 7 Issue List (status / tracker / version + history)
+* Version values: open + locked only
+* Root cloud tracker/version lists union of project + descendants
+* Name limited to 100 characters
+
+Visibility & permissions
+* Author only selectable by the cloud author (disabled otherwise)
+* Author name shown on the Author only option
+* Roles list as checkboxes (givable roles fallback)
+* owner_id synced to created_by_id
+
+UI
+* Word wrap for long unbroken names
+* Modal bulk check/uncheck, width 560px
+* Settings table responsive + zebra from the system row
+* Small hint font for subprojects text
+
+Schema notes
+* If operators columns are missing: rake redmine:plugins:migrate NAME=redmineup_tags
+  or redmineup_tags:repair_schema, then restart
+
+Docs
+* doc/RELEASE_0.0.4.md
 
 == 2026-08-15 v0.0.3
 
@@ -49,9 +72,6 @@ Logic
 * Controller syncs role_ids / tag_ids on create/update; clears when not applicable
 * Model assigned_role_ids / assigned_tag_ids work for new records before save
 * Unit tests for owner, roles, tag_filter, uniqueness, preferences
-
-Not in this release
-* V.0.0.4 full automated functional suite / exhaustive manual matrix only
 
 == 2026-08-10 v0.0.2-beta
 
