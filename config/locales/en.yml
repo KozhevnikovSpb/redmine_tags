@@ -71,6 +71,8 @@ en:
   label_tag_cloud_badge_inherited: R
   label_tag_cloud_badge_system_title: System cloud
   label_tag_cloud_badge_inherited_title: Inherited from parent project
+  label_tag_cloud_group_inherited: From parent projects
+  label_tag_cloud_group_local: This project
   label_tag_cloud_drag_to_reorder: Drag to change display order
   button_collapse: Collapse
   text_tag_cloud_filters_empty_means_all: empty = Any / all
@@ -101,6 +103,6 @@ en:
   label_tag_cloud_issue_count:
     one: "%{count} issue"
     other: "%{count} issues"
-  text_select_visible_tag_clouds_hint: Choose which custom tag clouds should be shown in the issues sidebar for you. Drag rows to change order.
+  text_select_visible_tag_clouds_hint: Choose which custom tag clouds to show in the issues sidebar. Inherited clouds stay above this project's clouds. Drag within a group to change order.
   notice_tag_cloud_preferences_updated: Visible tag clouds updated.
   notice_failed_to_update_tag_cloud_preferences: Failed to update visible tag clouds.
