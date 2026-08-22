@@ -15,8 +15,6 @@ module TagsHelper
     content_tag('span', content, style)
   end
 
-  # Filters applied when clicking a tag in the sidebar.
-  # For custom clouds: cloud status/tracker/version + tag (+ open_only if no status filter).
   def issue_filters_for_tag_link(tag, options = {})
     filters = []
     cloud = options[:tag_cloud]
@@ -25,15 +23,27 @@ module TagsHelper
       status_ids = Array(cloud.status_filter).map(&:to_i).reject(&:zero?)
       tracker_ids = Array(cloud.tracker_filter).map(&:to_i).reject(&:zero?)
       version_ids = Array(cloud.version_filter).map(&:to_i).reject(&:zero?)
+      sop = cloud.respond_to?(:normalized_status_operator) ? cloud.normalized_status_operator : '*'
+      top = cloud.respond_to?(:normalized_tracker_operator) ? cloud.normalized_tracker_operator : '*'
+      vop = cloud.respond_to?(:normalized_version_operator) ? cloud.normalized_version_operator : '*'
 
-      if status_ids.any?
-        filters << ['status_id', '=', status_ids]
-      elsif options[:open_only]
-        filters << ['status_id', 'o', '']
+      case sop
+      when 'o', 'c'
+        filters << ['status_id', sop, '']
+      when '=', '!'
+        filters << ['status_id', sop, status_ids] if status_ids.any?
+      when '*'
+        filters << ['status_id', 'o', ''] if options[:open_only]
+      else
+        filters << ['status_id', '=', status_ids] if status_ids.any?
       end
 
-      filters << ['tracker_id', '=', tracker_ids] if tracker_ids.any?
-      filters << ['fixed_version_id', '=', version_ids] if version_ids.any?
+      filters << ['tracker_id', top, tracker_ids] if %w[= !].include?(top) && tracker_ids.any?
+      if %w[= !].include?(vop) && version_ids.any?
+        filters << ['fixed_version_id', vop, version_ids]
+      elsif vop == '!='
+        filters << ['fixed_version_id', '!*', '']
+      end
     elsif options[:open_only]
       filters << ['status_id', 'o', '']
     end
@@ -102,21 +112,58 @@ module TagsHelper
       v[name] = value.nil? || value == '' ? [''] : Array(value).map(&:to_s)
     end
 
-    {
-      set_filter: 1,
-      f: f,
-      op: op,
-      v: v
-    }
+    { set_filter: 1, f: f, op: op, v: v }
+  end
+
+  def tag_cloud_status_operator_options
+    [
+      [l(:label_tag_cloud_op_open), 'o'],
+      [l(:label_equals), '='],
+      [l(:label_not_equals), '!'],
+      [l(:label_tag_cloud_op_has_been), 'ev'],
+      [l(:label_tag_cloud_op_never), '!ev'],
+      [l(:label_tag_cloud_op_changed_from), 'cf'],
+      [l(:label_tag_cloud_op_closed), 'c'],
+      [l(:label_any), '*']
+    ]
+  end
+
+  def tag_cloud_list_operator_options(with_none: false)
+    opts = [
+      [l(:label_equals), '='],
+      [l(:label_not_equals), '!'],
+      [l(:label_any), '*']
+    ]
+    opts.insert(2, [l(:label_none), '!*']) if with_none
+    opts
+  end
+
+  def tag_cloud_operator_label(operator)
+    case operator.to_s
+    when 'o' then l(:label_tag_cloud_op_open)
+    when 'c' then l(:label_tag_cloud_op_closed)
+    when '=' then l(:label_equals)
+    when '!' then l(:label_not_equals)
+    when '*' then l(:label_any)
+    when '!=' then l(:label_none)
+    when 'ev' then l(:label_tag_cloud_op_has_been)
+    when '!ev' then l(:label_tag_cloud_op_never)
+    when 'cf' then l(:label_tag_cloud_op_changed_from)
+    else l(:label_any)
+    end
   end
 
   def tag_cloud_filters_summary(tag_cloud)
     return '' unless tag_cloud
 
     parts = []
-    parts << filter_summary(:field_status, safe_names(IssueStatus, tag_cloud.status_filter))
-    parts << filter_summary(:field_fixed_version, safe_names(Version, tag_cloud.version_filter))
-    parts << filter_summary(:field_tracker, safe_names(Tracker, tag_cloud.tracker_filter))
+    sop = tag_cloud.respond_to?(:normalized_status_operator) ? tag_cloud.normalized_status_operator : '*'
+    vop = tag_cloud.respond_to?(:normalized_version_operator) ? tag_cloud.normalized_version_operator : '*'
+    top = tag_cloud.respond_to?(:normalized_tracker_operator) ? tag_cloud.normalized_tracker_operator : '*'
+
+    parts << operator_filter_summary(:field_status, sop, safe_names(IssueStatus, tag_cloud.status_filter))
+    parts << operator_filter_summary(:field_fixed_version, vop, safe_names(Version, tag_cloud.version_filter))
+    parts << operator_filter_summary(:field_tracker, top, safe_names(Tracker, tag_cloud.tracker_filter))
 
     if tag_cloud.tag_filter
       tag_names = if tag_cloud.tag_ids.any?
@@ -157,7 +204,6 @@ module TagsHelper
     end
   end
 
-  # Circular letter marker: system (S/С) or inherited from parent (R/К).
   def tag_cloud_letter_marker(kind)
     case kind.to_sym
     when :system
@@ -180,6 +226,18 @@ module TagsHelper
   end
 
   private
+
+  def operator_filter_summary(label, operator, values)
+    op_label = tag_cloud_operator_label(operator)
+    text =
+      if TagCloud::VALUE_OPERATORS.include?(operator.to_s)
+        names = values.presence || ['—']
+        "#{l(label)} #{op_label} #{names.join(', ')}"
+      else
+        "#{l(label)}: #{op_label}"
+      end
+    content_tag(:span, text)
+  end
 
   def safe_names(model, ids)
     ids = Array(ids).map(&:to_i).reject(&:zero?)
