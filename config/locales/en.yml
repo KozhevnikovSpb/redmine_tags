@@ -114,6 +114,8 @@ en:
     one: "%{count} issue"
     other: "%{count} issues"
   text_select_visible_tag_clouds_hint: Choose which custom tag clouds to show in the issues sidebar. Inherited clouds stay above this project's clouds. Drag within a group to change order.
+  button_tag_cloud_preferences_reset: Reset
+  text_tag_cloud_preferences_reset_title: Reset personal visibility and order to defaults
   notice_tag_cloud_preferences_updated: Visible tag clouds updated.
   notice_failed_to_update_tag_cloud_preferences: Failed to update visible tag clouds.
 
