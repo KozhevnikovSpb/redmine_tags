@@ -79,16 +79,19 @@ module IssuesTagsHelper
 
     visible_inherited = inherited_clouds.select { |c| c.visible_for?(User.current, project: @project) }
     visible_local = local_clouds.select { |c| c.visible_for?(User.current, project: @project) }
+    show_system_cloud = !can_select_clouds || TagCloudPreference.system_visible_for?(User.current, @project)
 
     sections = []
 
-    sections << tag_cloud_section(
-      system_tag_cloud_title,
-      render_sidebar_tags,
-      'sidebar-tag-cloud sidebar-tag-cloud-system'
-    )
+    if show_system_cloud
+      sections << tag_cloud_section(
+        system_tag_cloud_title,
+        render_sidebar_tags,
+        'sidebar-tag-cloud sidebar-tag-cloud-system'
+      )
+    end
 
-    if can_select_clouds && (inherited_clouds.any? || local_clouds.any?)
+    if can_select_clouds
       sections << content_tag(:div, class: 'sidebar-tag-cloud-controls') do
         link_to(
           l(:label_select_visible_tag_clouds),
