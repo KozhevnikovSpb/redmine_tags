@@ -35,13 +35,13 @@ module IssuesTagsHelper
   end
 
   def render_tag_cloud(cloud)
-    open_only = RedmineupTags.settings['issues_open_only'].to_i == 1
-    # Count against the current view project (issues list scope), not cloud home.
+    # Custom clouds are driven only by their project filters.
+    # Plugin setting issues_open_only applies to the default Tags cloud only.
     tags = TagCloudAggregator.new(
       cloud,
       project: @project,
       user: User.current,
-      open_only: open_only
+      open_only: false
     ).tags.to_a
 
     if tags.empty?
@@ -51,7 +51,7 @@ module IssuesTagsHelper
     render_tags_list(
       tags,
       show_count: RedmineupTags.settings['issues_show_count'].to_i == 1,
-      open_only: open_only,
+      open_only: false,
       style: RedmineupTags.tag_list_view,
       tag_cloud: cloud
     )

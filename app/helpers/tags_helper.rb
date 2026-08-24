@@ -32,8 +32,7 @@ module TagsHelper
         filters << ['status_id', sop, '']
       when '=', '!', 'ev', '!ev', 'cf'
         filters << ['status_id', sop, status_ids] if status_ids.any?
-      when '*'
-        filters << ['status_id', 'o', ''] if options[:open_only]
+      # '*' (Any): no status constraint. Plugin issues_open_only does not apply.
       end
 
       if %w[= ! ev !ev cf].include?(top) && tracker_ids.any?
