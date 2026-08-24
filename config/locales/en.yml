@@ -72,6 +72,10 @@ en:
   label_tag_cloud_badge_inherited: R
   label_tag_cloud_badge_system_title: System cloud
   label_tag_cloud_badge_inherited_title: Inherited from parent project
+  label_system_tag_cloud_open_only: open only
+  label_system_tag_cloud_all: all
+  text_system_tag_cloud_open_only_title: Plugin setting «Display open issues only» is on
+  text_system_tag_cloud_all_title: Plugin setting «Display open issues only» is off
   label_tag_cloud_group_inherited: From parent projects
   label_tag_cloud_group_local: This project
   label_tag_cloud_drag_to_reorder: Drag to change display order
