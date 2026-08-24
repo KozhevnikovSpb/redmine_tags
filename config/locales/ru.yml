@@ -72,6 +72,10 @@ ru:
   label_tag_cloud_badge_inherited: К
   label_tag_cloud_badge_system_title: Системное облако
   label_tag_cloud_badge_inherited_title: Унаследовано из родительского проекта
+  label_system_tag_cloud_open_only: только открытые
+  label_system_tag_cloud_all: все
+  text_system_tag_cloud_open_only_title: Глобальная настройка «Только открытые задачи» включена
+  text_system_tag_cloud_all_title: Глобальная настройка «Только открытые задачи» выключена
   label_tag_cloud_group_inherited: Из родительских проектов
   label_tag_cloud_group_local: Этот проект
   label_tag_cloud_drag_to_reorder: Перетащите, чтобы изменить порядок отображения
