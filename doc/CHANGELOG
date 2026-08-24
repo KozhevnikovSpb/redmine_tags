@@ -16,6 +16,7 @@ Custom clouds
 * Custom clouds use project-level filters only (status Any = all issues, including closed)
 * Sidebar counts, preview and tag click links follow the same rule
 * Equal issue counts sort alphabetically (A–Z), independent of count direction
+* System cloud title shows current setting: open only / all
 
 == 2026-08-22 v0.0.4
 
