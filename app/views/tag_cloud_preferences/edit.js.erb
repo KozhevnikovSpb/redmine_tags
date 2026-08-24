@@ -1,9 +1,14 @@
 $('#ajax-modal').html('<%= escape_javascript(render partial: 'tag_cloud_preferences/select_modal') %>');
 showModal('ajax-modal', '560px');
-$('#ajax-modal').css({ height: 'auto', 'max-height': 'none', 'min-height': '0' });
-$('#ajax-modal').closest('.ui-dialog').css({ height: 'auto', width: '560px' });
 
 (function () {
+  var $modal = $('#ajax-modal');
+  var $dialog = $modal.closest('.ui-dialog');
+  $modal.addClass('tag-clouds-visibility-modal');
+  $dialog.addClass('tag-clouds-visibility-dialog');
+  $modal.css({ height: 'auto', 'min-height': '0' });
+  $dialog.css({ width: '560px' });
+
   function initGroupSortable(selector) {
     var $list = $(selector);
     if (!$list.length || typeof $.fn.sortable !== 'function') {

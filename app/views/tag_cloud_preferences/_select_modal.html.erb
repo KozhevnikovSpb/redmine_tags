@@ -16,27 +16,29 @@
         </label>
       </div>
 
-      <% if @inherited_clouds.present? %>
-        <div class="tag-clouds-visibility-group">
-          <ul class="tag-clouds-visibility-list" id="tag-clouds-sortable-inherited">
-            <% @inherited_clouds.each do |cloud| %>
-              <%= render partial: 'tag_cloud_preferences/visibility_row',
-                         locals: { cloud: cloud, inherited: true } %>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
+      <div class="tag-clouds-visibility-scroll">
+        <% if @inherited_clouds.present? %>
+          <div class="tag-clouds-visibility-group">
+            <ul class="tag-clouds-visibility-list" id="tag-clouds-sortable-inherited">
+              <% @inherited_clouds.each do |cloud| %>
+                <%= render partial: 'tag_cloud_preferences/visibility_row',
+                           locals: { cloud: cloud, inherited: true } %>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
 
-      <% if @local_clouds.present? %>
-        <div class="tag-clouds-visibility-group">
-          <ul class="tag-clouds-visibility-list" id="tag-clouds-sortable">
-            <% @local_clouds.each do |cloud| %>
-              <%= render partial: 'tag_cloud_preferences/visibility_row',
-                         locals: { cloud: cloud, inherited: false } %>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
+        <% if @local_clouds.present? %>
+          <div class="tag-clouds-visibility-group">
+            <ul class="tag-clouds-visibility-list" id="tag-clouds-sortable">
+              <% @local_clouds.each do |cloud| %>
+                <%= render partial: 'tag_cloud_preferences/visibility_row',
+                           locals: { cloud: cloud, inherited: false } %>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+      </div>
     <% end %>
   </div>
 
