@@ -15,6 +15,7 @@ Custom clouds
 * Plugin setting «Display open issues only» applies only to the default Tags cloud
 * Custom clouds use project-level filters only (status Any = all issues, including closed)
 * Sidebar counts, preview and tag click links follow the same rule
+* Equal issue counts sort alphabetically (A–Z), independent of count direction
 
 == 2026-08-22 v0.0.4
 
