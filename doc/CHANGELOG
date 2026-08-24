@@ -18,6 +18,12 @@ Custom clouds
 * Equal issue counts sort alphabetically (A–Z), independent of count direction
 * System cloud title shows current setting: open only / all
 
+Personal visibility
+* System Tags cloud can be hidden per user on the current project (Select visible tag clouds)
+* System row is first in the modal, not sortable
+* Stored in user preferences (no extra table)
+* Plugin / project settings for the system cloud stay read-only
+
 == 2026-08-22 v0.0.4
 
 Stable freeze. Plugin ID: :redmineup_tags
