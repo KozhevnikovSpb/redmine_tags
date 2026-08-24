@@ -125,8 +125,19 @@ module IssuesTagsHelper
 
   private
 
+  def system_issues_open_only?
+    RedmineupTags.settings['issues_open_only'].to_i == 1
+  end
+
   def system_tag_cloud_title
-    safe_join([l(:tags), ' '.html_safe, tag_cloud_letter_marker(:system)])
+    open_only = system_issues_open_only?
+    scope = content_tag(
+      :span,
+      open_only ? l(:label_system_tag_cloud_open_only) : l(:label_system_tag_cloud_all),
+      class: 'tag-cloud-system-scope',
+      title: open_only ? l(:text_system_tag_cloud_open_only_title) : l(:text_system_tag_cloud_all_title)
+    )
+    safe_join([l(:tags), ' '.html_safe, tag_cloud_letter_marker(:system), ' '.html_safe, scope])
   end
 
   def custom_tag_cloud_title(cloud)
