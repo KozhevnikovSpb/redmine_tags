@@ -2,6 +2,13 @@ $('#ajax-modal').html('<%= escape_javascript(render partial: 'tag_cloud_preferen
 showModal('ajax-modal', '560px');
 $('#ajax-modal').css({ height: 'auto', 'max-height': 'none', 'min-height': '0' });
 $('#ajax-modal').closest('.ui-dialog').css({ height: 'auto', width: '560px' });
+$('#select-visible-tag-clouds-form .tag-clouds-visibility-buttons').css({
+  display: 'flex',
+  'align-items': 'center',
+  'justify-content': 'space-between',
+  'text-align': 'left'
+});
+$('#tag-clouds-reset-defaults').css({ 'margin-left': 0 });
 
 (function () {
   function initGroupSortable(selector) {
