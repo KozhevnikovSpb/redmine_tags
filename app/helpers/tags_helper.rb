@@ -58,12 +58,21 @@ module TagsHelper
     content = +''
     style = options.delete(:style)
     tags = tags.to_a
+    custom_cloud = options[:tag_cloud]
 
     case sorting = "#{RedmineupTags.settings['issues_sort_by']}:#{RedmineupTags.settings['issues_sort_order']}"
     when 'name:asc' then tags.sort_by! { |tag| tag.name.to_s.downcase }
     when 'name:desc' then tags.sort_by! { |tag| tag.name.to_s.downcase }.reverse!
-    when 'count:asc' then tags.sort_by! { |tag| tag.count.to_i }
-    when 'count:desc' then tags.sort_by! { |tag| tag.count.to_i }.reverse!
+    when 'count:asc'
+      tags.sort_by! do |tag|
+        custom_cloud ? [tag.count.to_i, tag.name.to_s.downcase] : tag.count.to_i
+      end
+    when 'count:desc'
+      if custom_cloud
+        tags.sort_by! { |tag| [-tag.count.to_i, tag.name.to_s.downcase] }
+      else
+        tags.sort_by! { |tag| tag.count.to_i }.reverse!
+      end
     else
       logger.warn "[redmine_tags] Unknown sorting option: <#{sorting}>"
       tags.sort_by! { |tag| tag.name.to_s.downcase }

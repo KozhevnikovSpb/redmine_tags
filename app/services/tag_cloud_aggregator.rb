@@ -46,7 +46,9 @@ class TagCloudAggregator
       group_cols = "#{tags_table}.id, #{tags_table}.name, #{tags_table}.color"
     end
 
-    result = scope.select(select_cols.join(', ')).group(group_cols)
+    result = scope.select(select_cols.join(', '))
+                  .group(group_cols)
+                  .order(Arel.sql("#{tags_table}.name ASC"))
     log_empty("issues=#{issue_ids.size} but no taggings matched") if result.to_a.empty?
     result
   rescue StandardError => e
