@@ -1,0 +1,18 @@
+<% count = @system_issue_count.to_i %>
+<li class="tag-cloud-row tag-cloud-row-system" data-id="system">
+  <label for="system-tag-cloud-visible">
+    <%= check_box_tag 'system_tag_cloud_visible',
+                      '1',
+                      @system_visible,
+                      id: 'system-tag-cloud-visible' %>
+    <span class="tag-cloud-name">
+      <%= l(:tags) %>
+      <%= tag_cloud_letter_marker(:system) %>
+    </span>
+  </label>
+  <span class="tag-cloud-issue-count"
+        title="<%= l(:label_tag_cloud_issue_count, count: count) %>">
+    <%= l(:label_tag_cloud_issue_count, count: count) %>
+  </span>
+  <span class="tag-cloud-drag-handle-spacer" aria-hidden="true"></span>
+</li>

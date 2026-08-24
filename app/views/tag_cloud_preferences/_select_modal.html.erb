@@ -2,20 +2,22 @@
 
 <%= form_tag(project_tag_cloud_preferences_path(@project), method: :put, id: 'select-visible-tag-clouds-form') do %>
   <div class="box tag-clouds-visibility-box">
-    <% if @tag_clouds.blank? %>
-      <p class="nodata"><%= l(:label_no_data) %></p>
-    <% else %>
-      <% all_visible = @tag_clouds.all? { |cloud| @visible_ids.include?(cloud.id) } %>
-      <div class="tag-cloud-row tag-cloud-row-bulk">
-        <label for="tag-clouds-check-all">
-          <%= check_box_tag 'tag_clouds_check_all', '1', all_visible,
-                            id: 'tag-clouds-check-all',
-                            name: nil,
-                            class: 'tag-clouds-check-all' %>
-          <span class="tag-cloud-name"><%= l(:button_check_all) %> / <%= l(:button_uncheck_all) %></span>
-        </label>
-      </div>
+    <% all_visible = @system_visible && @tag_clouds.all? { |cloud| @visible_ids.include?(cloud.id) } %>
+    <div class="tag-cloud-row tag-cloud-row-bulk">
+      <label for="tag-clouds-check-all">
+        <%= check_box_tag 'tag_clouds_check_all', '1', all_visible,
+                          id: 'tag-clouds-check-all',
+                          name: nil,
+                          class: 'tag-clouds-check-all' %>
+        <span class="tag-cloud-name"><%= l(:button_check_all) %> / <%= l(:button_uncheck_all) %></span>
+      </label>
+    </div>
 
+    <ul class="tag-clouds-visibility-list tag-clouds-visibility-system" id="tag-clouds-system">
+      <%= render partial: 'tag_cloud_preferences/system_visibility_row' %>
+    </ul>
+
+    <% if @inherited_clouds.present? || @local_clouds.present? %>
       <div class="tag-clouds-visibility-scroll">
         <% if @inherited_clouds.present? %>
           <div class="tag-clouds-visibility-group">
@@ -48,11 +50,10 @@
                     type: 'button',
                     id: 'tag-clouds-reset-defaults',
                     name: nil,
-                    disabled: @tag_clouds.blank?,
                     title: l(:text_tag_cloud_preferences_reset_title) %>
     </span>
     <span class="tag-clouds-visibility-buttons-right">
-      <%= submit_tag l(:button_save), name: nil, disabled: @tag_clouds.blank? %>
+      <%= submit_tag l(:button_save), name: nil %>
       <%= button_tag l(:button_cancel), type: 'button', onclick: 'hideModal(this);', name: nil %>
     </span>
   </div>
