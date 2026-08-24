@@ -123,12 +123,11 @@ class TagCloudsController < ApplicationController
     )
     cloud.tag_ids = Array(params[:tag_ids]) if cloud.tag_filter
 
-    open_only = RedmineupTags.settings['issues_open_only'].to_i == 1
     tags = TagCloudAggregator.new(
       cloud,
       project: @project,
       user: User.current,
-      open_only: open_only
+      open_only: false
     ).tags.to_a
 
     if tags.empty?
@@ -142,8 +141,9 @@ class TagCloudsController < ApplicationController
     html = helpers.render_tags_list(
       tags,
       show_count: RedmineupTags.settings['issues_show_count'].to_i == 1,
-      open_only: open_only,
-      style: style
+      open_only: false,
+      style: style,
+      tag_cloud: cloud
     )
     render html: html
   rescue StandardError => e
