@@ -10,6 +10,7 @@ en:
   sidebar_tag_list_view: Display tags on sidebar as
   issues_show_count: Display amount of issues
   issues_open_only: Display open issues only
+  text_issues_open_only_hint: Applies only to the default Tags cloud. Custom tag clouds use their own status filter (Any = all issues, including closed).
   issues_sort_by: Sort tags by
   use_colors: Use colors
 

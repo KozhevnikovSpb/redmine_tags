@@ -42,4 +42,14 @@ class TagCloudAggregatorTest < ActiveSupport::TestCase
       TagCloudAggregator.new(cloud, project: @project, user: @user).tags.to_a
     end
   end
+
+  test 'custom cloud any-status ignores open_only extra restriction by default' do
+    cloud = TagCloud.create!(name: 'Any status', visibility: 'all', visible_by_default: true)
+    cloud.tag_cloud_projects.create!(project: @project, position: 0)
+
+    all_count = TagCloudAggregator.new(cloud, project: @project, user: @user, open_only: false).issue_count
+    open_count = TagCloudAggregator.new(cloud, project: @project, user: @user, open_only: true).issue_count
+
+    assert_operator open_count, :<=, all_count
+  end
 end
