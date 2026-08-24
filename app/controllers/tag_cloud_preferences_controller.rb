@@ -13,7 +13,6 @@ class TagCloudPreferencesController < ApplicationController
     @visible_ids = @tag_clouds.select { |c| c.visible_for?(User.current, project: @project) }.map(&:id)
     @issue_counts = load_issue_counts_for_clouds(@tag_clouds)
     @system_visible = TagCloudPreference.system_visible_for?(User.current, @project)
-    @system_issue_count = system_tag_cloud_issue_count
 
     respond_to do |format|
       format.js
@@ -108,20 +107,5 @@ class TagCloudPreferencesController < ApplicationController
         open_only: false
       ).issue_count
     end
-  end
-
-  def system_tag_cloud_issue_count
-    return 0 unless @project
-
-    project_ids = [@project.id]
-    project_ids.concat(@project.descendants.pluck(:id)) if Setting.display_subprojects_issues?
-    issues = Issue.visible(User.current).where(project_id: project_ids)
-    if RedmineupTags.settings['issues_open_only'].to_i == 1
-      issues = issues.joins(:status).where(issue_statuses: { is_closed: false })
-    end
-    issues.unscope(:order).distinct.count
-  rescue StandardError => e
-    Rails.logger.warn("[redmineup_tags] system_tag_cloud_issue_count: #{e.class}: #{e.message}")
-    0
   end
 end
