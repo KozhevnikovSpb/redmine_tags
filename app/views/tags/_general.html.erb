@@ -9,6 +9,7 @@
 <p>
   <%= label_tag 'settings[issues_open_only]', l(:issues_open_only) %>
   <%= check_box_tag 'settings[issues_open_only]', 1, 1 == @settings['issues_open_only'].to_i %>
+  <em class="info"><%= l(:text_issues_open_only_hint) %></em>
 </p>
 <p>
   <%= label_tag 'settings[issues_sort_by]', l(:issues_sort_by) %>

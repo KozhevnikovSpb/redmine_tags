@@ -96,13 +96,12 @@ class TagCloudPreferencesController < ApplicationController
   def load_issue_counts_for_clouds(clouds)
     return {} if clouds.blank?
 
-    open_only = RedmineupTags.settings['issues_open_only'].to_i == 1
     clouds.each_with_object({}) do |cloud, hash|
       hash[cloud.id] = TagCloudAggregator.new(
         cloud,
         project: @project,
         user: User.current,
-        open_only: open_only
+        open_only: false
       ).issue_count
     end
   end
