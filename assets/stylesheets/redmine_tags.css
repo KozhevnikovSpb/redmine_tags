@@ -75,6 +75,14 @@
   margin-top: 1px;
 }
 
+#sidebar .sidebar-tag-cloud-system h3 .tag-cloud-system-scope {
+  margin-left: 6px;
+  color: #6b7280;
+  font-size: 0.78em;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
 #sidebar .sidebar-tag-cloud-controls {
   margin: 2px 0 12px;
 }
