@@ -43,7 +43,17 @@
   </div>
 
   <div class="buttons tag-clouds-visibility-buttons">
-    <%= submit_tag l(:button_save), name: nil, disabled: @tag_clouds.blank? %>
-    <%= button_tag l(:button_cancel), type: 'button', onclick: 'hideModal(this);', name: nil %>
+    <span class="tag-clouds-visibility-buttons-left">
+      <%= button_tag l(:button_tag_cloud_preferences_reset),
+                    type: 'button',
+                    id: 'tag-clouds-reset-defaults',
+                    name: nil,
+                    disabled: @tag_clouds.blank?,
+                    title: l(:text_tag_cloud_preferences_reset_title) %>
+    </span>
+    <span class="tag-clouds-visibility-buttons-right">
+      <%= submit_tag l(:button_save), name: nil, disabled: @tag_clouds.blank? %>
+      <%= button_tag l(:button_cancel), type: 'button', onclick: 'hideModal(this);', name: nil %>
+    </span>
   </div>
 <% end %>
