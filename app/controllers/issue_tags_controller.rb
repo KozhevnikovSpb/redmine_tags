@@ -30,8 +30,12 @@ class IssueTagsController < ApplicationController
 
   def autocomplete
     tags_table = Redmineup::Tag.table_name
+    taggings_table = Redmineup::Tagging.table_name
     q = (params[:q] || params[:term]).to_s.strip
     scope = Redmineup::Tag.unscoped
+                          .joins("INNER JOIN #{taggings_table} ON #{taggings_table}.tag_id = #{tags_table}.id")
+                          .where("#{taggings_table}.taggable_type = ?", 'Issue')
+                          .distinct
     if q.present?
       scope = scope.where("LOWER(#{tags_table}.name) LIKE LOWER(?)",
                           "%#{Redmineup::Tag.sanitize_sql_like(q)}%")
