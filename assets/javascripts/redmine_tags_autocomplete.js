@@ -1,6 +1,22 @@
 (function () {
+  var cacheByUrl = {};
+
   function isTagsUrl(url) {
     return url && String(url).indexOf('auto_completes/redmine_tags') !== -1;
+  }
+
+  function parseTags(data) {
+    return $.isArray(data) ? data : ((data && data.results) || []);
+  }
+
+  function filterTags(items, term) {
+    var q = $.trim(term || '').toLowerCase();
+    if (!q) {
+      return items;
+    }
+    return $.grep(items, function (item) {
+      return String(item.text || item.id || '').toLowerCase().indexOf(q) !== -1;
+    });
   }
 
   function ajaxOptionsOf($el) {
@@ -17,24 +33,46 @@
     return null;
   }
 
-  function patchAjax($el) {
+  function patchTagSelect2($el) {
     var ajax = ajaxOptionsOf($el);
-    if (!ajax || !isTagsUrl(ajax.url)) {
+    if (!ajax || !isTagsUrl(ajax.url) || ajax.__redmineTagsFullList) {
       return;
     }
+    ajax.__redmineTagsFullList = true;
     ajax.cache = false;
     ajax.data = function (params) {
-      return {
-        q: params.term || '',
-        page: params.page || 1
-      };
+      return { q: params.term || '' };
     };
     ajax.processResults = function (data) {
-      var items = $.isArray(data) ? data : ((data && data.results) || []);
       return {
-        results: items,
+        results: parseTags(data),
         pagination: { more: false }
       };
+    };
+    ajax.transport = function (params, success, failure) {
+      var url = ajax.url;
+      var term = '';
+      if (params && params.data) {
+        term = params.data.q || params.data.term || '';
+      }
+      function respond(items) {
+        success({
+          results: filterTags(items, term),
+          pagination: { more: false }
+        });
+      }
+      if (cacheByUrl[url]) {
+        respond(cacheByUrl[url]);
+        return;
+      }
+      $.ajax({
+        url: url,
+        dataType: 'json',
+        data: {}
+      }).done(function (data) {
+        cacheByUrl[url] = parseTags(data);
+        respond(cacheByUrl[url]);
+      }).fail(failure);
     };
   }
 
@@ -45,7 +83,7 @@
     }
     $el.data('redmine-tags-highlight-patched', true);
     s2.results.highlightFirstItem = function () {
-      if (this.$results.scrollTop() > 0) {
+      if (this.$results && this.$results.scrollTop() > 0) {
         return;
       }
       var $options = this.$results.find('.select2-results__option--selectable');
@@ -54,20 +92,12 @@
       }
     };
     s2.results.ensureHighlightVisible = function () {};
-    $el.on('select2:open', function () {
-      window.setTimeout(function () {
-        var $results = s2.results && s2.results.$results;
-        if ($results && $results.length) {
-          $results.scrollTop(0);
-        }
-      }, 0);
-    });
   }
 
   function patchAll() {
     $('select').each(function () {
       var $el = $(this);
-      patchAjax($el);
+      patchTagSelect2($el);
       patchHighlight($el);
     });
   }
