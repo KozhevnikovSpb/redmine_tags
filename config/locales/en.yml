@@ -113,6 +113,8 @@ en:
   label_tag_cloud_issue_count:
     one: "%{count} issue"
     other: "%{count} issues"
+  label_tag_cloud_modal_issue_count: "%{filtered} / %{untagged} issues"
+  text_tag_cloud_modal_issue_count_title: Open issues matching the filter / open issues without tags
   text_select_visible_tag_clouds_hint: Choose which custom tag clouds to show in the issues sidebar. Inherited clouds stay above this project's clouds. Drag within a group to change order.
   button_tag_cloud_preferences_reset: Reset
   text_tag_cloud_preferences_reset_title: Reset personal visibility and order to defaults
