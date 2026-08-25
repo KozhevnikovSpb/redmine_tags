@@ -15,8 +15,12 @@
     </span>
   </label>
   <span class="tag-cloud-issue-count"
-        title="<%= l(:text_tag_cloud_modal_issue_count_title) %>">
-    <%= l(:label_tag_cloud_modal_issue_count, filtered: filtered, untagged: untagged) %>
+        title="<%= l(:text_tag_cloud_modal_issue_count_title,
+                     default: 'Open issues matching the filter / open issues without tags') %>">
+    <%= l(:label_tag_cloud_modal_issue_count,
+          filtered: filtered,
+          untagged: untagged,
+          default: '%{filtered} / %{untagged} issues') %>
   </span>
   <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
     <%= sprite_icon('reorder', '') %>
