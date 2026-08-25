@@ -1,5 +1,5 @@
 RedmineApp::Application.routes.draw do
-  match 'auto_completes/redmine_tags' => 'auto_completes#redmine_tags', via: :get, as: 'auto_complete_redmine_tags'
+  match 'auto_completes/redmine_tags' => 'issue_tags#autocomplete', via: :get, as: 'auto_complete_redmine_tags'
   match '/tags/context_menu', to: 'tags#context_menu', as: 'tags_context_menu', via: %i[get post]
   match '/tags', controller: 'tags', action: 'destroy', via: :delete
 
@@ -27,7 +27,6 @@ RedmineApp::Application.routes.draw do
       end
     end
 
-    # Bulk preferences modal (Select visible tag clouds)
     resource :tag_cloud_preferences,
              only: %i[edit update],
              controller: 'tag_cloud_preferences'

@@ -28,6 +28,24 @@ class IssueTagsController < ApplicationController
     redirect_to_referer_or { render plain: 'Tags updated.', layout: true } unless performed?
   end
 
+  def autocomplete
+    tags_table = Redmineup::Tag.table_name
+    q = (params[:q] || params[:term]).to_s.strip
+    scope = Redmineup::Tag.unscoped
+    if q.present?
+      scope = scope.where("LOWER(#{tags_table}.name) LIKE LOWER(?)",
+                          "%#{Redmineup::Tag.sanitize_sql_like(q)}%")
+    end
+    scope = scope.order(Arel.sql("#{tags_table}.name ASC"))
+    payload = scope.map { |tag| { id: tag.name, text: tag.name } }
+
+    if params[:page].present?
+      render json: { results: payload, pagination: { more: false } }
+    else
+      render json: payload
+    end
+  end
+
   private
 
   def authorize_tag_editing
