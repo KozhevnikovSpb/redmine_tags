@@ -42,15 +42,19 @@ module RedmineupTags
           taggings_table = Redmineup::Tagging.table_name
           issues_table = Issue.table_name
 
-          visible_issues = Issue.visible(options[:user] || User.current)
+          issues = if options[:all_issues]
+                     Issue.unscoped.select(:id)
+                   else
+                     Issue.visible(options[:user] || User.current)
+                   end
           projects = Array(options[:projects] || options[:project]).compact
-          visible_issues = visible_issues.where(project_id: projects.map { |project| project.respond_to?(:id) ? project.id : project }) if projects.any?
-          visible_issues = visible_issues.joins(:status).where(issue_statuses: { is_closed: false }) if options[:open_only]
+          issues = issues.where(project_id: projects.map { |project| project.respond_to?(:id) ? project.id : project }) if projects.any?
+          issues = issues.joins(:status).where(issue_statuses: { is_closed: false }) if options[:open_only]
 
           scope = Redmineup::Tag
                   .joins("JOIN #{taggings_table} ON #{taggings_table}.tag_id = #{tags_table}.id")
                   .where("#{taggings_table}.taggable_type = ?", Issue.name)
-                  .where("#{taggings_table}.taggable_id IN (#{visible_issues.select(:id).to_sql})")
+                  .where("#{taggings_table}.taggable_id IN (#{issues.select(:id).to_sql})")
 
           if options[:name_like].present?
             scope = scope.where("LOWER(#{tags_table}.name) LIKE LOWER(?)", "%#{sanitize_sql_like(options[:name_like])}%")
