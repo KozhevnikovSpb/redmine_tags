@@ -1,4 +1,7 @@
 (function () {
+  var allTags = null;
+  var loading = false;
+
   function isTagsUrl(url) {
     return url && String(url).indexOf('auto_completes/redmine_tags') !== -1;
   }
@@ -19,6 +22,13 @@
       return s2.options.options.ajax.url || '';
     }
     return '';
+  }
+
+  function isTagSelect($el) {
+    if ($el.is('#issue_tag_list') || $el.attr('name') === 'issue[tag_list][]') {
+      return true;
+    }
+    return isTagsUrl(ajaxUrlOf($el));
   }
 
   function copySelect2Options($el) {
@@ -54,50 +64,69 @@
     });
   }
 
-  function convertToLocal($el) {
-    if ($el.data('redmine-tags-local') || $el.data('redmine-tags-local-loading')) {
+  function applyLocal($el) {
+    if (!allTags || $el.data('redmine-tags-local')) {
       return;
     }
-    var url = ajaxUrlOf($el);
-    if (!isTagsUrl(url)) {
+    if (!isTagSelect($el)) {
       return;
     }
-    $el.data('redmine-tags-local-loading', true);
     var select2opts = copySelect2Options($el);
+    var s2 = $el.data('select2');
+    var wasOpen = s2 && typeof s2.isOpen === 'function' && s2.isOpen();
+    if (s2) {
+      $el.select2('destroy');
+    }
+    fillOptions($el, allTags);
+    $el.select2(select2opts);
+    $el.data('redmine-tags-local', true);
+    if (wasOpen) {
+      $el.select2('open');
+    }
+  }
+
+  function convertAll() {
+    if (!allTags) {
+      return;
+    }
+    $('select').each(function () {
+      applyLocal($(this));
+    });
+  }
+
+  function preload() {
+    if (allTags || loading) {
+      convertAll();
+      return;
+    }
+    loading = true;
+    var url = '/auto_completes/redmine_tags';
+    $('select').each(function () {
+      var found = ajaxUrlOf($(this));
+      if (isTagsUrl(found)) {
+        url = found;
+        return false;
+      }
+    });
     $.ajax({
       url: url,
       dataType: 'json',
       data: {}
     }).done(function (data) {
-      var items = parseTags(data);
-      var wasOpen = false;
-      var s2 = $el.data('select2');
-      if (s2 && typeof s2.isOpen === 'function') {
-        wasOpen = s2.isOpen();
-      }
-      if (s2) {
-        $el.select2('destroy');
-      }
-      fillOptions($el, items);
-      $el.select2(select2opts);
-      $el.data('redmine-tags-local', true);
-      $el.data('redmine-tags-local-loading', false);
-      if (wasOpen) {
-        $el.select2('open');
-      }
+      allTags = parseTags(data);
+      loading = false;
+      convertAll();
     }).fail(function () {
-      $el.data('redmine-tags-local-loading', false);
+      loading = false;
     });
   }
 
-  function patchAll() {
-    $('select').each(function () {
-      convertToLocal($(this));
-    });
-  }
-
-  $(patchAll);
-  $(document).on('ajax:complete ajaxComplete', function () {
-    setTimeout(patchAll, 0);
+  $(preload);
+  $(document).on('ajax:complete ajaxComplete select2:open select2:opening', function () {
+    preload();
+    convertAll();
   });
+  window.setTimeout(preload, 0);
+  window.setTimeout(preload, 300);
+  window.setTimeout(preload, 1000);
 }());
