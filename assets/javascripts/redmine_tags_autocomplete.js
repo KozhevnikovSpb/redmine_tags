@@ -1,12 +1,4 @@
 (function () {
-  function lastSelectedTag($el) {
-    var selected = $el.val() || [];
-    if (!$.isArray(selected)) {
-      selected = selected ? [selected] : [];
-    }
-    return selected.length ? selected[selected.length - 1] : '';
-  }
-
   function patchTagAjaxData() {
     $('select').each(function () {
       var $el = $(this);
@@ -19,12 +11,10 @@
         return;
       }
       ajax.data = function (params) {
-        var searching = !!(params.term && String(params.term).trim());
         return {
           q: params.term || '',
           page: params.page || 1,
-          limit: 30,
-          from: searching ? '' : lastSelectedTag($el)
+          limit: 30
         };
       };
     });
