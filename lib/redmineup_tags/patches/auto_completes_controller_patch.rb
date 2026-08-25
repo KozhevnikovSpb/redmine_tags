@@ -30,7 +30,8 @@ module RedmineupTags
       end
 
       module InstanceMethods
-        DEFAULT_AUTOCOMPLETE_LIMIT = 10
+        DEFAULT_AUTOCOMPLETE_LIMIT = 30
+        MAX_AUTOCOMPLETE_LIMIT = 100
         SORTING_FIELDS = { 'name' => 'name',
                            'last_created' => 'created_at',
                            'most_used' => 'count' }
@@ -42,11 +43,32 @@ module RedmineupTags
             sort_by: SORTING_FIELDS[suggestion_order],
             order: (suggestion_order == 'name' ? 'ASC' : 'DESC')
           }
-          @redmine_tags = Issue.all_tags(options).limit(DEFAULT_AUTOCOMPLETE_LIMIT)
-          render json: format_redmine_tags_json(@redmine_tags)
+          scope = Issue.all_tags(options)
+          page = params[:page].to_i
+          if page.positive?
+            limit = autocomplete_page_size
+            offset = (page - 1) * limit
+            tags = scope.offset(offset).limit(limit + 1).to_a
+            more = tags.size > limit
+            tags = tags.first(limit)
+            render json: {
+              results: format_redmine_tags_json(tags),
+              pagination: { more: more }
+            }
+          else
+            # Legacy clients / tests: first page as a flat array
+            @redmine_tags = scope.limit(DEFAULT_AUTOCOMPLETE_LIMIT)
+            render json: format_redmine_tags_json(@redmine_tags)
+          end
         end
 
         private
+
+        def autocomplete_page_size
+          limit = params[:limit].present? ? params[:limit].to_i : DEFAULT_AUTOCOMPLETE_LIMIT
+          limit = DEFAULT_AUTOCOMPLETE_LIMIT if limit <= 0
+          [limit, MAX_AUTOCOMPLETE_LIMIT].min
+        end
 
         def format_redmine_tags_json(redmine_tags)
           redmine_tags.map do |redmine_tag|
