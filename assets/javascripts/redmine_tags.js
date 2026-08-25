@@ -1,4 +1,49 @@
 $(function () {
+    var TAGS_PAGE_SIZE = 30;
+
+    function isRedmineTagsAjax(ajax) {
+        if (!ajax || !ajax.url) {
+            return false;
+        }
+        return String(ajax.url).indexOf('auto_completes/redmine_tags') !== -1;
+    }
+
+    function enableTagSelect2Pagination() {
+        $('select').each(function () {
+            var $el = $(this);
+            var s2 = $el.data('select2');
+            if (!s2 || !s2.options || !s2.options.options) {
+                return;
+            }
+            var ajax = s2.options.options.ajax;
+            if (!isRedmineTagsAjax(ajax) || ajax.__redmineTagsPaged) {
+                return;
+            }
+            ajax.__redmineTagsPaged = true;
+            ajax.data = function (params) {
+                return {
+                    q: params.term || '',
+                    page: params.page || 1,
+                    limit: TAGS_PAGE_SIZE
+                };
+            };
+            ajax.processResults = function (data, params) {
+                params.page = params.page || 1;
+                var items = $.isArray(data) ? data : ((data && data.results) || []);
+                var more = data && data.pagination ? !!data.pagination.more : items.length >= TAGS_PAGE_SIZE;
+                return {
+                    results: items,
+                    pagination: { more: more }
+                };
+            };
+        });
+    }
+
+    enableTagSelect2Pagination();
+    $(document).on('ajax:complete ajaxComplete', function () {
+        setTimeout(enableTagSelect2Pagination, 0);
+    });
+
     $('body').on('click', '.most_used_tags .most_used_tag', function (e) {
         var $tagsSelect = $('select#issue_tag_list');
         var tag = $(e.currentTarget).text();
