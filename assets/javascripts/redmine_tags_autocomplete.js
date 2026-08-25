@@ -1,12 +1,8 @@
 (function () {
   var TAGS_PAGE_SIZE = 30;
 
-  function lastSelectedTag($el) {
-    var selected = $el.val() || [];
-    if (!$.isArray(selected)) {
-      selected = selected ? [selected] : [];
-    }
-    return selected.length ? String(selected[selected.length - 1]) : '';
+  function isTagsUrl(url) {
+    return url && String(url).indexOf('auto_completes/redmine_tags') !== -1;
   }
 
   function ajaxOptionsOf($el) {
@@ -23,24 +19,61 @@
     return null;
   }
 
-  function isTagsUrl(url) {
-    return url && String(url).indexOf('auto_completes/redmine_tags') !== -1;
+  function scrollResultsToStart($el) {
+    var s2 = $el.data('select2');
+    var $results = (s2 && s2.results && s2.results.$results) ||
+      $('.select2-container--open .select2-results__options');
+    if (!$results || !$results.length) {
+      return;
+    }
+    $results.scrollTop(0);
+    $results.find('.select2-results__option--highlighted')
+      .removeClass('select2-results__option--highlighted');
+    $results.find('.select2-results__option--selectable, .select2-results__option')
+      .first()
+      .addClass('select2-results__option--highlighted');
   }
 
-  function patchTagSelect2($el) {
+  function patchHighlight($el) {
+    var s2 = $el.data('select2');
+    if (!s2 || !s2.results || $el.data('redmine-tags-highlight-patched')) {
+      return;
+    }
+    $el.data('redmine-tags-highlight-patched', true);
+
+    // Select2 scrolls to the first already-selected tag. Always stay at the top.
+    s2.results.highlightFirstItem = function () {
+      var $options = this.$results.find('.select2-results__option--selectable');
+      if ($options.length) {
+        $options.first().trigger('mouseenter');
+      }
+      this.$results.scrollTop(0);
+    };
+    s2.results.ensureHighlightVisible = function () {
+      this.$results.scrollTop(0);
+    };
+
+    $el.on('select2:open', function () {
+      window.setTimeout(function () {
+        scrollResultsToStart($el);
+      }, 0);
+      window.setTimeout(function () {
+        scrollResultsToStart($el);
+      }, 150);
+    });
+  }
+
+  function patchAjax($el) {
     var ajax = ajaxOptionsOf($el);
     if (!ajax || !isTagsUrl(ajax.url)) {
       return;
     }
-
     ajax.cache = false;
     ajax.data = function (params) {
-      var searching = !!(params.term && String(params.term).trim());
       return {
         q: params.term || '',
         page: params.page || 1,
-        limit: TAGS_PAGE_SIZE,
-        from: searching ? '' : lastSelectedTag($el)
+        limit: TAGS_PAGE_SIZE
       };
     };
     ajax.processResults = function (data, params) {
@@ -52,43 +85,13 @@
         pagination: { more: more }
       };
     };
-
-    if ($el.data('redmine-tags-open-bound')) {
-      return;
-    }
-    $el.data('redmine-tags-open-bound', true);
-    $el.on('select2:open', function () {
-      window.setTimeout(function () {
-        highlightLastSelected($el);
-      }, 120);
-    });
-  }
-
-  function highlightLastSelected($el) {
-    var last = lastSelectedTag($el);
-    var $opts = $('.select2-container--open .select2-results__option');
-    if (!$opts.length) {
-      return;
-    }
-    $opts.removeClass('select2-results__option--highlighted');
-    var $target = $();
-    if (last) {
-      $target = $opts.filter(function () {
-        return $.trim($(this).text()) === last;
-      }).first();
-    }
-    if (!$target.length) {
-      $target = $opts.first();
-    }
-    $target.addClass('select2-results__option--highlighted');
-    if ($target[0] && $target[0].scrollIntoView) {
-      $target[0].scrollIntoView({ block: 'start' });
-    }
   }
 
   function patchAll() {
     $('select').each(function () {
-      patchTagSelect2($(this));
+      var $el = $(this);
+      patchAjax($el);
+      patchHighlight($el);
     });
   }
 
@@ -96,47 +99,4 @@
   $(document).on('ajax:complete ajaxComplete select2:open', function () {
     patchAll();
   });
-
-  // Fallback if adapter options were copied: inject from/page into the request.
-  if ($.ajaxPrefilter) {
-    $.ajaxPrefilter(function (options) {
-      if (!isTagsUrl(options.url)) {
-        return;
-      }
-      var $open = $('select').filter(function () {
-        var s2 = $(this).data('select2');
-        return s2 && typeof s2.isOpen === 'function' && s2.isOpen();
-      }).first();
-      if (!$open.length) {
-        $open = $('select#issue_tag_list');
-      }
-      var searching = false;
-      var data = options.data;
-      if (typeof data === 'string' && /(?:^|&)q=[^&]+/.test(data)) {
-        searching = true;
-      }
-      var extra = {
-        page: 1,
-        limit: TAGS_PAGE_SIZE
-      };
-      if (!searching) {
-        extra.from = lastSelectedTag($open);
-      }
-      if (typeof data === 'string') {
-        if (!/(?:^|&)page=/.test(data)) {
-          options.data += (data ? '&' : '') + $.param(extra);
-        } else if (!searching && extra.from && !/(?:^|&)from=/.test(data)) {
-          options.data += '&from=' + encodeURIComponent(extra.from);
-        }
-      } else if (data && typeof data === 'object') {
-        if (!data.page) {
-          data.page = extra.page;
-        }
-        data.limit = extra.limit;
-        if (!searching && extra.from) {
-          data.from = extra.from;
-        }
-      }
-    });
-  }
 }());
