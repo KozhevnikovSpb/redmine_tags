@@ -31,20 +31,9 @@ module RedmineupTags
 
       module InstanceMethods
         DEFAULT_AUTOCOMPLETE_LIMIT = 30
-        MAX_AUTOCOMPLETE_LIMIT = 100
-        SORTING_FIELDS = { 'name' => 'name',
-                           'last_created' => 'created_at',
-                           'most_used' => 'count' }
 
         def redmine_tags
-          suggestion_order = RedmineupTags.settings['tags_suggestion_order'] || 'name'
-          options = {
-            name_like: (params[:q] || params[:term]).to_s.strip,
-            sort_by: SORTING_FIELDS[suggestion_order],
-            order: (suggestion_order == 'name' ? 'ASC' : 'DESC'),
-            all_issues: true
-          }
-          scope = Issue.all_tags(options)
+          scope = autocomplete_tags_scope
           page = [params[:page].to_i, 1].max
           limit = autocomplete_page_size
           offset = (page - 1) * limit
@@ -65,7 +54,36 @@ module RedmineupTags
         def autocomplete_page_size
           limit = params[:limit].present? ? params[:limit].to_i : DEFAULT_AUTOCOMPLETE_LIMIT
           limit = DEFAULT_AUTOCOMPLETE_LIMIT if limit <= 0
-          [limit, MAX_AUTOCOMPLETE_LIMIT].min
+          limit
+        end
+
+        # Full tags table (not Issue.visible / not grouped by issue counts).
+        def autocomplete_tags_scope
+          tags_table = Redmineup::Tag.table_name
+          taggings_table = Redmineup::Tagging.table_name
+          q = (params[:q] || params[:term]).to_s.strip
+          suggestion_order = RedmineupTags.settings['tags_suggestion_order'] || 'name'
+
+          scope = Redmineup::Tag.all
+          if q.present?
+            scope = scope.where("LOWER(#{tags_table}.name) LIKE LOWER(?)",
+                                "%#{Redmineup::Tag.sanitize_sql_like(q)}%")
+          end
+
+          case suggestion_order
+          when 'most_used'
+            scope.joins("LEFT JOIN #{taggings_table} ON #{taggings_table}.tag_id = #{tags_table}.id AND #{taggings_table}.taggable_type = #{Redmineup::Tag.connection.quote('Issue')}")
+                 .group("#{tags_table}.id")
+                 .order(Arel.sql("COUNT(#{taggings_table}.id) DESC"), Arel.sql("#{tags_table}.name ASC"))
+          when 'last_created'
+            if Redmineup::Tag.column_names.include?('created_at')
+              scope.order(Arel.sql("#{tags_table}.created_at DESC"), Arel.sql("#{tags_table}.name ASC"))
+            else
+              scope.order(Arel.sql("#{tags_table}.name ASC"))
+            end
+          else
+            scope.order(Arel.sql("#{tags_table}.name ASC"))
+          end
         end
 
         def format_redmine_tags_json(redmine_tags)
