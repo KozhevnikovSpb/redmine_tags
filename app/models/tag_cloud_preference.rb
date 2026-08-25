@@ -38,5 +38,19 @@ class TagCloudPreference < ActiveRecord::Base
     rescue StandardError
       []
     end
+
+    # Remove personal visibility/order rows for clouds on this project
+    # and show the system Tags cloud again.
+    def reset_for_user!(user, project)
+      return false unless user&.logged? && project
+
+      cloud_ids = (
+        TagCloud.inherited_for(project).map(&:id) +
+        TagCloud.for_project(project).map(&:id)
+      ).uniq
+      where(user_id: user.id, tag_cloud_id: cloud_ids).delete_all if cloud_ids.any?
+      set_system_visible!(user, project, true)
+      true
+    end
   end
 end

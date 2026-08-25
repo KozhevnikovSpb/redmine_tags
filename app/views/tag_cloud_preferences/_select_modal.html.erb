@@ -46,11 +46,11 @@
 
   <div class="buttons tag-clouds-visibility-buttons">
     <span class="tag-clouds-visibility-buttons-left">
-      <%= button_tag l(:button_tag_cloud_preferences_reset),
-                    type: 'button',
-                    id: 'tag-clouds-reset-defaults',
-                    name: nil,
-                    title: l(:text_tag_cloud_preferences_reset_title) %>
+      <%= submit_tag l(:button_tag_cloud_preferences_reset),
+                     name: 'reset_defaults',
+                     id: 'tag-clouds-reset-defaults',
+                     title: l(:text_tag_cloud_preferences_reset_title),
+                     data: { disable_with: false } %>
     </span>
     <span class="tag-clouds-visibility-buttons-right">
       <%= submit_tag l(:button_save), name: nil %>

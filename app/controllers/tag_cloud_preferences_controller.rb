@@ -20,6 +20,13 @@ class TagCloudPreferencesController < ApplicationController
   end
 
   def update
+    if params[:reset_defaults].present?
+      TagCloudPreference.reset_for_user!(User.current, @project)
+      redirect_back fallback_location: project_issues_path(@project),
+                    notice: l(:notice_tag_cloud_preferences_reset)
+      return
+    end
+
     load_custom_tag_clouds_for_user
     selected_ids = Array(params[:visible_tag_cloud_ids]).map(&:to_i)
     inherited_order = Array(params[:inherited_tag_cloud_order]).map(&:to_i)
