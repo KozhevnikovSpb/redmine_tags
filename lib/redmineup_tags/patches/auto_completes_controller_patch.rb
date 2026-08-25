@@ -31,7 +31,6 @@ module RedmineupTags
 
       module InstanceMethods
         DEFAULT_AUTOCOMPLETE_LIMIT = 30
-        MAX_AUTOCOMPLETE_LIMIT = 100
         SORTING_FIELDS = { 'name' => 'name',
                            'last_created' => 'created_at',
                            'most_used' => 'count' }
@@ -47,13 +46,17 @@ module RedmineupTags
           page = [params[:page].to_i, 1].max
           limit = autocomplete_page_size
           offset = (page - 1) * limit
-          tags = scope.offset(offset).limit(limit + 1).to_a
-          more = tags.size > limit
-          tags = tags.first(limit)
+          total = autocomplete_total(scope)
+          tags = scope.offset(offset).limit(limit).to_a
+          more = (offset + tags.size) < total
           payload = format_redmine_tags_json(tags)
 
           if params[:page].present?
-            render json: { results: payload, pagination: { more: more } }
+            render json: {
+              results: payload,
+              pagination: { more: more },
+              total_count: total
+            }
           else
             render json: payload
           end
@@ -64,7 +67,15 @@ module RedmineupTags
         def autocomplete_page_size
           limit = params[:limit].present? ? params[:limit].to_i : DEFAULT_AUTOCOMPLETE_LIMIT
           limit = DEFAULT_AUTOCOMPLETE_LIMIT if limit <= 0
-          [limit, MAX_AUTOCOMPLETE_LIMIT].min
+          limit
+        end
+
+        def autocomplete_total(scope)
+          counted = scope.except(:select, :order, :limit, :offset).count
+          counted.is_a?(Hash) ? counted.size : counted.to_i
+        rescue StandardError => e
+          Rails.logger.warn("[redmineup_tags] autocomplete_total: #{e.class}: #{e.message}")
+          scope.to_a.size
         end
 
         def format_redmine_tags_json(redmine_tags)
