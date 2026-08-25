@@ -31,6 +31,7 @@ module RedmineupTags
 
       module InstanceMethods
         DEFAULT_AUTOCOMPLETE_LIMIT = 30
+        MAX_AUTOCOMPLETE_LIMIT = 100
         SORTING_FIELDS = { 'name' => 'name',
                            'last_created' => 'created_at',
                            'most_used' => 'count' }
@@ -40,23 +41,20 @@ module RedmineupTags
           options = {
             name_like: (params[:q] || params[:term]).to_s.strip,
             sort_by: SORTING_FIELDS[suggestion_order],
-            order: (suggestion_order == 'name' ? 'ASC' : 'DESC')
+            order: (suggestion_order == 'name' ? 'ASC' : 'DESC'),
+            all_issues: true
           }
           scope = Issue.all_tags(options)
           page = [params[:page].to_i, 1].max
           limit = autocomplete_page_size
           offset = (page - 1) * limit
-          total = autocomplete_total(scope)
-          tags = scope.offset(offset).limit(limit).to_a
-          more = (offset + tags.size) < total
+          tags = scope.offset(offset).limit(limit + 1).to_a
+          more = tags.size > limit
+          tags = tags.first(limit)
           payload = format_redmine_tags_json(tags)
 
           if params[:page].present?
-            render json: {
-              results: payload,
-              pagination: { more: more },
-              total_count: total
-            }
+            render json: { results: payload, pagination: { more: more } }
           else
             render json: payload
           end
@@ -67,15 +65,7 @@ module RedmineupTags
         def autocomplete_page_size
           limit = params[:limit].present? ? params[:limit].to_i : DEFAULT_AUTOCOMPLETE_LIMIT
           limit = DEFAULT_AUTOCOMPLETE_LIMIT if limit <= 0
-          limit
-        end
-
-        def autocomplete_total(scope)
-          counted = scope.except(:select, :order, :limit, :offset).count
-          counted.is_a?(Hash) ? counted.size : counted.to_i
-        rescue StandardError => e
-          Rails.logger.warn("[redmineup_tags] autocomplete_total: #{e.class}: #{e.message}")
-          scope.to_a.size
+          [limit, MAX_AUTOCOMPLETE_LIMIT].min
         end
 
         def format_redmine_tags_json(redmine_tags)
