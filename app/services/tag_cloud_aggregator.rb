@@ -82,6 +82,27 @@ class TagCloudAggregator
     0
   end
 
+  # Modal: open issues matching status/tracker/version filter (ignore tag whitelist)
+  # and how many of those have no tags.
+  def modal_issue_counts
+    return { filtered: 0, untagged: 0 } if @project.nil? || @tag_cloud.nil?
+
+    issue_ids = matching_issue_ids
+    return { filtered: 0, untagged: 0 } if issue_ids.empty?
+
+    tagged = Redmineup::Tagging
+             .where(taggable_type: Issue.name, taggable_id: issue_ids)
+             .distinct
+             .count(:taggable_id)
+    { filtered: issue_ids.size, untagged: issue_ids.size - tagged.to_i }
+  rescue StandardError => e
+    Rails.logger.error(
+      "[redmineup_tags] TagCloudAggregator#modal_issue_counts cloud=#{@tag_cloud&.id} " \
+      "project=#{@project&.id}: #{e.class}: #{e.message}"
+    )
+    { filtered: 0, untagged: 0 }
+  end
+
   private
 
   def empty_tags
@@ -158,7 +179,7 @@ class TagCloudAggregator
       return issues unless ids.any?
 
       issues.where('issues.fixed_version_id IS NULL OR issues.fixed_version_id NOT IN (?)', ids)
-    when '!*'
+    when '!='
       issues.where(fixed_version_id: nil)
     when 'ev'
       ids.any? ? issues.where(id: attr_ever_issue_ids('fixed_version_id', ids, :fixed_version_id)) : issues
