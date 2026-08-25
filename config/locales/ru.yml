@@ -115,9 +115,12 @@ ru:
     few: "%{count} задачи"
     many: "%{count} задач"
     other: "%{count} задач"
+  label_tag_cloud_modal_issue_count: "%{filtered} / %{untagged} задач"
+  text_tag_cloud_modal_issue_count_title: Количество открытых задач по заданному фильтру и количество открытых задач без тегов
   text_select_visible_tag_clouds_hint: Выберите, какие пользовательские облака тегов показывать в боковой панели. Унаследованные облака всегда выше облаков этого проекта. Перетаскивайте строки внутри группы, чтобы изменить порядок.
   button_tag_cloud_preferences_reset: Сброс
   text_tag_cloud_preferences_reset_title: Сбросить персональную видимость и порядок к значениям по умолчанию
+  notice_tag_cloud_preferences_reset: Персональные настройки облаков сброшены к значениям по умолчанию.
   notice_tag_cloud_preferences_updated: Настройки видимости облаков тегов обновлены.
   notice_failed_to_update_tag_cloud_preferences: Не удалось обновить настройки видимости облаков тегов.
 
