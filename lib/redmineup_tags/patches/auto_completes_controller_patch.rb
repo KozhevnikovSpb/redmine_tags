@@ -47,7 +47,7 @@ module RedmineupTags
           page = params[:page].to_i
           if page.positive?
             limit = autocomplete_page_size
-            offset = (page - 1) * limit
+            offset = autocomplete_start_offset(scope) + ((page - 1) * limit)
             tags = scope.offset(offset).limit(limit + 1).to_a
             more = tags.size > limit
             tags = tags.first(limit)
@@ -67,6 +67,20 @@ module RedmineupTags
           limit = params[:limit].present? ? params[:limit].to_i : DEFAULT_AUTOCOMPLETE_LIMIT
           limit = DEFAULT_AUTOCOMPLETE_LIMIT if limit <= 0
           [limit, MAX_AUTOCOMPLETE_LIMIT].min
+        end
+
+        # Start listing at the last already chosen tag (params[:from]),
+        # so the next open does not jump back to the first selected tag.
+        def autocomplete_start_offset(scope)
+          from = params[:from].to_s.strip
+          return 0 if from.blank?
+
+          names = scope.pluck(:name)
+          index = names.index { |name| name.to_s.casecmp?(from) }
+          index || 0
+        rescue StandardError => e
+          Rails.logger.warn("[redmineup_tags] autocomplete_start_offset: #{e.class}: #{e.message}")
+          0
         end
 
         def format_redmine_tags_json(redmine_tags)
