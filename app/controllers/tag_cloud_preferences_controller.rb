@@ -112,8 +112,8 @@ class TagCloudPreferencesController < ApplicationController
         cloud,
         project: @project,
         user: User.current,
-        open_only: false
-      ).issue_count
+        open_only: true
+      ).modal_issue_counts
     end
   end
 end
