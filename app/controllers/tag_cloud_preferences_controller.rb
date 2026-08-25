@@ -23,7 +23,8 @@ class TagCloudPreferencesController < ApplicationController
     if params[:reset_defaults].present?
       TagCloudPreference.reset_for_user!(User.current, @project)
       redirect_back fallback_location: project_issues_path(@project),
-                    notice: l(:notice_tag_cloud_preferences_reset)
+                    notice: l(:notice_tag_cloud_preferences_reset,
+                              default: 'Personal tag cloud settings were reset to defaults.')
       return
     end
 
