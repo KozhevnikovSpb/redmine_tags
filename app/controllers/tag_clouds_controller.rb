@@ -10,7 +10,9 @@ class TagCloudsController < ApplicationController
   before_action :find_tag_cloud, only: %i[edit update destroy]
 
   def index
-    @tag_clouds = TagCloud.for_project(@project).to_a
+    @tag_clouds = TagCloud.for_project(@project).to_a.select do |cloud|
+      cloud.listed_in_settings_for?(User.current)
+    end
   end
 
   def new
@@ -97,6 +99,7 @@ class TagCloudsController < ApplicationController
 
   def reorder
     ids = Array(params[:tag_cloud_ids]).map { |v| Integer(v) rescue 0 }.reject(&:zero?)
+    ids = manageable_reorder_ids(ids)
     inherited = ActiveModel::Type::Boolean.new.cast(params[:inherited])
 
     if inherited
@@ -147,7 +150,7 @@ class TagCloudsController < ApplicationController
     )
     render html: html
   rescue StandardError => e
-    Rails.logger.error("[redmineup_tags] preview project=#{@project&.id}: #{e.class}: #{e.message}\n#{e.backtrace&.first(8)&.join("\n")}")
+    Rails.logger.error("[redmineup_tags] preview project=#{@project&.id}: #{e.class}: #{e.message}\n#{e.backtrace&.first(8)&.join(\"\\n\")}")
     render html: helpers.content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
   end
 
@@ -186,6 +189,11 @@ class TagCloudsController < ApplicationController
   def authorize_tag_clouds
     return true if User.current.admin?
 
+    if action_name == 'index'
+      deny_access unless TagCloud.can_view_settings_list?(User.current, @project)
+      return true
+    end
+
     authorize
   end
 
@@ -194,6 +202,20 @@ class TagCloudsController < ApplicationController
     @tag_cloud = TagCloud.for_project(@project).find_by(id: id)
     @tag_cloud ||= TagCloud.inherited_for(@project).find { |cloud| cloud.id == id }
     raise ActiveRecord::RecordNotFound unless @tag_cloud
+    return if User.current.admin?
+    return if @tag_cloud.manageable_by?(User.current, project: @project)
+
+    deny_access
+  end
+
+  def manageable_reorder_ids(ids)
+    return ids if User.current.admin?
+    return [] if ids.empty?
+
+    allowed = TagCloud.where(id: ids).to_a.select do |cloud|
+      cloud.manageable_by?(User.current, project: @project)
+    end.map(&:id)
+    ids.select { |id| allowed.include?(id) }
   end
 
   def next_position
