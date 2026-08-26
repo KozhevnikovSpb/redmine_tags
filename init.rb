@@ -26,18 +26,22 @@ Redmine::Plugin.register :redmineup_tags do
   }, partial: 'tags/settings'
 
   # All tag/cloud permissions under Issue tracking (same module as issues).
-  # manage_tag_clouds: project settings CRUD + reorder + live preview (require membership).
-  # select_tag_clouds: personal sidebar visibility/order only.
-  # Admin can manage any cloud from plugin settings even without project membership.
+  # view_tag_clouds: see custom clouds + read-only project list (no author-only clouds).
+  # select_tag_clouds: personal sidebar show/hide and order (not other authors' owner clouds).
+  # manage_tag_clouds: create/edit/delete/reorder (not author-only clouds).
+  # Full Redmine admin sees and manages author-only clouds in the global plugin list.
   project_module :issue_tracking do
     permission :create_tags, {}
     permission :edit_tags, {}
-    permission :manage_tag_clouds, {
-      tag_clouds: %i[index new create edit update destroy reorder preview]
-    }, require: :member
+    permission :view_tag_clouds, {
+      tag_clouds: %i[index]
+    }
     permission :select_tag_clouds, {
       tag_cloud_preferences: %i[toggle edit update]
     }
+    permission :manage_tag_clouds, {
+      tag_clouds: %i[index new create edit update destroy reorder preview]
+    }, require: :member
   end
 
   menu :admin_menu, :tags,
@@ -57,11 +61,11 @@ module RedmineupTags
 
           def project_settings_tabs
             tabs = project_settings_tabs_without_tags
-            if User.current.allowed_to?(:manage_tag_clouds, @project) &&
+            if TagCloud.can_view_settings_list?(User.current, @project) &&
                !tabs.any? { |tab| tab[:name] == 'tags' }
               tabs << {
                 name: 'tags',
-                action: :manage_tag_clouds,
+                action: User.current.allowed_to?(:manage_tag_clouds, @project) ? :manage_tag_clouds : :view_tag_clouds,
                 module: :issue_tracking,
                 partial: 'projects/settings/tags',
                 label: :tag_clouds
