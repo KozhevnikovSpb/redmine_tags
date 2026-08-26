@@ -11,6 +11,18 @@ Plugin ID: :redmineup_tags
 Target: Redmine 7.0.0 / Ruby 3.4 / Rails 8.1
 Version in init.rb: 0.0.5 (Dev)
 
+Permissions (iteration 2)
+* Split cloud permissions: view_tag_clouds / select_tag_clouds / manage_tag_clouds
+* No cloud permission → only the default Tags cloud
+* View: custom clouds in sidebar + read-only project settings list
+* Display (select): personal sidebar show/hide/reorder (modal)
+* Manage: create/edit/delete/reorder in the project (membership required)
+* Author-only clouds stay out of project lists; non-admin cannot manage them (including own)
+* Author still sees own author-only cloud in the sidebar when any cloud permission is granted
+* Full Redmine admin lists and manages author-only clouds (project + plugin settings tab)
+* Direct edit/delete/reorder of author-only clouds denied for non-admin
+* create_tags / edit_tags unchanged (issue tag field, not clouds)
+
 Custom clouds
 * Plugin setting «Display open issues only» applies only to the default Tags cloud
 * Custom clouds use project-level filters only (status Any = all issues, including closed)
@@ -23,6 +35,9 @@ Personal visibility
 * System row is first in the modal, not sortable
 * Stored in user preferences (no extra table)
 * Plugin / project settings for the system cloud stay read-only
+
+Docs
+* doc/TEST_V005_CLOUD_PERMISSIONS.md
 
 == 2026-08-22 v0.0.4
 
