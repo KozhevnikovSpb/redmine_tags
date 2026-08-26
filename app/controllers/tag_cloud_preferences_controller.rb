@@ -59,19 +59,29 @@ class TagCloudPreferencesController < ApplicationController
   private
 
   def authorize_select_tag_clouds
-    deny_access unless User.current.allowed_to?(:select_tag_clouds, @project)
+    deny_access unless TagCloud.can_select_display?(User.current, @project)
   end
 
   def find_tag_cloud
     id = params[:tag_cloud_id].to_i
     @tag_cloud = (TagCloud.inherited_for(@project) + TagCloud.for_project(@project).to_a).find { |c| c.id == id }
     raise ActiveRecord::RecordNotFound unless @tag_cloud
+    deny_access unless selectable_cloud?(@tag_cloud)
   end
 
   def load_custom_tag_clouds_for_user
-    @inherited_clouds = sort_clouds_for_user(TagCloud.inherited_for(@project), User.current)
-    @local_clouds = sort_clouds_for_user(TagCloud.for_project(@project).to_a, User.current)
+    inherited = TagCloud.inherited_for(@project).select { |cloud| selectable_cloud?(cloud) }
+    local = TagCloud.for_project(@project).to_a.select { |cloud| selectable_cloud?(cloud) }
+    @inherited_clouds = sort_clouds_for_user(inherited, User.current)
+    @local_clouds = sort_clouds_for_user(local, User.current)
     @tag_clouds = @inherited_clouds + @local_clouds
+  end
+
+  def selectable_cloud?(cloud)
+    return true if User.current.admin?
+    return true if cloud.authored_by?(User.current)
+
+    !cloud.author_only?
   end
 
   def save_group_preferences!(clouds, order_ids, selected_ids)
