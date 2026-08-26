@@ -7,10 +7,6 @@ class TagCloud < ActiveRecord::Base
   VISIBILITIES = %w[all owner roles].freeze
   NAME_MAX_LENGTH = 100
 
-  # Same operator codes as Redmine 7 Issue Query
-  # status_id: list_status
-  # tracker_id: list_with_history (+ * = no extra filter, row always visible)
-  # fixed_version_id: list_optional_with_history (+ * = no extra filter)
   STATUS_OPERATORS  = %w[o = ! ev !ev cf c *].freeze
   VERSION_OPERATORS = %w[= ! ev !ev cf !* *].freeze
   TRACKER_OPERATORS = %w[= ! ev !ev cf *].freeze
@@ -19,15 +15,11 @@ class TagCloud < ActiveRecord::Base
 
   has_many :tag_cloud_projects, dependent: :destroy, inverse_of: :tag_cloud
   has_many :projects, through: :tag_cloud_projects
-
   has_many :tag_cloud_tags, dependent: :destroy
   has_many :tags, through: :tag_cloud_tags, class_name: '::Redmineup::Tag', source: :tag
-
   has_many :tag_cloud_roles, dependent: :destroy
   has_many :roles, through: :tag_cloud_roles
-
   has_many :preferences, class_name: 'TagCloudPreference', dependent: :delete_all, inverse_of: :tag_cloud
-
   belongs_to :owner, class_name: 'User', optional: true
   belongs_to :created_by, class_name: 'User', optional: true, foreign_key: :created_by_id
 
@@ -43,12 +35,10 @@ class TagCloud < ActiveRecord::Base
   validates :status_operator, inclusion: { in: STATUS_OPERATORS }, if: :operator_columns?
   validates :version_operator, inclusion: { in: VERSION_OPERATORS }, if: :operator_columns?
   validates :tracker_operator, inclusion: { in: TRACKER_OPERATORS }, if: :operator_columns?
-
   validate :name_unique_within_projects
   validate :status_filter_exists
   validate :roles_present_when_visibility_roles
   validate :owner_visibility_only_for_author
-
   before_validation :normalize_operators
   before_validation :normalize_filters
   before_validation :normalize_owner_for_visibility
@@ -68,7 +58,6 @@ class TagCloud < ActiveRecord::Base
   def self.ensure_operator_schema!
     return true if operator_columns?
     return false unless defined?(RedmineupTags::SchemaRepair)
-
     RedmineupTags::SchemaRepair.ensure_operators!(verbose: false)
     reset_column_information
     operator_columns?
@@ -77,16 +66,13 @@ class TagCloud < ActiveRecord::Base
     false
   end
 
-  # Ancestor clouds marked «include subprojects», root → nearest parent.
   def self.inherited_for(project)
     return [] unless project && project.respond_to?(:ancestors)
-
     clouds = []
     seen = {}
     project.ancestors.reorder(:lft).each do |ancestor|
       for_project(ancestor).where(include_subprojects: true).each do |cloud|
         next if seen[cloud.id]
-
         clouds << cloud
         seen[cloud.id] = true
       end
@@ -94,21 +80,43 @@ class TagCloud < ActiveRecord::Base
     clouds
   end
 
-  # Sidebar containers: inherited (parent) then local. System cloud is virtual.
   def self.for_sidebar(project)
     return [] unless project
-
     inherited_for(project) + for_project(project).to_a
+  end
+
+  def self.can_see_custom_clouds?(user, project)
+    return false unless user
+    return true if user.admin?
+    return false unless project
+    %i[view_tag_clouds select_tag_clouds manage_tag_clouds].any? { |permission| user.allowed_to?(permission, project) }
+  end
+
+  def self.can_select_display?(user, project)
+    return false unless user
+    return true if user.admin?
+    return false unless project
+    user.allowed_to?(:select_tag_clouds, project)
+  end
+
+  def self.can_manage?(user, project)
+    return false unless user
+    return true if user.admin?
+    return false unless project
+    user.allowed_to?(:manage_tag_clouds, project)
+  end
+
+  def self.can_view_settings_list?(user, project)
+    return false unless user
+    return true if user.admin?
+    return false unless project
+    user.allowed_to?(:view_tag_clouds, project) || user.allowed_to?(:manage_tag_clouds, project)
   end
 
   def home_project_for(view_project)
     return nil unless view_project
     return view_project if linked_to?(view_project)
-
-    view_project.ancestors.reorder(lft: :desc).each do |anc|
-      return anc if linked_to?(anc)
-    end
-
+    view_project.ancestors.reorder(lft: :desc).each { |anc| return anc if linked_to?(anc) }
     projects.first
   end
 
@@ -116,31 +124,55 @@ class TagCloud < ActiveRecord::Base
     created_by || owner
   end
 
+  def author_only?
+    visibility.to_s == 'owner'
+  end
+
+  def authored_by?(user)
+    return false unless user&.logged?
+    author_id = created_by_id.presence || owner_id
+    author_id.present? && author_id == user.id
+  end
+
   def can_set_owner_visibility?(user = User.current)
     return false unless user&.logged?
+    return true if user.admin?
     return true unless persisted?
     return true if created_by_id.blank?
-
     created_by_id == user.id
+  end
+
+  def listed_in_settings_for?(user)
+    return false if user.nil?
+    return true if user.admin?
+    !author_only?
+  end
+
+  def manageable_by?(user, project: nil)
+    return false if user.nil?
+    return true if user.admin?
+    return false unless project && user.allowed_to?(:manage_tag_clouds, project)
+    !author_only?
   end
 
   def visible_for?(user, project: nil)
     return false if user.nil?
-
-    if user.logged? && project && user.allowed_to?(:select_tag_clouds, project)
+    return false unless self.class.can_see_custom_clouds?(user, project)
+    if author_only?
+      return false unless user.admin? || authored_by?(user)
+    end
+    if user.logged? && project && self.class.can_select_display?(user, project)
       pref = preferences.find_by(user_id: user.id)
       return pref.visible? if pref
     end
-
     case visibility
     when 'all'
       visible_by_default?
     when 'owner'
-      author_id = created_by_id.presence || owner_id
-      user.logged? && author_id.present? && author_id == user.id
+      user.admin? || authored_by?(user)
     when 'roles'
+      return true if user.admin?
       return false unless user.logged? && project
-
       user_role_ids = user.roles_for_project(project).map(&:id)
       (assigned_role_ids & user_role_ids).any?
     else
@@ -150,19 +182,16 @@ class TagCloud < ActiveRecord::Base
 
   def position_in(project)
     return nil unless project
-
     tag_cloud_projects.find_by(project_id: project.id)&.position
   end
 
   def linked_to?(project)
     return false unless project
-
     tag_cloud_projects.exists?(project_id: project.id)
   end
 
   def inherited_in?(project)
     return false unless project
-
     include_subprojects? && !linked_to?(project)
   end
 
@@ -246,7 +275,6 @@ class TagCloud < ActiveRecord::Base
 
   def read_filter_operator(name)
     return '*' unless operator_columns?
-
     self[name].to_s.presence || '*'
   rescue StandardError
     '*'
@@ -259,7 +287,6 @@ class TagCloud < ActiveRecord::Base
 
   def normalize_operators
     return unless operator_columns?
-
     self.status_operator = normalized_status_operator
     self.version_operator = normalized_version_operator
     self.tracker_operator = normalized_tracker_operator
@@ -280,7 +307,6 @@ class TagCloud < ActiveRecord::Base
 
   def normalize_owner_for_visibility
     return unless visibility == 'owner'
-
     self.owner_id = created_by_id.presence || User.current&.id
   end
 
@@ -288,28 +314,21 @@ class TagCloud < ActiveRecord::Base
     return unless visibility == 'owner'
     return if can_set_owner_visibility?(User.current)
     return unless will_save_change_to_visibility?
-
     errors.add(:visibility, :invalid)
   end
 
   def name_unique_within_projects
     return if name.blank?
     return if projects.empty? && tag_cloud_projects.empty?
-
     project_ids = projects.map(&:id).presence || tag_cloud_projects.map(&:project_id)
     return if project_ids.blank?
-
-    conflict = self.class
-                   .joins(:tag_cloud_projects)
-                   .where(tag_cloud_projects: { project_id: project_ids })
-                   .where(name: name)
+    conflict = self.class.joins(:tag_cloud_projects).where(tag_cloud_projects: { project_id: project_ids }).where(name: name)
     conflict = conflict.where.not(id: id) if persisted?
     errors.add(:name, :taken) if conflict.exists?
   end
 
   def status_filter_exists
     return if status_filter.blank?
-
     invalid = status_filter - IssueStatus.where(id: status_filter).pluck(:id)
     errors.add(:status_filter, :invalid) if invalid.any?
   end
@@ -317,7 +336,6 @@ class TagCloud < ActiveRecord::Base
   def roles_present_when_visibility_roles
     return unless visibility == 'roles'
     return if assigned_role_ids.any?
-
     errors.add(:roles, :blank)
   end
 end
