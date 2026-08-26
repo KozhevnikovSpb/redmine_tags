@@ -150,7 +150,7 @@ class TagCloudsController < ApplicationController
     )
     render html: html
   rescue StandardError => e
-    Rails.logger.error("[redmineup_tags] preview project=#{@project&.id}: #{e.class}: #{e.message}\n#{e.backtrace&.first(8)&.join(\"\\n\")}")
+    Rails.logger.error("[redmineup_tags] preview project=#{@project&.id}: #{e.class}: #{e.message} #{e.backtrace&.first(8)}")
     render html: helpers.content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
   end
 
