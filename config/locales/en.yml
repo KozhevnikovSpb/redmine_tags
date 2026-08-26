@@ -39,8 +39,9 @@ en:
 
   permission_create_tags: Create tags
   permission_edit_tags: Edit tags
+  permission_view_tag_clouds: View tag clouds
+  permission_select_tag_clouds: Manage tag cloud display
   permission_manage_tag_clouds: Manage tag clouds
-  permission_select_tag_clouds: Select visible tag clouds
 
   label_tags_remove_tags: Remove tags
   tag_clouds: Tag Clouds
@@ -81,7 +82,7 @@ en:
   label_tag_cloud_drag_to_reorder: Drag to change display order
   button_collapse: Collapse
   text_tag_cloud_filters_empty_means_all: empty = Any / all
-  text_tag_clouds_permissions_info: "Permissions (Roles and permissions → Issue tracking): Manage tag clouds — create/edit/delete clouds (requires membership). Select visible tag clouds — per-user sidebar visibility and order. Cloud visibility rule (All / Owner / Roles) further restricts who sees each custom cloud."
+  text_tag_clouds_permissions_info: "Permissions (Roles and permissions → Issue tracking): View tag clouds — see custom clouds and a read-only project list (no author-only clouds). Manage tag cloud display — personal sidebar show/hide and order. Manage tag clouds — create/edit/delete (requires membership). Author-only clouds are hidden from these roles; only a full Redmine administrator can list and manage them."
   notice_tag_cloud_created: Tag cloud was successfully created.
   notice_tag_cloud_updated: Tag cloud was successfully updated.
   notice_tag_cloud_deleted: Tag cloud was successfully deleted.
@@ -92,7 +93,7 @@ en:
   label_tag_cloud_visibility_owner: Author only
   label_tag_cloud_visibility_roles: Selected roles
   label_tag_cloud_owner: Author
-  text_tag_cloud_visibility_hint: Controls who can see this cloud in the issues sidebar (before personal preference). Users with «Select visible tag clouds» can still override visibility for themselves.
+  text_tag_cloud_visibility_hint: Controls who can see this cloud in the issues sidebar (before personal preference). Users with «Manage tag cloud display» can override visibility for themselves, except author-only clouds that belong to another user.
   text_tag_cloud_roles_required: Select at least one role. Users must have one of these roles in the project to see the cloud.
   text_tag_cloud_owner_only_author: Only the cloud author can choose «Author only».
   text_tag_cloud_no_roles: No assignable project roles were found.
