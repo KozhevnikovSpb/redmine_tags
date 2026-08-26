@@ -35,8 +35,6 @@ module IssuesTagsHelper
   end
 
   def render_tag_cloud(cloud)
-    # Custom clouds are driven only by their project filters.
-    # Plugin setting issues_open_only applies to the default Tags cloud only.
     tags = TagCloudAggregator.new(
       cloud,
       project: @project,
@@ -66,7 +64,12 @@ module IssuesTagsHelper
 
     inherited_clouds = TagCloud.inherited_for(@project)
     local_clouds = TagCloud.for_project(@project).to_a
-    can_select_clouds = User.current.allowed_to?(:select_tag_clouds, @project)
+    can_see_custom = TagCloud.can_see_custom_clouds?(User.current, @project)
+    can_select_clouds = TagCloud.can_select_display?(User.current, @project)
+
+    unless can_see_custom
+      return render_global_tags_sidebar
+    end
 
     unless can_select_clouds
       clear_stale_tag_cloud_preferences!(User.current, inherited_clouds + local_clouds)
@@ -165,7 +168,7 @@ module IssuesTagsHelper
 
   def sort_tag_clouds_for_user(clouds, user)
     return clouds if user.nil? || !user.logged? || clouds.blank?
-    return clouds unless @project && user.allowed_to?(:select_tag_clouds, @project)
+    return clouds unless @project && TagCloud.can_select_display?(user, @project)
 
     prefs = TagCloudPreference.where(user_id: user.id, tag_cloud_id: clouds.map(&:id)).index_by(&:tag_cloud_id)
     return clouds if prefs.empty? || prefs.values.none? { |p| !p.position.nil? }
