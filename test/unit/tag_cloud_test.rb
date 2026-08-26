@@ -10,6 +10,12 @@ class TagCloudTest < ActiveSupport::TestCase
     @admin = users(:users_001)
   end
 
+  def stub_cloud_permissions(user, view: false, select: false, manage: false)
+    user.stubs(:allowed_to?).with(:view_tag_clouds, @project).returns(view)
+    user.stubs(:allowed_to?).with(:select_tag_clouds, @project).returns(select)
+    user.stubs(:allowed_to?).with(:manage_tag_clouds, @project).returns(manage)
+  end
+
   test 'serializes filters as integer arrays' do
     cloud = TagCloud.new(name: 'Filtered', status_filter: ['1', '', '1'])
     cloud.valid?
@@ -36,6 +42,7 @@ class TagCloudTest < ActiveSupport::TestCase
   end
 
   test 'preference overrides default visibility' do
+    stub_cloud_permissions(@user, view: true, select: true)
     cloud = TagCloud.create!(name: 'Hidden', visible_by_default: false, visibility: 'all')
     cloud.tag_cloud_projects.create!(project: @project, position: 0)
 
@@ -87,6 +94,7 @@ class TagCloudTest < ActiveSupport::TestCase
   end
 
   test 'visibility owner only owner sees cloud' do
+    stub_cloud_permissions(@user, view: true)
     cloud = TagCloud.create!(
       name: 'Owner cloud',
       visibility: 'owner',
@@ -101,6 +109,7 @@ class TagCloudTest < ActiveSupport::TestCase
   end
 
   test 'visibility roles requires matching project role' do
+    stub_cloud_permissions(@user, view: true)
     role = roles(:roles_001)
     cloud = TagCloud.new(name: 'Roles cloud', visibility: 'roles', visible_by_default: true)
     cloud.role_ids = [role.id]
