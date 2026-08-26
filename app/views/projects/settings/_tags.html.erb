@@ -1,7 +1,7 @@
-<% can_manage = User.current.allowed_to?(:manage_tag_clouds, @project) %>
-<% inherited_clouds = @project ? TagCloud.inherited_for(@project) : [] %>
+<% can_manage = TagCloud.can_manage?(User.current, @project) %>
+<% inherited_clouds = @project ? TagCloud.inherited_for(@project).select { |cloud| cloud.listed_in_settings_for?(User.current) } : [] %>
 <% if @project.present? %>
-  <% @tag_clouds = TagCloud.for_project(@project).includes(:created_by).to_a %>
+  <% @tag_clouds = TagCloud.for_project(@project).includes(:created_by).to_a.select { |cloud| cloud.listed_in_settings_for?(User.current) } %>
 <% end %>
 <% reset_cycle('tag_cloud_rows') %>
 
