@@ -21,6 +21,7 @@ module RedmineupTags
     ].freeze
 
     PRESERVE_TABLES = %w[tags taggings].freeze
+    OPERATOR_COLUMNS = %w[status_operator version_operator tracker_operator tag_operator].freeze
 
     class << self
       def run!(verbose: true)
@@ -76,7 +77,7 @@ module RedmineupTags
       return false unless table?(:tag_clouds)
 
       added = false
-      %w[status_operator version_operator tracker_operator].each do |col|
+      OPERATOR_COLUMNS.each do |col|
         next if column?(:tag_clouds, col)
 
         log "ADD COLUMN tag_clouds.#{col}"
@@ -97,7 +98,7 @@ module RedmineupTags
       if table?(:tag_clouds)
         cols = @connection.columns(:tag_clouds).map(&:name)
         legacy = (%w[project_id position is_system] & cols)
-        needed = (%w[tag_filter include_subprojects owner_id visibility name visible_by_default status_operator version_operator tracker_operator] - cols)
+        needed = (%w[tag_filter include_subprojects owner_id visibility name visible_by_default] + OPERATOR_COLUMNS - cols)
         log "  tag_clouds columns: #{cols.join(', ')}"
         log "  tag_clouds legacy left: #{legacy.empty? ? 'none' : legacy.join(', ')}"
         log "  tag_clouds missing: #{needed.empty? ? 'none' : needed.join(', ')}"
@@ -202,6 +203,7 @@ module RedmineupTags
           t.string  :status_operator, null: false, default: '*'
           t.string  :version_operator, null: false, default: '*'
           t.string  :tracker_operator, null: false, default: '*'
+          t.string  :tag_operator, null: false, default: '*'
           t.boolean :tag_filter, null: false, default: false
           t.boolean :include_subprojects, null: false, default: false
           t.boolean :visible_by_default, null: false, default: true
