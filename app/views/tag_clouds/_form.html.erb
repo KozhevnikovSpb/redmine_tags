@@ -4,7 +4,6 @@
   tracker_selected = Array(@tag_cloud.tracker_filter).map(&:to_i).reject(&:zero?)
   role_selected    = Array(@tag_cloud.role_ids).map(&:to_i).reject(&:zero?)
   tag_selected     = Array(@tag_cloud.tag_ids).map(&:to_i).reject(&:zero?)
-  label_all = l(:label_all)
   visibility = @tag_cloud.visibility.presence || 'all'
   preview_url = preview_project_tag_clouds_path(@project)
   can_select_owner = @tag_cloud.can_set_owner_visibility?(User.current)
@@ -154,13 +153,15 @@
         <div class="tag-cloud-issue-stats">
           <div class="tag-cloud-issue-stat">
             <span class="tag-cloud-issue-stat-label"><%= l(:label_tag_cloud_issues_with_filter) %></span>
-            <span class="tag-cloud-issue-stat-sep"> — </span>
+            <span class="tag-cloud-issue-stat-sep"> = </span>
             <span class="tag-cloud-issue-stat-value" id="tag-cloud-filtered-count">0</span>
+            <span class="tag-cloud-issue-stat-unit"> <%= l(:label_tag_cloud_issues_unit) %></span>
           </div>
           <div class="tag-cloud-issue-stat">
             <span class="tag-cloud-issue-stat-label"><%= l(:label_tag_cloud_issues_without_filter) %></span>
-            <span class="tag-cloud-issue-stat-sep"> — </span>
+            <span class="tag-cloud-issue-stat-sep"> = </span>
             <span class="tag-cloud-issue-stat-value" id="tag-cloud-unfiltered-count">0</span>
+            <span class="tag-cloud-issue-stat-unit"> <%= l(:label_tag_cloud_issues_unit) %></span>
           </div>
         </div>
       </div>
