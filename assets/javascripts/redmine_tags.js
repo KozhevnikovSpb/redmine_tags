@@ -285,6 +285,11 @@ $(function () {
         };
     }
 
+    function setIssueCounts(filtered, unfiltered) {
+        $('#tag-cloud-filtered-count').text(filtered == null ? 0 : filtered);
+        $('#tag-cloud-unfiltered-count').text(unfiltered == null ? 0 : unfiltered);
+    }
+
     function refreshPreview() {
         var $form = $('.tag-cloud-form');
         var url = $form.data('preview-url');
@@ -295,13 +300,16 @@ $(function () {
         $.ajax({
             url: url,
             type: 'POST',
-            dataType: 'html',
+            dataType: 'json',
             data: collectPreviewParams()
-        }).done(function (html) {
-            $body.html(html || '');
+        }).done(function (data) {
+            data = data || {};
+            $body.html(data.html || '');
+            setIssueCounts(data.filtered, data.unfiltered);
         }).fail(function () {
             var emptyLabel = $form.data('label-empty') || '\u2014';
             $body.html($('<p>', { class: 'tag-cloud-empty', text: emptyLabel }));
+            setIssueCounts(0, 0);
         });
     }
 
