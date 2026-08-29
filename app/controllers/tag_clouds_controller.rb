@@ -134,8 +134,7 @@ class TagCloudsController < ApplicationController
       open_only: false
     )
     tags = aggregator.tags.to_a
-    filtered = aggregator.issue_count
-    unfiltered = aggregator.unfiltered_issue_count
+    counts = aggregator.modal_issue_counts
 
     html =
       if tags.empty?
@@ -154,8 +153,8 @@ class TagCloudsController < ApplicationController
 
     render json: {
       html: html.to_s,
-      filtered: filtered.to_i,
-      unfiltered: unfiltered.to_i
+      filtered: counts[:filtered].to_i,
+      unfiltered: counts[:untagged].to_i
     }
   rescue StandardError => e
     Rails.logger.error("[redmineup_tags] preview project=#{@project&.id}: #{e.class}: #{e.message} #{e.backtrace&.first(8)}")
