@@ -20,6 +20,7 @@ class TagCloudsController < ApplicationController
       status_operator: '*',
       version_operator: '*',
       tracker_operator: '*',
+      tag_operator: '*',
       visible_by_default: true,
       visibility: 'all',
       tag_filter: false,
@@ -116,15 +117,15 @@ class TagCloudsController < ApplicationController
       status_operator: params[:status_operator].presence || '*',
       version_operator: params[:version_operator].presence || '*',
       tracker_operator: params[:tracker_operator].presence || '*',
+      tag_operator: params[:tag_operator].presence || '*',
       status_filter: Array(params[:status_filter]),
       version_filter: Array(params[:version_filter]),
       tracker_filter: Array(params[:tracker_filter]),
-      tag_filter: ActiveModel::Type::Boolean.new.cast(params[:tag_filter]),
       visible_by_default: true,
       visibility: 'all',
       include_subprojects: ActiveModel::Type::Boolean.new.cast(params[:include_subprojects])
     )
-    cloud.tag_ids = Array(params[:tag_ids]) if cloud.tag_filter
+    cloud.tag_ids = Array(params[:tag_ids]) if cloud.tag_needs_values?
 
     tags = TagCloudAggregator.new(
       cloud,
@@ -171,13 +172,15 @@ class TagCloudsController < ApplicationController
     allowed = TagCloud.attribute_names.map(&:to_sym)
     db_attrs = attrs.select { |key, _| allowed.include?(key.to_sym) }
     cloud = TagCloud.new(db_attrs)
-    %i[status_operator version_operator tracker_operator].each do |key|
+    %i[status_operator version_operator tracker_operator tag_operator].each do |key|
       next unless attrs.key?(key)
-      next unless cloud.respond_to?("#{key}=") && TagCloud.operator_columns?
+      next unless cloud.respond_to?("#{key}=")
+      next if key != :tag_operator && !TagCloud.operator_columns?
+      next if key == :tag_operator && !TagCloud.tag_operator_column?
 
       cloud.public_send("#{key}=", attrs[key])
     end
-    %i[status_filter version_filter tracker_filter tag_filter include_subprojects visibility visible_by_default].each do |key|
+    %i[status_filter version_filter tracker_filter include_subprojects visibility visible_by_default].each do |key|
       next unless attrs.key?(key)
       next unless cloud.respond_to?("#{key}=")
 
@@ -402,18 +405,20 @@ class TagCloudsController < ApplicationController
       :status_operator,
       :version_operator,
       :tracker_operator,
+      :tag_operator,
       status_filter: [],
       version_filter: [],
       tracker_filter: []
     )
 
     raw[:visible_by_default] = ActiveModel::Type::Boolean.new.cast(raw[:visible_by_default])
-    raw[:tag_filter] = ActiveModel::Type::Boolean.new.cast(raw.fetch(:tag_filter, false))
     raw[:include_subprojects] = ActiveModel::Type::Boolean.new.cast(raw.fetch(:include_subprojects, false))
     raw[:visibility] = raw[:visibility].to_s.presence_in(TagCloud::VISIBILITIES) || 'all'
     raw[:status_operator] = raw[:status_operator].to_s.presence_in(TagCloud::STATUS_OPERATORS) || '*'
     raw[:version_operator] = raw[:version_operator].to_s.presence_in(TagCloud::VERSION_OPERATORS) || '*'
     raw[:tracker_operator] = raw[:tracker_operator].to_s.presence_in(TagCloud::TRACKER_OPERATORS) || '*'
+    raw[:tag_operator] = raw[:tag_operator].to_s.presence_in(TagCloud::TAG_OPERATORS) || '*'
+    raw[:tag_filter] = %w[= ! !*].include?(raw[:tag_operator])
     raw[:status_filter] = Array(raw[:status_filter])
     raw[:version_filter] = Array(raw[:version_filter])
     raw[:tracker_filter] = Array(raw[:tracker_filter])
@@ -422,6 +427,7 @@ class TagCloudsController < ApplicationController
       raw.delete(:version_operator)
       raw.delete(:tracker_operator)
     end
+    raw.delete(:tag_operator) if force_without_operators || !TagCloud.tag_operator_column?
     collapse_full_filters!(raw)
     raw
   end
@@ -443,6 +449,13 @@ class TagCloudsController < ApplicationController
       raw[:tracker_operator] = '*'
       raw[:tracker_filter] = []
     end
+
+    tag_ids = Array(params.dig(:tag_cloud, :tag_ids))
+    available_tag_ids = Array(project_available_tags).map { |t| t.respond_to?(:id) ? t.id : t.to_i }
+    if raw[:tag_operator] == '=' && filter_covers_all?(tag_ids, available_tag_ids)
+      raw[:tag_operator] = '*'
+      raw[:tag_filter] = false
+    end
   end
 
   def filter_covers_all?(selected, all_ids)
@@ -461,7 +474,7 @@ class TagCloudsController < ApplicationController
       cloud.role_ids = []
     end
 
-    if cloud.tag_filter
+    if cloud.tag_needs_values?
       cloud.tag_ids = tag_ids
     else
       cloud.tag_ids = []
