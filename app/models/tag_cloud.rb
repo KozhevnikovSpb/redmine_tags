@@ -10,8 +10,10 @@ class TagCloud < ActiveRecord::Base
   STATUS_OPERATORS  = %w[o = ! ev !ev cf c *].freeze
   VERSION_OPERATORS = %w[= ! ev !ev cf !* *].freeze
   TRACKER_OPERATORS = %w[= ! ev !ev cf *].freeze
+  TAG_OPERATORS     = %w[= ! !* *].freeze
   VALUE_OPERATORS   = %w[= ! ev !ev cf].freeze
-  OPERATOR_COLUMNS  = %w[status_operator version_operator tracker_operator].freeze
+  TAG_VALUE_OPERATORS = %w[= !].freeze
+  OPERATOR_COLUMNS  = %w[status_operator version_operator tracker_operator tag_operator].freeze
 
   has_many :tag_cloud_projects, dependent: :destroy, inverse_of: :tag_cloud
   has_many :projects, through: :tag_cloud_projects
@@ -35,6 +37,7 @@ class TagCloud < ActiveRecord::Base
   validates :status_operator, inclusion: { in: STATUS_OPERATORS }, if: :operator_columns?
   validates :version_operator, inclusion: { in: VERSION_OPERATORS }, if: :operator_columns?
   validates :tracker_operator, inclusion: { in: TRACKER_OPERATORS }, if: :operator_columns?
+  validates :tag_operator, inclusion: { in: TAG_OPERATORS }, if: :tag_operator_column?
   validate :name_unique_within_projects
   validate :status_filter_exists
   validate :roles_present_when_visibility_roles
@@ -55,12 +58,18 @@ class TagCloud < ActiveRecord::Base
     false
   end
 
+  def self.tag_operator_column?
+    table_exists? && column_names.include?('tag_operator')
+  rescue StandardError
+    false
+  end
+
   def self.ensure_operator_schema!
-    return true if operator_columns?
+    return true if operator_columns? && tag_operator_column?
     return false unless defined?(RedmineupTags::SchemaRepair)
     RedmineupTags::SchemaRepair.ensure_operators!(verbose: false)
     reset_column_information
-    operator_columns?
+    operator_columns? && tag_operator_column?
   rescue StandardError => e
     Rails.logger.warn("[redmineup_tags] ensure_operator_schema: #{e.class}: #{e.message}") if defined?(Rails) && Rails.logger
     false
@@ -255,6 +264,10 @@ class TagCloud < ActiveRecord::Base
     VALUE_OPERATORS.include?(normalized_tracker_operator)
   end
 
+  def tag_needs_values?
+    TAG_VALUE_OPERATORS.include?(normalized_tag_operator)
+  end
+
   def normalized_status_operator
     normalize_operator_code(read_filter_operator(:status_operator), STATUS_OPERATORS)
   end
@@ -267,8 +280,20 @@ class TagCloud < ActiveRecord::Base
     normalize_operator_code(read_filter_operator(:tracker_operator), TRACKER_OPERATORS)
   end
 
+  def normalized_tag_operator
+    if tag_operator_column?
+      normalize_operator_code(read_tag_operator, TAG_OPERATORS)
+    else
+      tag_filter ? '=' : '*'
+    end
+  end
+
   def operator_columns?
     self.class.operator_columns?
+  end
+
+  def tag_operator_column?
+    self.class.tag_operator_column?
   end
 
   private
@@ -280,16 +305,28 @@ class TagCloud < ActiveRecord::Base
     '*'
   end
 
+  def read_tag_operator
+    return (tag_filter ? '=' : '*') unless tag_operator_column?
+    self[:tag_operator].to_s.presence || (tag_filter ? '=' : '*')
+  rescue StandardError
+    tag_filter ? '=' : '*'
+  end
+
   def normalize_operator_code(op, allowed)
     code = op.to_s.presence || '*'
     allowed.include?(code) ? code : '*'
   end
 
   def normalize_operators
-    return unless operator_columns?
-    self.status_operator = normalized_status_operator
-    self.version_operator = normalized_version_operator
-    self.tracker_operator = normalized_tracker_operator
+    if operator_columns?
+      self.status_operator = normalized_status_operator
+      self.version_operator = normalized_version_operator
+      self.tracker_operator = normalized_tracker_operator
+    end
+    if tag_operator_column?
+      self.tag_operator = normalized_tag_operator
+    end
+    self.tag_filter = %w[= ! !*].include?(normalized_tag_operator)
   rescue StandardError
     nil
   end

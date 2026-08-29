@@ -11,8 +11,8 @@ class TagCloudAggregator
   def tags
     return empty_tags if @project.nil? || @tag_cloud.nil?
 
-    if @tag_cloud.tag_filter && Array(@tag_cloud.tag_ids).empty?
-      log_empty('tag_filter enabled but whitelist empty')
+    if empty_tag_restriction?
+      log_empty('tag filter none or is-with-empty-values')
       return empty_tags
     end
 
@@ -30,9 +30,7 @@ class TagCloudAggregator
             .where("#{taggings_table}.taggable_type = ?", Issue.name)
             .where("#{taggings_table}.taggable_id" => issue_ids)
 
-    if @tag_cloud.tag_filter
-      scope = scope.where(tags_table => { id: @tag_cloud.tag_ids })
-    end
+    scope = apply_tag_restriction(scope, tags_table)
 
     select_cols = [
       "#{tags_table}.id",
@@ -61,19 +59,23 @@ class TagCloudAggregator
 
   def issue_count
     return 0 if @project.nil? || @tag_cloud.nil?
-    return 0 if @tag_cloud.tag_filter && Array(@tag_cloud.tag_ids).empty?
+    return 0 if empty_tag_restriction?
 
     issue_ids = matching_issue_ids
     return 0 if issue_ids.empty?
-    return issue_ids.size unless @tag_cloud.tag_filter
+    return issue_ids.size unless tag_ids_restricted?
 
     taggings_table = Redmineup::Tagging.table_name
-    Redmineup::Tagging
-      .where(taggable_type: Issue.name)
-      .where(taggable_id: issue_ids)
-      .where(tag_id: @tag_cloud.tag_ids)
-      .distinct
-      .count(:taggable_id)
+    scope = Redmineup::Tagging
+            .where(taggable_type: Issue.name)
+            .where(taggable_id: issue_ids)
+    case tag_operator
+    when '='
+      scope = scope.where(tag_id: tag_ids)
+    when '!'
+      scope = scope.where.not(tag_id: tag_ids)
+    end
+    scope.distinct.count(:taggable_id)
   rescue StandardError => e
     Rails.logger.error(
       "[redmineup_tags] TagCloudAggregator#issue_count cloud=#{@tag_cloud&.id} " \
@@ -107,6 +109,48 @@ class TagCloudAggregator
 
   def empty_tags
     Redmineup::Tag.none
+  end
+
+  def tag_operator
+    if @tag_cloud.respond_to?(:normalized_tag_operator)
+      @tag_cloud.normalized_tag_operator
+    elsif @tag_cloud.tag_filter
+      '='
+    else
+      '*'
+    end
+  end
+
+  def tag_ids
+    Array(@tag_cloud.tag_ids).map(&:to_i).reject(&:zero?)
+  end
+
+  def empty_tag_restriction?
+    case tag_operator
+    when '!='
+      true
+    when '='
+      tag_ids.empty?
+    else
+      false
+    end
+  end
+
+  def tag_ids_restricted?
+    TAG_VALUE_OPS.include?(tag_operator) && tag_ids.any?
+  end
+
+  TAG_VALUE_OPS = %w[= !].freeze
+
+  def apply_tag_restriction(scope, tags_table)
+    case tag_operator
+    when '='
+      scope.where(tags_table => { id: tag_ids })
+    when '!'
+      tag_ids.any? ? scope.where.not(tags_table => { id: tag_ids }) : scope
+    else
+      scope
+    end
   end
 
   def matching_issue_ids
