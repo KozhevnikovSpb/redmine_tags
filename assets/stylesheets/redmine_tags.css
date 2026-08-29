@@ -49,8 +49,18 @@
 #sidebar .sidebar-tag-cloud-system h3 .tag-cloud-system-scope {
   margin-left: 6px; color: #6b7280; font-size: 0.78em; font-weight: 500; line-height: 1.2;
 }
-#sidebar .sidebar-tag-cloud-controls { margin: 2px 0 12px; }
-#sidebar .sidebar-tag-cloud-controls a { font-size: 0.9em; }
+#sidebar .sidebar-tag-cloud-controls {
+  display: flex;
+  justify-content: center;
+  margin: 2px 0 12px;
+  text-align: center;
+}
+#sidebar .sidebar-tag-cloud-controls a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9em;
+}
 #sidebar .tags-cloud,
 #sidebar .tags-cloud li,
 #sidebar .tags-cloud a,
