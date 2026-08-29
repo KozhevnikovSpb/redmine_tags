@@ -108,6 +108,8 @@ ru:
   text_tag_cloud_no_tags_in_project: В задачах этого проекта пока нет тегов.
   label_tag_cloud_empty: Нет подходящих тегов
   label_tag_cloud_matching_tags: Подходящие теги
+  label_tag_cloud_issues_with_filter: По фильтру
+  label_tag_cloud_issues_without_filter: Без фильтра
 
   label_select_visible_tag_clouds: Выбрать видимые облака тегов
   label_tag_clouds_visibility: Видимые облака тегов
@@ -116,8 +118,6 @@ ru:
     few: "%{count} задачи"
     many: "%{count} задач"
     other: "%{count} задач"
-  label_tag_cloud_modal_issue_count: "%{filtered} / %{untagged} задач"
-  text_tag_cloud_modal_issue_count_title: Количество открытых задач по заданному фильтру и количество открытых задач без тегов
   text_select_visible_tag_clouds_hint: Выберите, какие пользовательские облака тегов показывать в боковой панели. Унаследованные облака всегда выше облаков этого проекта. Перетаскивайте строки внутри группы, чтобы изменить порядок.
   button_tag_cloud_preferences_reset: Сброс
   text_tag_cloud_preferences_reset_title: Сбросить персональную видимость и порядок к значениям по умолчанию
