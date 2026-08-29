@@ -109,7 +109,7 @@ ru:
   label_tag_cloud_empty: Нет подходящих тегов
   label_tag_cloud_matching_tags: Подходящие теги
   label_tag_cloud_issues_with_filter: По фильтру
-  label_tag_cloud_issues_without_filter: Без фильтра
+  label_tag_cloud_issues_without_filter: Без тегов
   label_tag_cloud_issues_unit: задач
 
   label_select_visible_tag_clouds: Выбрать видимые облака тегов
