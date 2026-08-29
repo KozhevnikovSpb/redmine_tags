@@ -32,7 +32,6 @@ module TagsHelper
         filters << ['status_id', sop, '']
       when '=', '!', 'ev', '!ev', 'cf'
         filters << ['status_id', sop, status_ids] if status_ids.any?
-      # '*' (Any): no status constraint. Plugin issues_open_only does not apply.
       end
 
       if %w[= ! ev !ev cf].include?(top) && tracker_ids.any?
@@ -160,6 +159,15 @@ module TagsHelper
     ]
   end
 
+  def tag_cloud_tag_operator_options
+    [
+      [l(:label_equals), '='],
+      [l(:label_not_equals), '!'],
+      [l(:label_none), '!*'],
+      [l(:label_any), '*']
+    ]
+  end
+
   def tag_cloud_list_operator_options(with_none: false)
     with_none ? tag_cloud_version_operator_options : tag_cloud_tracker_operator_options
   end
@@ -186,18 +194,25 @@ module TagsHelper
     sop = tag_cloud.respond_to?(:normalized_status_operator) ? tag_cloud.normalized_status_operator : '*'
     vop = tag_cloud.respond_to?(:normalized_version_operator) ? tag_cloud.normalized_version_operator : '*'
     top = tag_cloud.respond_to?(:normalized_tracker_operator) ? tag_cloud.normalized_tracker_operator : '*'
+    tagop =
+      if tag_cloud.respond_to?(:normalized_tag_operator)
+        tag_cloud.normalized_tag_operator
+      else
+        tag_cloud.tag_filter ? '=' : '*'
+      end
 
     parts << operator_filter_summary(:field_status, sop, safe_names(IssueStatus, tag_cloud.status_filter))
     parts << operator_filter_summary(:field_fixed_version, vop, safe_names(Version, tag_cloud.version_filter))
     parts << operator_filter_summary(:field_tracker, top, safe_names(Tracker, tag_cloud.tracker_filter))
 
-    if tag_cloud.tag_filter
-      tag_names = if tag_cloud.tag_ids.any?
-                    Redmineup::Tag.where(id: tag_cloud.tag_ids).order(:name).pluck(:name)
-                  else
-                    []
-                  end
-      parts << filter_summary(:tags, tag_names.presence || [l(:label_none)])
+    if tagop != '*'
+      tag_names =
+        if tag_cloud.tag_ids.any?
+          Redmineup::Tag.where(id: tag_cloud.tag_ids).order(:name).pluck(:name)
+        else
+          []
+        end
+      parts << operator_filter_summary(:field_tags, tagop, tag_names)
     end
 
     if tag_cloud.include_subprojects
@@ -256,7 +271,7 @@ module TagsHelper
   def operator_filter_summary(label, operator, values)
     op_label = tag_cloud_operator_label(operator)
     text =
-      if TagCloud::VALUE_OPERATORS.include?(operator.to_s)
+      if TagCloud::VALUE_OPERATORS.include?(operator.to_s) || TagCloud::TAG_VALUE_OPERATORS.include?(operator.to_s)
         names = values.presence || ['—']
         "#{l(label)} #{op_label} #{names.join(', ')}"
       else
