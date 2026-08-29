@@ -157,16 +157,25 @@ class TagCloudTest < ActiveSupport::TestCase
   end
 
   test 'tag_filter association stores tag ids' do
-    cloud = TagCloud.create!(name: 'With tags', visibility: 'all', tag_filter: true)
+    cloud = TagCloud.create!(name: 'With tags', visibility: 'all', tag_filter: true, tag_operator: '=')
     cloud.tag_cloud_projects.create!(project: @project, position: 0)
     assert_equal true, cloud.tag_filter
+    assert_equal '=', cloud.normalized_tag_operator
     assert_equal [], cloud.tag_ids
+  end
+
+  test 'is not tag operator does not require values to stay valid' do
+    cloud = TagCloud.new(name: 'Exclude tags', visibility: 'all', tag_operator: '!')
+    assert cloud.valid?, cloud.errors.full_messages.inspect
+    assert_equal '!', cloud.normalized_tag_operator
+    assert cloud.tag_needs_values?
   end
 
   test 'operators match Redmine 7 Issue Query filter types' do
     assert_equal %w[o = ! ev !ev cf c *], TagCloud::STATUS_OPERATORS
     assert_equal %w[= ! ev !ev cf !* *], TagCloud::VERSION_OPERATORS
     assert_equal %w[= ! ev !ev cf *], TagCloud::TRACKER_OPERATORS
+    assert_equal %w[= ! !* *], TagCloud::TAG_OPERATORS
     %w[= ! ev !ev cf].each do |op|
       assert_includes TagCloud::VALUE_OPERATORS, op
     end

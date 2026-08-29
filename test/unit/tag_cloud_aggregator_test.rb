@@ -14,7 +14,6 @@ class TagCloudAggregatorTest < ActiveSupport::TestCase
     cloud.tag_cloud_projects.create!(project: @project, position: 0)
 
     result = TagCloudAggregator.new(cloud, project: @project, user: @user).tags
-    # Result is either empty or only Redmineup::Tag records — never tracker names as tags
     result.each do |tag|
       assert tag.respond_to?(:name)
       assert tag.is_a?(Redmineup::Tag) || tag.class.name.include?('Tag')
@@ -22,7 +21,15 @@ class TagCloudAggregatorTest < ActiveSupport::TestCase
   end
 
   test 'tag_filter with no tags returns empty' do
-    cloud = TagCloud.create!(name: 'Empty tags', visibility: 'all', tag_filter: true)
+    cloud = TagCloud.create!(name: 'Empty tags', visibility: 'all', tag_filter: true, tag_operator: '=')
+    cloud.tag_cloud_projects.create!(project: @project, position: 0)
+
+    result = TagCloudAggregator.new(cloud, project: @project, user: @user).tags
+    assert_equal 0, result.to_a.size
+  end
+
+  test 'none tag operator returns empty' do
+    cloud = TagCloud.create!(name: 'None tags', visibility: 'all', tag_operator: '!*')
     cloud.tag_cloud_projects.create!(project: @project, position: 0)
 
     result = TagCloudAggregator.new(cloud, project: @project, user: @user).tags
@@ -37,7 +44,6 @@ class TagCloudAggregatorTest < ActiveSupport::TestCase
     )
     cloud.tag_cloud_projects.create!(project: @project, position: 0)
 
-    # Should not raise and should run SQL with status constraint
     assert_nothing_raised do
       TagCloudAggregator.new(cloud, project: @project, user: @user).tags.to_a
     end
