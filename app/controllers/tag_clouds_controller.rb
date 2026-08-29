@@ -428,40 +428,7 @@ class TagCloudsController < ApplicationController
       raw.delete(:tracker_operator)
     end
     raw.delete(:tag_operator) if force_without_operators || !TagCloud.tag_operator_column?
-    collapse_full_filters!(raw)
     raw
-  end
-
-  def collapse_full_filters!(raw)
-    if raw[:status_operator] == '=' && filter_covers_all?(raw[:status_filter], IssueStatus.pluck(:id))
-      raw[:status_operator] = '*'
-      raw[:status_filter] = []
-    end
-
-    version_ids = Array(active_versions_for_project).map { |v| v.respond_to?(:id) ? v.id : v.to_i }
-    if raw[:version_operator] == '=' && filter_covers_all?(raw[:version_filter], version_ids)
-      raw[:version_operator] = '*'
-      raw[:version_filter] = []
-    end
-
-    tracker_ids = Array(trackers_for_filter).map { |t| t.respond_to?(:id) ? t.id : t.to_i }
-    if raw[:tracker_operator] == '=' && filter_covers_all?(raw[:tracker_filter], tracker_ids)
-      raw[:tracker_operator] = '*'
-      raw[:tracker_filter] = []
-    end
-
-    tag_ids = Array(params.dig(:tag_cloud, :tag_ids))
-    available_tag_ids = Array(project_available_tags).map { |t| t.respond_to?(:id) ? t.id : t.to_i }
-    if raw[:tag_operator] == '=' && filter_covers_all?(tag_ids, available_tag_ids)
-      raw[:tag_operator] = '*'
-      raw[:tag_filter] = false
-    end
-  end
-
-  def filter_covers_all?(selected, all_ids)
-    sel = Array(selected).map(&:to_i).reject(&:zero?).uniq.sort
-    all = Array(all_ids).map(&:to_i).reject(&:zero?).uniq.sort
-    sel.any? && all.any? && sel == all
   end
 
   def apply_join_ids!(cloud)
