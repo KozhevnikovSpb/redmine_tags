@@ -11,7 +11,6 @@ class TagCloudPreferencesController < ApplicationController
   def edit
     load_custom_tag_clouds_for_user
     @visible_ids = @tag_clouds.select { |c| c.visible_for?(User.current, project: @project) }.map(&:id)
-    @issue_counts = load_issue_counts_for_clouds(@tag_clouds)
     @system_visible = TagCloudPreference.system_visible_for?(User.current, @project)
 
     respond_to do |format|
@@ -111,19 +110,6 @@ class TagCloudPreferencesController < ApplicationController
     clouds.sort_by.with_index do |cloud, idx|
       pref = prefs[cloud.id]
       [pref&.position.nil? ? 1_000_000 + idx : pref.position, idx]
-    end
-  end
-
-  def load_issue_counts_for_clouds(clouds)
-    return {} if clouds.blank?
-
-    clouds.each_with_object({}) do |cloud, hash|
-      hash[cloud.id] = TagCloudAggregator.new(
-        cloud,
-        project: @project,
-        user: User.current,
-        open_only: true
-      ).modal_issue_counts
     end
   end
 end

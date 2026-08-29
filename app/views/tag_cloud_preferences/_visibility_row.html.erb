@@ -1,7 +1,4 @@
 <% inherited = local_assigns.fetch(:inherited, false) %>
-<% counts = (@issue_counts || {})[cloud.id] || {} %>
-<% filtered = counts[:filtered].to_i %>
-<% untagged = counts[:untagged].to_i %>
 <% order_name = inherited ? 'inherited_tag_cloud_order[]' : 'tag_cloud_order[]' %>
 <li class="tag-cloud-row<%= ' inherited' if inherited %>" data-id="<%= cloud.id %>">
   <label for="visible_tag_cloud_<%= cloud.id %>">
@@ -14,15 +11,6 @@
       <%= tag_cloud_letter_marker(:inherited) if inherited %>
     </span>
   </label>
-  <span class="tag-cloud-issue-count"
-        style="pointer-events: auto; cursor: help;"
-        title="<%= l(:text_tag_cloud_modal_issue_count_title,
-                     default: 'Open issues matching the filter / open issues without tags') %>">
-    <%= l(:label_tag_cloud_modal_issue_count,
-          filtered: filtered,
-          untagged: untagged,
-          default: '%{filtered} / %{untagged} issues') %>
-  </span>
   <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
     <%= sprite_icon('reorder', '') %>
   </span>
