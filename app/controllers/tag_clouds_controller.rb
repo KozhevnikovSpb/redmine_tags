@@ -127,32 +127,43 @@ class TagCloudsController < ApplicationController
     )
     cloud.tag_ids = Array(params[:tag_ids]) if cloud.tag_needs_values?
 
-    tags = TagCloudAggregator.new(
+    aggregator = TagCloudAggregator.new(
       cloud,
       project: @project,
       user: User.current,
       open_only: false
-    ).tags.to_a
-
-    if tags.empty?
-      render html: helpers.content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
-      return
-    end
-
-    style = RedmineupTags.tag_list_view
-    style = :simple_cloud if style == :none || style.blank?
-
-    html = helpers.render_tags_list(
-      tags,
-      show_count: RedmineupTags.settings['issues_show_count'].to_i == 1,
-      open_only: false,
-      style: style,
-      tag_cloud: cloud
     )
-    render html: html
+    tags = aggregator.tags.to_a
+    filtered = aggregator.issue_count
+    unfiltered = aggregator.unfiltered_issue_count
+
+    html =
+      if tags.empty?
+        helpers.content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
+      else
+        style = RedmineupTags.tag_list_view
+        style = :simple_cloud if style == :none || style.blank?
+        helpers.render_tags_list(
+          tags,
+          show_count: RedmineupTags.settings['issues_show_count'].to_i == 1,
+          open_only: false,
+          style: style,
+          tag_cloud: cloud
+        )
+      end
+
+    render json: {
+      html: html.to_s,
+      filtered: filtered.to_i,
+      unfiltered: unfiltered.to_i
+    }
   rescue StandardError => e
     Rails.logger.error("[redmineup_tags] preview project=#{@project&.id}: #{e.class}: #{e.message} #{e.backtrace&.first(8)}")
-    render html: helpers.content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
+    render json: {
+      html: helpers.content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty').to_s,
+      filtered: 0,
+      unfiltered: 0
+    }
   end
 
   private
