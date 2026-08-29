@@ -36,8 +36,18 @@ Personal visibility
 * Stored in user preferences (no extra table)
 * Plugin / project settings for the system cloud stay read-only
 
+Filters
+* Restrict cloud is a Tags row in the same filter table as Status / Target version / Tracker
+* Operators match Issue List list/optional: is (=), is not (!), none (!*), any (*)
+* is = whitelist; is not = exclude selected; none = empty cloud; any = all matching tags
+* is with no values stays empty (same as the old enabled-empty whitelist)
+* tag_operator column; tag_filter boolean kept in sync for compatibility
+
 UI
 * Hide core Apply button on plugin settings list tabs (Manage tags, Tag Clouds); keep it on General
+
+Schema notes
+* rake redmine:plugins:migrate NAME=redmineup_tags (migration 003) or redmineup_tags:repair_schema, then restart
 
 Docs
 * doc/TEST_V005_CLOUD_PERMISSIONS.md
