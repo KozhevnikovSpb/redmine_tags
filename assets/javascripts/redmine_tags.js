@@ -271,16 +271,15 @@ $(function () {
 
     function collectPreviewParams() {
         var $form = $('.tag-cloud-form');
-        var tagFilterOn = $('#tag_cloud_tag_filter').is(':checked');
         return {
             status_operator: $form.find('select[name="tag_cloud[status_operator]"]').val() || '*',
             version_operator: $form.find('select[name="tag_cloud[version_operator]"]').val() || '*',
             tracker_operator: $form.find('select[name="tag_cloud[tracker_operator]"]').val() || '*',
+            tag_operator: $form.find('select[name="tag_cloud[tag_operator]"]').val() || '*',
             status_filter: selectedValues($form.find('select[name="tag_cloud[status_filter][]"]')),
             version_filter: selectedValues($form.find('select[name="tag_cloud[version_filter][]"]')),
             tracker_filter: selectedValues($form.find('select[name="tag_cloud[tracker_filter][]"]')),
-            tag_filter: tagFilterOn ? '1' : '0',
-            tag_ids: tagFilterOn ? ($form.find('select[name="tag_cloud[tag_ids][]"]').val() || []) : [],
+            tag_ids: selectedValues($form.find('select[name="tag_cloud[tag_ids][]"]')),
             include_subprojects: $('#tag_cloud_include_subprojects').is(':checked') ? '1' : '0',
             authenticity_token: $('meta[name="csrf-token"]').attr('content')
         };
@@ -346,24 +345,6 @@ $(function () {
         fitSelectWidth($(this));
     });
 
-    $(document).on('change', '#tag_cloud_tag_filter', function () {
-        var on = $(this).is(':checked');
-        var $panel = $('#tag-cloud-tags-panel');
-        $panel.prop('hidden', !on);
-        $panel.removeAttr('hidden');
-        if (!on) {
-            $panel.attr('hidden', 'hidden');
-            $panel.find('select').val(null);
-        } else {
-            $panel.find('select.tag-cloud-tag-ids-select, select.tag-cloud-filter-select').each(function () {
-                this.removeAttribute('hidden');
-                $(this).prop('hidden', false);
-                fitSelectWidth($(this));
-            });
-        }
-        schedulePreview();
-    });
-
     $(document).on('change', '#tag_cloud_include_subprojects', function () {
         schedulePreview();
     });
@@ -388,9 +369,6 @@ $(function () {
 
     if ($('.tag-cloud-form').length) {
         syncVisibilityPanels();
-        if (!$('#tag_cloud_tag_filter').is(':checked')) {
-            $('#tag-cloud-tags-panel').prop('hidden', true);
-        }
         refreshPreview();
     }
 });
