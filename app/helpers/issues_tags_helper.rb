@@ -86,14 +86,6 @@ module IssuesTagsHelper
 
     sections = []
 
-    if show_system_cloud
-      sections << tag_cloud_section(
-        system_tag_cloud_title,
-        render_sidebar_tags,
-        'sidebar-tag-cloud sidebar-tag-cloud-system'
-      )
-    end
-
     if can_select_clouds
       sections << content_tag(:div, class: 'sidebar-tag-cloud-controls') do
         link_to(
@@ -103,6 +95,14 @@ module IssuesTagsHelper
           class: 'icon icon-settings'
         )
       end
+    end
+
+    if show_system_cloud
+      sections << tag_cloud_section(
+        system_tag_cloud_title,
+        render_sidebar_tags,
+        'sidebar-tag-cloud sidebar-tag-cloud-system'
+      )
     end
 
     visible_inherited.each do |cloud|
