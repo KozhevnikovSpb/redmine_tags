@@ -149,7 +149,24 @@
 .tag-cloud-filters-with-preview {
   display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px 24px; margin: 4px 0 0 0;
 }
+.tag-cloud-filters-column { flex: 0 1 auto; min-width: 0; }
 .tag-cloud-filters-with-preview .tag-cloud-filters-table { flex: 0 1 auto; }
+.tag-cloud-issue-stats {
+  margin: 14px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tag-cloud-issue-stat {
+  color: #4b5563;
+  font-size: 0.92em;
+  line-height: 1.4;
+}
+.tag-cloud-issue-stat-value {
+  font-weight: 600;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+}
 .tag-cloud-preview-panel {
   flex: 1 1 360px; min-width: 240px; max-width: none; padding: 0;
   background: transparent; border: none; box-sizing: border-box;
@@ -286,11 +303,6 @@ select.tag-cloud-tag-ids-select { overflow-y: scroll !important; overflow-x: hid
   word-wrap: break-word; word-break: break-word; line-height: 1.35;
 }
 #select-visible-tag-clouds-form .tag-cloud-row .tag-cloud-name .tag-cloud-marker { margin-left: 6px; }
-#select-visible-tag-clouds-form .tag-cloud-issue-count {
-  flex: 0 0 auto; margin: 1px 4px 0 8px; padding-top: 1px; text-align: right;
-  white-space: nowrap; font-size: 0.9em; color: #6b7280; font-variant-numeric: tabular-nums;
-  user-select: none; pointer-events: none;
-}
 #select-visible-tag-clouds-form .tag-clouds-visibility-hint {
   display: block; width: auto; margin: 8px 0 2px 0; padding: 0;
   text-align: left !important; float: none !important; clear: both;
