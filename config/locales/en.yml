@@ -110,6 +110,7 @@ en:
   label_tag_cloud_matching_tags: Matching tags
   label_tag_cloud_issues_with_filter: With filter
   label_tag_cloud_issues_without_filter: Without filter
+  label_tag_cloud_issues_unit: issues
 
   label_select_visible_tag_clouds: Select visible tag clouds
   label_tag_clouds_visibility: Visible tag clouds
