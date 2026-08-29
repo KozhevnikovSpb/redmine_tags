@@ -36,6 +36,9 @@ Personal visibility
 * Stored in user preferences (no extra table)
 * Plugin / project settings for the system cloud stay read-only
 
+UI
+* Hide core Apply button on plugin settings list tabs (Manage tags, Tag Clouds); keep it on General
+
 Docs
 * doc/TEST_V005_CLOUD_PERMISSIONS.md
 

@@ -3,8 +3,44 @@
                 {:name => 'tag_clouds', :partial => 'tags/tag_clouds', :label => :tag_clouds}
         ]   %>
 
-
 <%= render_tabs tags_tabs %>
 
 <% html_title(l(:label_settings), l(:tags)) -%>
 
+<%# Redmine always appends Apply after the plugin settings partial.
+    List tabs have no plugin settings to save — hide the button there. %>
+<%= javascript_tag do %>
+(function () {
+  var listOnlyTabs = ['manage_tags', 'tag_clouds'];
+
+  function applyButton() {
+    return $('#settings.plugin-redmineup_tags form').children('input[type=submit], button[type=submit]');
+  }
+
+  function selectedTabName() {
+    var $selected = $('#content .tabs a.selected').first();
+    if (!$selected.length) {
+      return 'general';
+    }
+    var id = $selected.attr('id') || '';
+    var href = $selected.attr('href') || '';
+    var match = (id + ' ' + href).match(/tab-([A-Za-z0-9_]+)/);
+    if (match) {
+      return match[1];
+    }
+    var visible = $('#content .tab-content:visible').attr('id') || '';
+    match = visible.match(/^tab-content-(.+)$/);
+    return match ? match[1] : 'general';
+  }
+
+  function syncApplyButton() {
+    var hide = listOnlyTabs.indexOf(selectedTabName()) !== -1;
+    applyButton().toggle(!hide);
+  }
+
+  $(document).on('click', '#content .tabs a', function () {
+    setTimeout(syncApplyButton, 0);
+  });
+  $(syncApplyButton);
+})();
+<% end %>
