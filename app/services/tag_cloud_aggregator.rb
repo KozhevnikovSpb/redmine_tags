@@ -84,8 +84,21 @@ class TagCloudAggregator
     0
   end
 
-  # Modal: open issues matching status/tracker/version filter (ignore tag whitelist)
-  # and how many of those have no tags.
+  def unfiltered_issue_count
+    return 0 if @project.nil?
+
+    project_ids = view_project_ids
+    return 0 if project_ids.empty?
+
+    Issue.visible(@user).where(project_id: project_ids).unscope(:order, :select).distinct.count(:id)
+  rescue StandardError => e
+    Rails.logger.error(
+      "[redmineup_tags] TagCloudAggregator#unfiltered_issue_count " \
+      "project=#{@project&.id}: #{e.class}: #{e.message}"
+    )
+    0
+  end
+
   def modal_issue_counts
     return { filtered: 0, untagged: 0 } if @project.nil? || @tag_cloud.nil?
 
