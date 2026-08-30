@@ -125,7 +125,7 @@ class TagCloudsController < ApplicationController
       visibility: 'all',
       include_subprojects: ActiveModel::Type::Boolean.new.cast(params[:include_subprojects])
     )
-    cloud.tag_ids = Array(params[:tag_ids]) if cloud.tag_needs_values?
+    cloud.tag_ids = Array(params[:tag_ids]) if cloud.respond_to?(:tag_ids=)
 
     aggregator = TagCloudAggregator.new(
       cloud,
@@ -134,7 +134,7 @@ class TagCloudsController < ApplicationController
       open_only: false
     )
     tags = aggregator.tags.to_a
-    counts = aggregator.modal_issue_counts
+    untagged = aggregator.modal_issue_counts[:untagged]
 
     html =
       if tags.empty?
@@ -153,8 +153,8 @@ class TagCloudsController < ApplicationController
 
     render json: {
       html: html.to_s,
-      filtered: counts[:filtered].to_i,
-      unfiltered: counts[:untagged].to_i
+      filtered: aggregator.issue_count.to_i,
+      unfiltered: untagged.to_i
     }
   rescue StandardError => e
     Rails.logger.error("[redmineup_tags] preview project=#{@project&.id}: #{e.class}: #{e.message} #{e.backtrace&.first(8)}")
