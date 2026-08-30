@@ -25,6 +25,10 @@
   tag_multi     = tag_selected.size > 1
 %>
 
+<% if @from_plugin %>
+  <%= hidden_field_tag :from, 'plugin' %>
+<% end %>
+
 <div class="box tag-cloud-form"
      data-preview-url="<%= preview_url %>"
      data-label-empty="<%= l(:label_tag_cloud_empty) %>">
@@ -241,5 +245,9 @@
 
 <p class="buttons">
   <%= f.submit @tag_cloud.new_record? ? l(:button_create) : l(:button_save) %>
-  <%= link_to l(:button_cancel), { controller: 'projects', action: 'settings', id: @project, tab: 'tags' } %>
+  <% if @from_plugin %>
+    <%= link_to l(:button_cancel), { controller: 'settings', action: 'plugin', id: 'redmineup_tags', tab: 'tag_clouds' } %>
+  <% else %>
+    <%= link_to l(:button_cancel), { controller: 'projects', action: 'settings', id: @project, tab: 'tags' } %>
+  <% end %>
 </p>
