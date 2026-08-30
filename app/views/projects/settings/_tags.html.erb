@@ -1,7 +1,7 @@
 <% can_manage = TagCloud.can_manage?(User.current, @project) %>
-<% inherited_clouds = @project ? TagCloud.inherited_for(@project).select { |cloud| cloud.listed_in_settings_for?(User.current) } : [] %>
+<% inherited_clouds = @project ? TagCloud.inherited_for(@project).select { |cloud| cloud.listed_in_settings_for?(User.current, project: @project) } : [] %>
 <% if @project.present? %>
-  <% @tag_clouds = TagCloud.for_project(@project).includes(:created_by).to_a.select { |cloud| cloud.listed_in_settings_for?(User.current) } %>
+  <% @tag_clouds = TagCloud.for_project(@project).includes(:created_by).to_a.select { |cloud| cloud.listed_in_settings_for?(User.current, project: @project) } %>
 <% end %>
 <% reset_cycle('tag_cloud_rows') %>
 
@@ -35,7 +35,6 @@
     </tr>
   </thead>
   <tbody>
-    <%# Virtual system cloud — always first, not in DB %>
     <tr id="tag-cloud-system" class="<%= cycle('even', 'odd', name: 'tag_cloud_rows') %> system" data-id="system">
       <td class="tag-cloud-col-name name">
         <%= l(:tags) %>
@@ -53,11 +52,12 @@
 
   <tbody id="tag-clouds-sortable-inherited"
          class="tag-clouds-sortable-settings"
-         <% if can_manage && inherited_clouds.any? %>
+         <% if can_manage && inherited_clouds.any? { |cloud| cloud.manageable_by?(User.current, project: @project) } %>
          data-reorder-url="<%= reorder_project_tag_clouds_path(@project) %>"
          data-inherited="1"
          <% end %>>
     <% inherited_clouds.each do |cloud| %>
+      <% cloud_manageable = can_manage && cloud.manageable_by?(User.current, project: @project) %>
       <tr id="tag-cloud-inherited-<%= cloud.id %>"
           class="<%= cycle('even', 'odd', name: 'tag_cloud_rows') %> inherited"
           data-id="<%= cloud.id %>">
@@ -73,17 +73,19 @@
         <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
         <% if can_manage %>
           <td class="buttons">
-            <span class="sort-handle tag-cloud-drag-handle">
-              <%= sprite_icon('reorder', '') %>
-            </span>
-            <%= link_to sprite_icon('edit', l(:button_edit)),
-                        edit_project_tag_cloud_path(@project, cloud),
-                        class: 'icon icon-edit' %>
-            <%= link_to sprite_icon('del', l(:button_delete)),
-                        project_tag_cloud_path(@project, cloud),
-                        method: :delete,
-                        data: { confirm: l(:text_are_you_sure) },
-                        class: 'icon icon-del' %>
+            <% if cloud_manageable %>
+              <span class="sort-handle tag-cloud-drag-handle">
+                <%= sprite_icon('reorder', '') %>
+              </span>
+              <%= link_to sprite_icon('edit', l(:button_edit)),
+                          edit_project_tag_cloud_path(@project, cloud),
+                          class: 'icon icon-edit' %>
+              <%= link_to sprite_icon('del', l(:button_delete)),
+                          project_tag_cloud_path(@project, cloud),
+                          method: :delete,
+                          data: { confirm: l(:text_are_you_sure) },
+                          class: 'icon icon-del' %>
+            <% end %>
           </td>
         <% end %>
       </tr>
@@ -97,6 +99,7 @@
          <% end %>>
     <% if @tag_clouds && @tag_clouds.any? %>
       <% @tag_clouds.each do |cloud| %>
+        <% cloud_manageable = can_manage && cloud.manageable_by?(User.current, project: @project) %>
         <tr id="tag-cloud-<%= cloud.id %>"
             class="<%= cycle('even', 'odd', name: 'tag_cloud_rows') %> tag-cloud-local"
             data-id="<%= cloud.id %>">
@@ -109,17 +112,19 @@
           <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
           <% if can_manage %>
             <td class="buttons">
-              <span class="sort-handle tag-cloud-drag-handle">
-                <%= sprite_icon('reorder', '') %>
-              </span>
-              <%= link_to sprite_icon('edit', l(:button_edit)),
-                          edit_project_tag_cloud_path(@project, cloud),
-                          class: 'icon icon-edit' %>
-              <%= link_to sprite_icon('del', l(:button_delete)),
-                          project_tag_cloud_path(@project, cloud),
-                          method: :delete,
-                          data: { confirm: l(:text_are_you_sure) },
-                          class: 'icon icon-del' %>
+              <% if cloud_manageable %>
+                <span class="sort-handle tag-cloud-drag-handle">
+                  <%= sprite_icon('reorder', '') %>
+                </span>
+                <%= link_to sprite_icon('edit', l(:button_edit)),
+                            edit_project_tag_cloud_path(@project, cloud),
+                            class: 'icon icon-edit' %>
+                <%= link_to sprite_icon('del', l(:button_delete)),
+                            project_tag_cloud_path(@project, cloud),
+                            method: :delete,
+                            data: { confirm: l(:text_are_you_sure) },
+                            class: 'icon icon-del' %>
+              <% end %>
             </td>
           <% end %>
         </tr>
