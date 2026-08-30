@@ -1,12 +1,14 @@
 <%# Global list of all custom tag clouds across projects (admin plugin settings).
-    Flat table (Name / Project / Filters / Visibility / Author / defaults).
-    Sorted by project name, then cloud name. No create / no reorder. %>
+    Flat table. Primary sort = Project column (overrides TagCloudProject default_scope). %>
 
 <%
   links = TagCloudProject
+            .unscoped
             .joins(:project, :tag_cloud)
             .includes(:project, tag_cloud: [:owner, :created_by])
-            .order(Arel.sql('LOWER(projects.name) ASC, LOWER(tag_clouds.name) ASC, tag_cloud_projects.position ASC'))
+            .reorder(Arel.sql('LOWER(projects.name) ASC, LOWER(tag_clouds.name) ASC'))
+            .to_a
+            .sort_by { |link| [link.project&.name.to_s.downcase, link.tag_cloud&.name.to_s.downcase] }
 %>
 
 <div class="tag-clouds-settings-wrap">
