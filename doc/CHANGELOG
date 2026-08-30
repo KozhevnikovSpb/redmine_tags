@@ -17,19 +17,21 @@ Permissions (iteration 2)
 * View: custom clouds in sidebar + read-only project settings list
 * Display (select): personal sidebar show/hide/reorder (modal)
 * Manage: create/edit/delete/reorder in the project (membership required)
-* Author-only clouds stay out of project lists; non-admin cannot manage them (including own)
 * Author still sees own author-only cloud in the sidebar when any cloud permission is granted
-* Full Redmine admin lists and manages author-only clouds (project + plugin settings tab)
-* Direct edit/delete/reorder of author-only clouds denied for non-admin
 * create_tags / edit_tags unchanged (issue tag field, not clouds)
 
 Permissions (iteration 3)
 * Author-only identity uses both created_by_id and owner_id; form save fills both
 * visible_by_default is forced on for Author only (checkbox disabled in the form)
 * Settings list requires project context; view never lists author-only rows
-* Manage lists own author-only rows without Edit / Delete / drag
 * TagCloudsController#index passes the project into listed_in_settings_for?
 * Unit tests cover the view / select / manage / author-only matrix, including the form create path
+
+Permissions (iteration 4)
+* Author with manage keeps Edit / Delete for own author-only cloud on the project
+* Another user's author-only cloud is hidden on the project from everyone, including full Redmine admin
+* Full admin edits other authors' owner clouds only from plugin settings → Tag Clouds (`from=plugin`)
+* Project modal no longer lists other authors' owner clouds for admin
 
 Custom clouds
 * Plugin setting «Display open issues only» applies only to the default Tags cloud

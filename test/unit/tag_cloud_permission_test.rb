@@ -103,7 +103,7 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert_not_includes sidebar_ids(@user), hidden_default.id
   end
 
-  test 'manage permission cannot change author-only clouds' do
+  test 'manage permission cannot change another authors owner cloud' do
     stub_cloud_permissions(@user, manage: true)
 
     owner_cloud = create_linked_cloud(name: 'Author only', visibility: 'owner', created_by: @admin, owner: @admin)
@@ -119,6 +119,17 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert public_cloud.listed_in_settings_for?(@user, project: @project)
   end
 
+  test 'author with manage can edit and delete own owner cloud on the project' do
+    stub_cloud_permissions(@user, manage: true)
+
+    own = create_linked_cloud(name: 'Mine manage', visibility: 'owner', visible_by_default: false, created_by: @user, owner: @user)
+
+    assert own.visible_for?(@user, project: @project)
+    assert own.listed_in_settings_for?(@user, project: @project)
+    assert own.manageable_by?(@user, project: @project)
+    assert_includes sidebar_ids(@user), own.id
+  end
+
   test 'author sees own owner cloud in sidebar with view permission' do
     stub_cloud_permissions(@user, view: true)
 
@@ -126,17 +137,6 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
 
     assert own.visible_for?(@user, project: @project)
     assert_not own.listed_in_settings_for?(@user, project: @project)
-    assert_not own.manageable_by?(@user, project: @project)
-    assert_includes sidebar_ids(@user), own.id
-  end
-
-  test 'author sees own owner cloud in sidebar with manage permission' do
-    stub_cloud_permissions(@user, manage: true)
-
-    own = create_linked_cloud(name: 'Mine manage', visibility: 'owner', visible_by_default: false, created_by: @user, owner: @user)
-
-    assert own.visible_for?(@user, project: @project)
-    assert own.listed_in_settings_for?(@user, project: @project)
     assert_not own.manageable_by?(@user, project: @project)
     assert_includes sidebar_ids(@user), own.id
   end
@@ -153,7 +153,7 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
   test 'author can hide own owner cloud only with a personal preference' do
     stub_cloud_permissions(@user, select: true)
 
-    own = create_linked_cloud(name: 'Mine hidden', visibility: 'owner', created_by: @user, owner: @user)
+    own = create_linked_cloud(name: 'Mine hidden pref', visibility: 'owner', created_by: @user, owner: @user)
     own.preferences.create!(user: @user, visible: false)
 
     assert_not own.visible_for?(@user, project: @project)
@@ -179,7 +179,7 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert_includes sidebar_ids(@user), cloud.id
   end
 
-  test 'create path like the form assigns author ids and shows cloud to author' do
+  test 'create path like the form assigns author ids and lets author manage' do
     User.stubs(:current).returns(@user)
     stub_cloud_permissions(@user, manage: true)
 
@@ -196,7 +196,7 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert cloud.visible_for?(@user, project: @project)
     assert_not cloud.visible_for?(@other, project: @project)
     assert cloud.listed_in_settings_for?(@user, project: @project)
-    assert_not cloud.manageable_by?(@user, project: @project)
+    assert cloud.manageable_by?(@user, project: @project)
     assert_includes sidebar_ids(@user), cloud.id
   end
 
@@ -215,13 +215,13 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert_not cloud.visible_for?(@other, project: @project)
   end
 
-  test 'settings list without project context hides author-only from non-admin' do
+  test 'settings list without project context hides author-only from project UI' do
     stub_cloud_permissions(@user, manage: true)
     own = create_linked_cloud(name: 'Needs project', visibility: 'owner', created_by: @user, owner: @user)
 
     assert_not own.listed_in_settings_for?(@user)
     assert own.listed_in_settings_for?(@user, project: @project)
-    assert own.listed_in_settings_for?(@admin)
+    assert own.listed_in_settings_for?(@admin, context: :admin)
   end
 
   test 'other member never sees author-only cloud even with all cloud permissions' do
@@ -236,6 +236,26 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert_not_includes sidebar_ids(@other), own.id
   end
 
+  test 'admin does not see another authors owner cloud on the project' do
+    own = create_linked_cloud(name: 'User private', visibility: 'owner', created_by: @user, owner: @user)
+
+    assert_not own.visible_for?(@admin, project: @project)
+    assert_not own.listed_in_settings_for?(@admin, project: @project)
+    assert_not own.manageable_by?(@admin, project: @project)
+    assert_not_includes sidebar_ids(@admin), own.id
+    assert own.listed_in_settings_for?(@admin, context: :admin)
+    assert own.manageable_by?(@admin, context: :admin)
+  end
+
+  test 'admin who is the author still sees own owner cloud on the project' do
+    own = create_linked_cloud(name: 'Admin own', visibility: 'owner', created_by: @admin, owner: @admin)
+
+    assert own.visible_for?(@admin, project: @project)
+    assert own.listed_in_settings_for?(@admin, project: @project)
+    assert own.manageable_by?(@admin, project: @project)
+    assert_includes sidebar_ids(@admin), own.id
+  end
+
   test 'admin can see custom clouds without a project context' do
     assert TagCloud.can_see_custom_clouds?(@admin, nil)
     assert TagCloud.can_manage?(@admin, nil)
@@ -245,7 +265,7 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
 
   test 'preference override applies only when select permission is granted' do
     stub_cloud_permissions(@user, view: true, select: false)
-    cloud = create_linked_cloud(name: 'Hidden default', visibility: 'all', visible_by_default: false, created_by: @admin)
+    cloud = create_linked_cloud(name: 'Hidden default pref', visibility: 'all', visible_by_default: false, created_by: @admin)
     cloud.preferences.create!(user: @user, visible: true)
 
     assert_not cloud.visible_for?(@user, project: @project)
