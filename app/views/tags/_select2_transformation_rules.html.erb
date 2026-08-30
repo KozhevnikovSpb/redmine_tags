@@ -1,1 +1,4 @@
-<%# Issue tag field is a local select with the full tags table. Do not attach ajax. %>
+<%# Issues list Tags filter: Select2 autocomplete. Field name issue_tags. %>
+<% if respond_to?(:transform_to_select2) && respond_to?(:auto_complete_redmine_tags_path) %>
+  <%= transform_to_select2('issue_tags', url: auto_complete_redmine_tags_path) %>
+<% end %>

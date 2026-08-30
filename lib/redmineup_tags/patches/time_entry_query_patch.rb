@@ -41,13 +41,16 @@ module RedmineupTags
 
         def available_filters_with_redmine_tags
           available_filters_without_redmine_tags
-          selected_tags = []
-          if filters['issue_tags'].present?
-            selected_tags = Issue.all_tags(project: project, user: User.current)
-                                 .where(name: filters['issue_tags'][:values])
-                                 .map { |tag| [tag.name, tag.name] }
-          end
-          add_available_filter('issue_tags', type: :issue_tags, name: l(:tags), values: selected_tags)
+          selected_tags = Array(filters.dig('issue_tags', :values))
+                               .reject(&:blank?)
+                               .uniq
+                               .map { |name| [name, name] }
+          add_available_filter(
+            'issue_tags',
+            type: :list_optional,
+            name: l(:tags),
+            values: selected_tags
+          )
         end
 
         private

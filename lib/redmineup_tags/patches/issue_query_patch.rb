@@ -49,7 +49,14 @@ module RedmineupTags
                                .uniq
                                .map { |name| [name, name] }
 
-          add_available_filter('issue_tags', type: :issue_tags, name: l(:tags), values: selected_tags)
+          # list_optional so Redmine 7 filters.js renders operator + values.
+          # Field name stays issue_tags for Select2 / saved queries / Q&A.
+          add_available_filter(
+            'issue_tags',
+            type: :list_optional,
+            name: l(:tags),
+            values: selected_tags
+          )
           available
         rescue StandardError => e
           Rails.logger.warn("[redmineup_tags] Tag filter error: #{e.class}: #{e.message}")
@@ -65,9 +72,6 @@ module RedmineupTags
 
         private
 
-        # RedmineUP's taggable implementation returns an Array from tagged_with,
-        # while joins(:tags) returns an ActiveRecord relation. Build a valid SQL
-        # subquery/list for both cases without calling Array#select(:id).
         def tagged_issue_ids_sql(issues)
           if issues.respond_to?(:reselect) && issues.respond_to?(:to_sql)
             return issues.reselect("#{Issue.table_name}.id").to_sql
