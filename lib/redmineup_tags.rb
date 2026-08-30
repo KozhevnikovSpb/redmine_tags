@@ -7,7 +7,7 @@
 # redmine_tags is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# (at an option) any later version.
+# (at your option) any later version.
 #
 # redmine_tags is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -33,6 +33,8 @@ module Redmineup
 end
 
 module RedmineupTags
+  PROJECT_MODULE_NAME = 'redmineup_tags'
+
   def self.settings() Setting[:plugin_redmineup_tags].stringify_keys end
 
   def self.use_colors?
@@ -52,6 +54,26 @@ module RedmineupTags
     type.nil? || plugin.name.match?(/#{type}/i)
   rescue Redmine::PluginNotFound
     false
+  end
+
+  # Keep create_tags / edit_tags working after they moved out of issue_tracking.
+  def self.enable_project_module!
+    conn = ActiveRecord::Base.connection
+    return unless conn.data_source_exists?('enabled_modules')
+
+    conn.execute(<<~SQL.squish)
+      INSERT INTO enabled_modules (project_id, name)
+      SELECT em.project_id, 'redmineup_tags'
+      FROM enabled_modules em
+      WHERE em.name = 'issue_tracking'
+        AND NOT EXISTS (
+          SELECT 1 FROM enabled_modules em2
+          WHERE em2.project_id = em.project_id
+            AND em2.name = 'redmineup_tags'
+        )
+    SQL
+  rescue StandardError => e
+    Rails.logger.warn("[redmineup_tags] enable_project_module: #{e.class}: #{e.message}") if defined?(Rails) && Rails.logger
   end
 end
 
@@ -83,3 +105,7 @@ end
 
 base_url = File.dirname(__FILE__)
 REDMINEUP_TAGS_REQUIRED_FILES.each { |file| require(base_url + '/' + file) }
+
+Rails.application.config.after_initialize do
+  RedmineupTags.enable_project_module!
+end
