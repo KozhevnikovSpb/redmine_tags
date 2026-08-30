@@ -79,7 +79,7 @@ Issue tracking (existing projects on boot, new projects on save).
 
 ## Full Redmine administrator
 
-- Global plugin settings → Tag Clouds is grouped by project name (then cloud name)
+- Global plugin settings → Tag Clouds is a flat table sorted by project name, then cloud name
 - That list includes author-only clouds
 - Admin edits/deletes other authors' owner clouds only from that list (`from=plugin`)
 - Direct project edit/delete URL of another author's owner cloud is denied

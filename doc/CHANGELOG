@@ -38,7 +38,7 @@ Permissions (iteration 5)
 * Block title: Tags and tag clouds / Теги и облака тегов
 * Permission names unchanged for RedmineUP Q&A (`create_tags`, `edit_tags`)
 * Module auto-enabled on projects that have Issue tracking (boot INSERT + project after_save)
-* Admin plugin list Tag Clouds sorted and grouped by project name, then cloud name
+* Admin plugin list Tag Clouds stays a flat table; rows sorted by project name, then cloud name
 
 Custom clouds
 * Plugin setting «Display open issues only» applies only to the default Tags cloud
