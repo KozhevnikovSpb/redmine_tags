@@ -33,6 +33,13 @@ Permissions (iteration 4)
 * Full admin edits other authors' owner clouds only from plugin settings → Tag Clouds (`from=plugin`)
 * Project modal no longer lists other authors' owner clouds for admin
 
+Permissions (iteration 5)
+* All tag and tag-cloud permissions moved to a separate Roles block `project_module :redmineup_tags`
+* Block title: Tags and tag clouds / Теги и облака тегов
+* Permission names unchanged for RedmineUP Q&A (`create_tags`, `edit_tags`)
+* Module auto-enabled on projects that have Issue tracking (boot INSERT + project after_save)
+* Admin plugin list Tag Clouds sorted and grouped by project name, then cloud name
+
 Custom clouds
 * Plugin setting «Display open issues only» applies only to the default Tags cloud
 * Custom clouds use project-level filters only (status Any = all issues, including closed)
@@ -165,5 +172,5 @@ Docs
 * Start of multi Tag Clouds extension development
 * Version reset for new development line based on redmine_up_tags
 * Target: Redmine 7.0.0 / Ruby 3.4 / Rails 8.1
-* Compatibility with redmineup Q&A and other RedmineUP tag plugins preserved
+* Compatibility with RedmineUP Q&A and other RedmineUP tag plugins preserved
 * Plugin ID remains :redmineup_tags

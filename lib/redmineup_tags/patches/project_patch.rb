@@ -24,11 +24,13 @@ module RedmineupTags
         base.class_eval do
           has_many :tag_cloud_projects, dependent: :destroy
           has_many :tag_clouds, through: :tag_cloud_projects
-          after_create :enable_redmineup_tags_module
+          after_save :enable_redmineup_tags_module_if_needed
 
-          # Default system cloud is virtual (not stored in DB).
-          def enable_redmineup_tags_module
+          # Keep create_tags / edit_tags available after they left issue_tracking.
+          # Enable Tags module only together with Issue tracking.
+          def enable_redmineup_tags_module_if_needed
             return if module_enabled?(:redmineup_tags)
+            return unless module_enabled?(:issue_tracking)
 
             enabled_modules.create(name: 'redmineup_tags')
           rescue StandardError => e

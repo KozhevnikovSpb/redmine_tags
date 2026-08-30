@@ -37,6 +37,7 @@ en:
   tags_order_by_last_created: Last created
   tags_order_by_most_used: Most used
 
+  project_module_redmineup_tags: Tags and tag clouds
   permission_create_tags: Create tags
   permission_edit_tags: Edit tags
   permission_view_tag_clouds: View tag clouds
@@ -82,7 +83,7 @@ en:
   label_tag_cloud_drag_to_reorder: Drag to change display order
   button_collapse: Collapse
   text_tag_cloud_filters_empty_means_all: empty = Any / all
-  text_tag_clouds_permissions_info: "Permissions (Roles and permissions → Issue tracking): View tag clouds — see custom clouds and a read-only project list (no author-only clouds). Manage tag cloud display — personal sidebar show/hide and order. Manage tag clouds — create/edit/delete (requires membership). Author-only clouds are hidden from these roles; only a full Redmine administrator can list and manage them."
+  text_tag_clouds_permissions_info: "Permissions (Roles and permissions → Tags and tag clouds): View tag clouds — see custom clouds and a read-only project list (no author-only clouds). Manage tag cloud display — personal sidebar show/hide and order. Manage tag clouds — create/edit/delete (requires membership). Author-only clouds are hidden from these roles; only a full Redmine administrator can list and manage them from plugin settings."
   notice_tag_cloud_created: Tag cloud was successfully created.
   notice_tag_cloud_updated: Tag cloud was successfully updated.
   notice_tag_cloud_deleted: Tag cloud was successfully deleted.

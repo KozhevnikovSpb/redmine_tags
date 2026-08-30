@@ -3,9 +3,14 @@
 Target: Redmine 7.0 / Ruby 3.4 / Rails 8.1
 Plugin ID: :redmineup_tags
 
-Assign permissions in Administration → Roles and permissions → Issue tracking.
+Assign permissions in Administration → Roles and permissions → **Tags and tag clouds**
+(not under Issue tracking).
 
-`create_tags` / `edit_tags` are unchanged and only affect issue tag fields.
+`create_tags` / `edit_tags` names are unchanged for RedmineUP Q&A compatibility.
+They now live in the same Roles block as the three cloud permissions.
+
+The project module `:redmineup_tags` is auto-enabled on projects that already have
+Issue tracking (existing projects on boot, new projects on save).
 
 ## Matrix
 
@@ -17,6 +22,18 @@ Assign permissions in Administration → Roles and permissions → Issue trackin
 | manage_tag_clouds | yes | yes | yes | no | yes | yes, with Edit / Delete | no | no | yes, including own author-only |
 | admin (not author) | yes | yes | no | no | yes | no | no | shared only | shared only; author-only only via plugin list |
 | admin (is author) | yes | yes | yes | no | yes | yes, with Edit / Delete | no | yes | yes |
+
+## Roles block
+
+- Administration → Roles → a separate fieldset **Tags and tag clouds** / **Теги и облака тегов**
+- Contains: Create tags, Edit tags, View tag clouds, Manage tag cloud display, Manage tag clouds
+- Issue tracking no longer lists these five permissions
+
+## Project module
+
+- Project → Settings → Modules shows **Tags and tag clouds**
+- Enabled automatically when Issue tracking is enabled
+- If the module is turned off, `allowed_to?(:create_tags / :edit_tags / cloud perms)` is false even if the role has them
 
 ## No cloud permissions
 
@@ -62,7 +79,8 @@ Assign permissions in Administration → Roles and permissions → Issue trackin
 
 ## Full Redmine administrator
 
-- Global plugin settings → Tag Clouds lists author-only clouds
+- Global plugin settings → Tag Clouds is grouped by project name (then cloud name)
+- That list includes author-only clouds
 - Admin edits/deletes other authors' owner clouds only from that list (`from=plugin`)
 - Direct project edit/delete URL of another author's owner cloud is denied
 - Admin who created the cloud is treated as the author on the project
