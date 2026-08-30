@@ -40,7 +40,6 @@ module RedmineupTags
         def all_tags(options = {})
           tags_table = Redmineup::Tag.table_name
           taggings_table = Redmineup::Tagging.table_name
-          issues_table = Issue.table_name
 
           issues = if options[:all_issues]
                      Issue.unscoped.select(:id)
@@ -54,7 +53,7 @@ module RedmineupTags
           scope = Redmineup::Tag
                   .joins("JOIN #{taggings_table} ON #{taggings_table}.tag_id = #{tags_table}.id")
                   .where("#{taggings_table}.taggable_type = ?", Issue.name)
-                  .where("#{taggings_table}.taggable_id IN (#{issues.select(:id).to_sql})")
+                  .where("#{taggings_table}.taggable_id IN (#{issues.unscope(:order, :select).select(:id).to_sql})")
 
           if options[:name_like].present?
             scope = scope.where("LOWER(#{tags_table}.name) LIKE LOWER(?)", "%#{sanitize_sql_like(options[:name_like])}%")
@@ -63,9 +62,15 @@ module RedmineupTags
           columns = [
             "#{tags_table}.id",
             "#{tags_table}.name",
-            "#{tags_table}.color",
             "COUNT(DISTINCT #{taggings_table}.taggable_id) AS count"
           ]
+          group_cols = "#{tags_table}.id, #{tags_table}.name"
+
+          if tag_has_color_column?
+            columns.insert(2, "#{tags_table}.color")
+            group_cols = "#{group_cols}, #{tags_table}.color"
+          end
+
           columns << "MIN(#{taggings_table}.created_at) AS created_at" if options[:sort_by] == 'created_at'
 
           allowed_sort = {
@@ -77,9 +82,15 @@ module RedmineupTags
           sort_order = options[:order].to_s.upcase == 'DESC' ? 'DESC' : 'ASC'
 
           scope.select(columns.join(', '))
-               .group("#{tags_table}.id, #{tags_table}.name, #{tags_table}.color")
+               .group(group_cols)
                .having('COUNT(*) > 0')
                .order(Arel.sql("#{sort_column} #{sort_order}"))
+        end
+
+        def tag_has_color_column?
+          Redmineup::Tag.column_names.include?('color')
+        rescue StandardError
+          false
         end
 
         def project_tags(project)

@@ -45,21 +45,39 @@ module RedmineupTags
             'issue_tags',
             type: :list_optional,
             name: l(:tags),
-            values: issue_tags_filter_values
+            remote: false,
+            values: issue_tag_filter_values
           )
         end
 
         private
 
-        def issue_tags_filter_values
-          opts = { user: User.current }
-          opts[:projects] = [project] if project
-          names = Issue.all_tags(opts).map(&:name)
-          names |= Array(filters.dig('issue_tags', :values)).reject(&:blank?)
-          names.uniq.map { |name| [name, name] }
+        def issue_tag_filter_values
+          names = issue_tag_names_for_filter
+          selected = Array(filters.dig('issue_tags', :values)).reject(&:blank?)
+          (names | selected).map { |name| [name, name] }
+        end
+
+        def issue_tag_names_for_filter
+          tags_table = Redmineup::Tag.table_name
+          taggings_table = Redmineup::Tagging.table_name
+          issues_table = Issue.table_name
+
+          scope = Redmineup::Tag.unscoped
+                                .joins("INNER JOIN #{taggings_table} ON #{taggings_table}.tag_id = #{tags_table}.id")
+                                .where("#{taggings_table}.taggable_type = ?", 'Issue')
+
+          if project
+            scope = scope.joins(
+                      "INNER JOIN #{issues_table} ON #{issues_table}.id = #{taggings_table}.taggable_id"
+                    )
+                    .where(issues_table => { project_id: project.id })
+          end
+
+          scope.distinct.order(Arel.sql("#{tags_table}.name ASC")).pluck(Arel.sql("#{tags_table}.name"))
         rescue StandardError => e
           Rails.logger.warn("[redmineup_tags] Time entry tag filter values: #{e.class}: #{e.message}")
-          Array(filters.dig('issue_tags', :values)).reject(&:blank?).uniq.map { |name| [name, name] }
+          []
         end
 
         def tagged_issue_ids_sql(issues)
