@@ -41,19 +41,26 @@ module RedmineupTags
 
         def available_filters_with_redmine_tags
           available_filters_without_redmine_tags
-          selected_tags = Array(filters.dig('issue_tags', :values))
-                               .reject(&:blank?)
-                               .uniq
-                               .map { |name| [name, name] }
           add_available_filter(
             'issue_tags',
             type: :list_optional,
             name: l(:tags),
-            values: selected_tags
+            values: issue_tags_filter_values
           )
         end
 
         private
+
+        def issue_tags_filter_values
+          opts = { user: User.current }
+          opts[:projects] = [project] if project
+          names = Issue.all_tags(opts).map(&:name)
+          names |= Array(filters.dig('issue_tags', :values)).reject(&:blank?)
+          names.uniq.map { |name| [name, name] }
+        rescue StandardError => e
+          Rails.logger.warn("[redmineup_tags] Time entry tag filter values: #{e.class}: #{e.message}")
+          Array(filters.dig('issue_tags', :values)).reject(&:blank?).uniq.map { |name| [name, name] }
+        end
 
         def tagged_issue_ids_sql(issues)
           if issues.respond_to?(:reselect) && issues.respond_to?(:to_sql)

@@ -44,18 +44,11 @@ module RedmineupTags
 
         def available_filters_with_redmine_tags
           available = available_filters_without_redmine_tags
-          selected_tags = Array(filters.dig('issue_tags', :values))
-                               .reject(&:blank?)
-                               .uniq
-                               .map { |name| [name, name] }
-
-          # list_optional so Redmine 7 filters.js renders operator + values.
-          # Field name stays issue_tags for Select2 / saved queries / Q&A.
           add_available_filter(
             'issue_tags',
             type: :list_optional,
             name: l(:tags),
-            values: selected_tags
+            values: issue_tags_filter_values
           )
           available
         rescue StandardError => e
@@ -71,6 +64,25 @@ module RedmineupTags
         end
 
         private
+
+        def issue_tags_filter_values
+          opts = { user: User.current }
+          if project
+            opts[:projects] =
+              if respond_to?(:with_subprojects?) && with_subprojects?
+                project.self_and_descendants.visible.to_a
+              else
+                [project]
+              end
+          end
+
+          names = Issue.all_tags(opts).map(&:name)
+          names |= Array(filters.dig('issue_tags', :values)).reject(&:blank?)
+          names.uniq.map { |name| [name, name] }
+        rescue StandardError => e
+          Rails.logger.warn("[redmineup_tags] Tag filter values: #{e.class}: #{e.message}")
+          Array(filters.dig('issue_tags', :values)).reject(&:blank?).uniq.map { |name| [name, name] }
+        end
 
         def tagged_issue_ids_sql(issues)
           if issues.respond_to?(:reselect) && issues.respond_to?(:to_sql)
