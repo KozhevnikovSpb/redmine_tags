@@ -7,10 +7,20 @@ Assign permissions in Administration → Roles and permissions → Issue trackin
 
 `create_tags` / `edit_tags` are unchanged and only affect issue tag fields.
 
+## Matrix
+
+| Permission | Sidebar default Tags | Sidebar shared clouds | Sidebar own author-only | Sidebar others author-only | Project settings tab | Settings: own author-only | Settings: others author-only | Select modal | Create / edit / delete |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| none | yes | no | no | no | no | — | — | no | no |
+| view_tag_clouds | yes | yes if visible by default / matching roles | yes | no | read-only | no | no | no | no |
+| select_tag_clouds | yes, can hide | yes, can hide/reorder | yes, can hide | no | no | — | — | yes | no |
+| manage_tag_clouds | yes | yes | yes | no | yes | yes, read-only | no | no | yes except author-only |
+| admin | yes | yes | yes | yes | yes | yes | yes | yes | yes |
+
 ## No cloud permissions
 
 - Issues sidebar shows only the default Tags cloud
-- No custom clouds
+- No custom clouds, including the current user's author-only clouds
 - No «Select visible tag clouds» link
 - Project → Settings has no Tag Clouds tab
 - Direct `/projects/:id/tag_clouds` returns 403
@@ -43,9 +53,10 @@ Assign permissions in Administration → Roles and permissions → Issue trackin
 
 ## Author only visibility
 
-- Visible by default checkbox is disabled (forced on)
+- Visible by default checkbox is disabled and forced on
+- Saving the form stores both `created_by_id` and `owner_id` as the current user
 - Author sees the cloud in the sidebar if they have view, select or manage
-- Other users never see it
+- Other users never see it, even with all three cloud permissions
 - Admin sees and can change it
 
 ## Full Redmine administrator

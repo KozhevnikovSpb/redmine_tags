@@ -23,6 +23,14 @@ Permissions (iteration 2)
 * Direct edit/delete/reorder of author-only clouds denied for non-admin
 * create_tags / edit_tags unchanged (issue tag field, not clouds)
 
+Permissions (iteration 3)
+* Author-only identity uses both created_by_id and owner_id; form save fills both
+* visible_by_default is forced on for Author only (checkbox disabled in the form)
+* Settings list requires project context; view never lists author-only rows
+* Manage lists own author-only rows without Edit / Delete / drag
+* TagCloudsController#index passes the project into listed_in_settings_for?
+* Unit tests cover the view / select / manage / author-only matrix, including the form create path
+
 Custom clouds
 * Plugin setting «Display open issues only» applies only to the default Tags cloud
 * Custom clouds use project-level filters only (status Any = all issues, including closed)
