@@ -11,7 +11,7 @@ class TagCloudsController < ApplicationController
 
   def index
     @tag_clouds = TagCloud.for_project(@project).to_a.select do |cloud|
-      cloud.listed_in_settings_for?(User.current)
+      cloud.listed_in_settings_for?(User.current, project: @project)
     end
   end
 
