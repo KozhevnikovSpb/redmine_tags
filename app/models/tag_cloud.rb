@@ -139,22 +139,26 @@ class TagCloud < ActiveRecord::Base
 
   def authored_by?(user)
     return false unless user&.logged?
-    author_id = created_by_id.presence || owner_id
-    author_id.present? && author_id == user.id
+    ids = [created_by_id, owner_id].compact.map(&:to_i).reject(&:zero?)
+    ids.include?(user.id)
   end
 
   def can_set_owner_visibility?(user = User.current)
     return false unless user&.logged?
     return true if user.admin?
     return true unless persisted?
-    return true if created_by_id.blank?
-    created_by_id == user.id
+    return true if created_by_id.blank? && owner_id.blank?
+    authored_by?(user)
   end
 
-  def listed_in_settings_for?(user)
+  def listed_in_settings_for?(user, project: nil)
     return false if user.nil?
     return true if user.admin?
-    !author_only?
+    return true unless author_only?
+    return false unless authored_by?(user)
+    return false unless project
+
+    user.allowed_to?(:manage_tag_clouds, project)
   end
 
   def manageable_by?(user, project: nil)
@@ -167,18 +171,24 @@ class TagCloud < ActiveRecord::Base
   def visible_for?(user, project: nil)
     return false if user.nil?
     return false unless self.class.can_see_custom_clouds?(user, project)
+
     if author_only?
       return false unless user.admin? || authored_by?(user)
+      if user.logged? && project && self.class.can_select_display?(user, project)
+        pref = preferences.find_by(user_id: user.id)
+        return pref.visible? if pref
+      end
+      return true
     end
+
     if user.logged? && project && self.class.can_select_display?(user, project)
       pref = preferences.find_by(user_id: user.id)
       return pref.visible? if pref
     end
+
     case visibility
     when 'all'
       visible_by_default?
-    when 'owner'
-      user.admin? || authored_by?(user)
     when 'roles'
       return true if user.admin?
       return false unless user.logged? && project
@@ -344,7 +354,8 @@ class TagCloud < ActiveRecord::Base
 
   def normalize_owner_for_visibility
     return unless visibility == 'owner'
-    self.owner_id = created_by_id.presence || User.current&.id
+    self.owner_id = created_by_id.presence || owner_id.presence || User.current&.id
+    self.visible_by_default = true
   end
 
   def owner_visibility_only_for_author
