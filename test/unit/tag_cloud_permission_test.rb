@@ -43,9 +43,9 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert_not TagCloud.can_manage?(@user, @project)
     assert public_cloud.visible_for?(@user, project: @project)
     assert_not owner_cloud.visible_for?(@user, project: @project)
-    assert public_cloud.listed_in_settings_for?(@user)
-    assert_not owner_cloud.listed_in_settings_for?(@user)
-    assert owner_cloud.listed_in_settings_for?(@admin)
+    assert public_cloud.listed_in_settings_for?(@user, project: @project)
+    assert_not owner_cloud.listed_in_settings_for?(@user, project: @project)
+    assert owner_cloud.listed_in_settings_for?(@admin, project: @project)
   end
 
   test 'select permission cannot reveal another authors owner cloud via preference' do
@@ -62,7 +62,7 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert owner_cloud.visible_for?(@admin, project: @project)
   end
 
-  test 'manage permission cannot list or manage author-only clouds' do
+  test 'manage permission cannot change author-only clouds' do
     stub_cloud_permissions(@user, manage: true)
 
     owner_cloud = TagCloud.create!(name: 'Author only', visibility: 'owner', created_by: @admin, owner: @admin)
@@ -76,18 +76,66 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert public_cloud.manageable_by?(@user, project: @project)
     assert_not owner_cloud.manageable_by?(@user, project: @project)
     assert owner_cloud.manageable_by?(@admin, project: @project)
-    assert_not owner_cloud.listed_in_settings_for?(@user)
+    assert_not owner_cloud.listed_in_settings_for?(@user, project: @project)
   end
 
-  test 'author sees own owner cloud in sidebar when they have view permission' do
+  test 'author sees own owner cloud in sidebar with view permission' do
     stub_cloud_permissions(@user, view: true)
 
-    own = TagCloud.create!(name: 'Mine', visibility: 'owner', created_by: @user, owner: @user)
+    own = TagCloud.create!(name: 'Mine view', visibility: 'owner', visible_by_default: false, created_by: @user, owner: @user)
     own.tag_cloud_projects.create!(project: @project, position: 0)
 
     assert own.visible_for?(@user, project: @project)
-    assert_not own.listed_in_settings_for?(@user)
+    assert_not own.listed_in_settings_for?(@user, project: @project)
     assert_not own.manageable_by?(@user, project: @project)
+  end
+
+  test 'author sees own owner cloud in sidebar with manage permission' do
+    stub_cloud_permissions(@user, manage: true)
+
+    own = TagCloud.create!(name: 'Mine manage', visibility: 'owner', visible_by_default: false, created_by: @user, owner: @user)
+    own.tag_cloud_projects.create!(project: @project, position: 0)
+
+    assert own.visible_for?(@user, project: @project)
+    assert own.listed_in_settings_for?(@user, project: @project)
+    assert_not own.manageable_by?(@user, project: @project)
+  end
+
+  test 'author sees own owner cloud in sidebar with select permission' do
+    stub_cloud_permissions(@user, select: true)
+
+    own = TagCloud.create!(name: 'Mine select', visibility: 'owner', visible_by_default: false, created_by: @user, owner: @user)
+    own.tag_cloud_projects.create!(project: @project, position: 0)
+
+    assert own.visible_for?(@user, project: @project)
+  end
+
+  test 'author can hide own owner cloud only with a personal preference' do
+    stub_cloud_permissions(@user, select: true)
+
+    own = TagCloud.create!(name: 'Mine hidden', visibility: 'owner', created_by: @user, owner: @user)
+    own.tag_cloud_projects.create!(project: @project, position: 0)
+    own.preferences.create!(user: @user, visible: false)
+
+    assert_not own.visible_for?(@user, project: @project)
+  end
+
+  test 'owner visibility forces visible_by_default true' do
+    cloud = TagCloud.create!(name: 'Forced default', visibility: 'owner', visible_by_default: false, created_by: @user, owner: @user)
+    assert cloud.visible_by_default?
+  end
+
+  test 'author is recognized by owner_id when created_by_id is blank' do
+    stub_cloud_permissions(@user, view: true)
+    cloud = TagCloud.new(name: 'Owner only id', visibility: 'all', visible_by_default: true)
+    cloud.created_by_id = nil
+    cloud.owner_id = @user.id
+    cloud.visibility = 'owner'
+    cloud.save!(validate: false)
+    cloud.tag_cloud_projects.create!(project: @project, position: 0)
+
+    assert cloud.authored_by?(@user)
+    assert cloud.visible_for?(@user, project: @project)
   end
 
   test 'admin can see custom clouds without a project context' do
