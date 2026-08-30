@@ -157,7 +157,7 @@
             <span class="tag-cloud-issue-stat-value" id="tag-cloud-filtered-count">0</span>
             <span class="tag-cloud-issue-stat-unit"> <%= l(:label_tag_cloud_issues_unit) %></span>
           </div>
-          <div class="tag-cloud-issue-stat">
+          <div class="tag-cloud-issue-stat" id="tag-cloud-untagged-stat"<%= ' hidden' unless tag_op == '*' %>>
             <span class="tag-cloud-issue-stat-label"><%= l(:label_tag_cloud_issues_without_filter) %></span>
             <span class="tag-cloud-issue-stat-sep"> = </span>
             <span class="tag-cloud-issue-stat-value" id="tag-cloud-unfiltered-count">0</span>
