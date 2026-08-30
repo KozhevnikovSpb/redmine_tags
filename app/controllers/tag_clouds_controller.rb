@@ -6,6 +6,7 @@ class TagCloudsController < ApplicationController
 
   before_action :find_project_by_project_id
   before_action :authorize_tag_clouds
+  before_action :assign_plugin_context
   before_action :ensure_operator_schema, only: %i[new create edit update preview]
   before_action :find_tag_cloud, only: %i[edit update destroy]
 
@@ -167,6 +168,14 @@ class TagCloudsController < ApplicationController
 
   private
 
+  def assign_plugin_context
+    @from_plugin = from_plugin_settings?
+  end
+
+  def manage_context
+    from_plugin_settings? ? :admin : :project
+  end
+
   def ensure_operator_schema
     TagCloud.ensure_operator_schema!
   end
@@ -215,18 +224,16 @@ class TagCloudsController < ApplicationController
     @tag_cloud = TagCloud.for_project(@project).find_by(id: id)
     @tag_cloud ||= TagCloud.inherited_for(@project).find { |cloud| cloud.id == id }
     raise ActiveRecord::RecordNotFound unless @tag_cloud
-    return if User.current.admin?
-    return if @tag_cloud.manageable_by?(User.current, project: @project)
+    return if @tag_cloud.manageable_by?(User.current, project: @project, context: manage_context)
 
     deny_access
   end
 
   def manageable_reorder_ids(ids)
-    return ids if User.current.admin?
     return [] if ids.empty?
 
     allowed = TagCloud.where(id: ids).to_a.select do |cloud|
-      cloud.manageable_by?(User.current, project: @project)
+      cloud.manageable_by?(User.current, project: @project, context: :project)
     end.map(&:id)
     ids.select { |id| allowed.include?(id) }
   end
@@ -470,8 +477,10 @@ class TagCloudsController < ApplicationController
   end
 
   def from_plugin_settings?
+    return true if %w[1 true plugin].include?(params[:from].to_s)
+
     ref = request.referer.to_s
     ref.include?('/settings/plugin/redmineup_tags') ||
-      ref.include?('settings/plugin') && ref.include?('redmineup_tags')
+      (ref.include?('settings/plugin') && ref.include?('redmineup_tags'))
   end
 end
