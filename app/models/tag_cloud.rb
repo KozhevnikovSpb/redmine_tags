@@ -162,35 +162,60 @@ class TagCloud < ActiveRecord::Base
     authored_by?(user)
   end
 
-  def listed_in_settings_for?(user, project: nil)
+  # context: :project — project sidebar / project settings
+  # context: :admin  — global plugin settings list
+  def listed_in_settings_for?(user, project: nil, context: :project)
     return false if user.nil?
+
+    if context.to_sym == :admin
+      return user.admin?
+    end
+
+    if author_only?
+      return false unless authored_by?(user)
+      return false unless project
+      return true if user.admin?
+      return user.allowed_to?(:manage_tag_clouds, project)
+    end
+
     return true if user.admin?
     return false unless project
-    return false unless self.class.can_view_settings_list?(user, project)
-    return true unless author_only?
-
-    authored_by?(user) && user.allowed_to?(:manage_tag_clouds, project)
+    self.class.can_view_settings_list?(user, project)
   end
 
-  def manageable_by?(user, project: nil)
+  def manageable_by?(user, project: nil, context: :project)
     return false if user.nil?
+
+    if context.to_sym == :admin
+      return user.admin?
+    end
+
+    if author_only?
+      return false unless authored_by?(user)
+      return false unless project
+      return true if user.admin?
+      return user.allowed_to?(:manage_tag_clouds, project)
+    end
+
     return true if user.admin?
-    return false unless project && user.allowed_to?(:manage_tag_clouds, project)
-    !author_only?
+    return false unless project
+    user.allowed_to?(:manage_tag_clouds, project)
   end
 
   def visible_for?(user, project: nil)
     return false if user.nil?
-    return false unless self.class.can_see_custom_clouds?(user, project)
 
     if author_only?
-      return false unless user.admin? || authored_by?(user)
+      return false unless authored_by?(user)
+      return false unless self.class.can_see_custom_clouds?(user, project)
 
       preferred = personal_visibility(user, project)
       return preferred unless preferred.nil?
 
       return true
     end
+
+    return false unless self.class.can_see_custom_clouds?(user, project)
 
     preferred = personal_visibility(user, project)
     return preferred unless preferred.nil?
