@@ -63,19 +63,17 @@ class TagCloudAggregator
 
     issue_ids = matching_issue_ids
     return 0 if issue_ids.empty?
-    return issue_ids.size unless tag_ids_restricted?
 
-    taggings_table = Redmineup::Tagging.table_name
-    scope = Redmineup::Tagging
-            .where(taggable_type: Issue.name)
-            .where(taggable_id: issue_ids)
     case tag_operator
     when '='
-      scope = scope.where(tag_id: tag_ids)
+      tagged_issue_count(issue_ids, tag_ids)
     when '!'
-      scope = scope.where.not(tag_id: tag_ids)
+      tag_ids.any? ? issue_ids.size - tagged_issue_count(issue_ids, tag_ids) : issue_ids.size
+    when '!='
+      issue_ids.size - tagged_issue_count(issue_ids)
+    else
+      issue_ids.size
     end
-    scope.distinct.count(:taggable_id)
   rescue StandardError => e
     Rails.logger.error(
       "[redmineup_tags] TagCloudAggregator#issue_count cloud=#{@tag_cloud&.id} " \
@@ -105,11 +103,8 @@ class TagCloudAggregator
     issue_ids = matching_issue_ids
     return { filtered: 0, untagged: 0 } if issue_ids.empty?
 
-    tagged = Redmineup::Tagging
-             .where(taggable_type: Issue.name, taggable_id: issue_ids)
-             .distinct
-             .count(:taggable_id)
-    { filtered: issue_ids.size, untagged: issue_ids.size - tagged.to_i }
+    tagged = tagged_issue_count(issue_ids)
+    { filtered: issue_ids.size, untagged: issue_ids.size - tagged }
   rescue StandardError => e
     Rails.logger.error(
       "[redmineup_tags] TagCloudAggregator#modal_issue_counts cloud=#{@tag_cloud&.id} " \
@@ -154,6 +149,12 @@ class TagCloudAggregator
   end
 
   TAG_VALUE_OPS = %w[= !].freeze
+
+  def tagged_issue_count(issue_ids, ids = nil)
+    scope = Redmineup::Tagging.where(taggable_type: Issue.name, taggable_id: issue_ids)
+    scope = scope.where(tag_id: ids) if ids
+    scope.distinct.count(:taggable_id).to_i
+  end
 
   def apply_tag_restriction(scope, tags_table)
     case tag_operator
