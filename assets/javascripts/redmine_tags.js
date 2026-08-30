@@ -371,6 +371,7 @@ $(function () {
     function syncVisibilityPanels() {
         var value = $('input[name="tag_cloud[visibility]"]:checked').val() || 'all';
         var roles = value === 'roles';
+        var owner = value === 'owner';
         var $panel = $('#tag-cloud-roles-panel');
         $panel.prop('hidden', !roles);
         if (!roles) {
@@ -379,6 +380,21 @@ $(function () {
             $panel.find('.tag-cloud-filter-select').each(function () {
                 fitSelectWidth($(this));
             });
+        }
+        var $cb = $('#tag_cloud_visible_by_default');
+        $cb.prop('disabled', owner);
+        if (owner) {
+            $cb.prop('checked', true);
+            if (!$('#tag_cloud_visible_by_default_fallback').length) {
+                $cb.after($('<input>', {
+                    type: 'hidden',
+                    name: 'tag_cloud[visible_by_default]',
+                    value: '1',
+                    id: 'tag_cloud_visible_by_default_fallback'
+                }));
+            }
+        } else {
+            $('#tag_cloud_visible_by_default_fallback').remove();
         }
     }
 
