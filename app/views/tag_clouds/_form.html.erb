@@ -222,7 +222,12 @@
   </fieldset>
 
   <p class="tag-cloud-visible-row">
-    <%= f.check_box :visible_by_default, {}, '1', '0' %>
+    <%= f.check_box :visible_by_default,
+                    { disabled: visibility == 'owner' },
+                    '1', '0' %>
+    <% if visibility == 'owner' %>
+      <%= hidden_field_tag 'tag_cloud[visible_by_default]', '1', id: 'tag_cloud_visible_by_default_fallback' %>
+    <% end %>
     <%= f.label :visible_by_default, l(:label_tag_cloud_visible_by_default) %>
   </p>
   <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_visible_by_default_hint) %></p>
