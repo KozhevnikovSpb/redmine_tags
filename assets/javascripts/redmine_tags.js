@@ -206,6 +206,15 @@ $(function () {
         }
     }
 
+    function currentTagOperator() {
+        return $('.tag-cloud-form select[name="tag_cloud[tag_operator]"]').val() || '*';
+    }
+
+    function syncUntaggedStat() {
+        var show = currentTagOperator() === '*';
+        setToggleHidden($('#tag-cloud-untagged-stat'), !show);
+    }
+
     function setFilterOpen($row, open, opts) {
         opts = opts || {};
         if (!isOperatorFilterRow($row)) {
@@ -253,6 +262,7 @@ $(function () {
             setToggleHidden($btn, false);
             setFilterOpen($row, $btn.attr('data-open') === '1', { silent: true });
         }
+        syncUntaggedStat();
         if (!opts.silent) {
             schedulePreview();
         }
@@ -288,6 +298,7 @@ $(function () {
     function setIssueCounts(filtered, unfiltered) {
         $('#tag-cloud-filtered-count').text(filtered == null ? 0 : filtered);
         $('#tag-cloud-unfiltered-count').text(unfiltered == null ? 0 : unfiltered);
+        syncUntaggedStat();
     }
 
     function refreshPreview() {
@@ -377,6 +388,7 @@ $(function () {
 
     if ($('.tag-cloud-form').length) {
         syncVisibilityPanels();
+        syncUntaggedStat();
         refreshPreview();
     }
 });
