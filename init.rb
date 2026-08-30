@@ -25,13 +25,9 @@ Redmine::Plugin.register :redmineup_tags do
     tags_suggestion_order: 'name'
   }, partial: 'tags/settings'
 
-  # All tag/cloud permissions under Issue tracking (same module as issues).
-  # view_tag_clouds: see custom clouds + read-only project list (no author-only clouds).
-  # select_tag_clouds: personal sidebar show/hide and order (not other authors' owner clouds).
-  # manage_tag_clouds: create/edit/delete/reorder; author may edit/delete own author-only cloud.
-  # Project UI never shows another user's author-only cloud, including to Redmine admin.
-  # Full Redmine admin manages other authors' owner clouds only from the plugin settings list.
-  project_module :issue_tracking do
+  # Separate Roles block: Tags and tag clouds.
+  # Permission names stay the same for RedmineUP Q&A compatibility.
+  project_module :redmineup_tags do
     permission :create_tags, {}
     permission :edit_tags, {}
     permission :view_tag_clouds, {
@@ -67,7 +63,7 @@ module RedmineupTags
               tabs << {
                 name: 'tags',
                 action: User.current.allowed_to?(:manage_tag_clouds, @project) ? :manage_tag_clouds : :view_tag_clouds,
-                module: :issue_tracking,
+                module: :redmineup_tags,
                 partial: 'projects/settings/tags',
                 label: :tag_clouds
               }

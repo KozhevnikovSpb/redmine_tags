@@ -7,7 +7,7 @@
 # redmine_tags is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
-# (at an option) any later version.
+# (at your option) any later version.
 #
 # redmine_tags is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,9 +24,16 @@ module RedmineupTags
         base.class_eval do
           has_many :tag_cloud_projects, dependent: :destroy
           has_many :tag_clouds, through: :tag_cloud_projects
+          after_create :enable_redmineup_tags_module
 
           # Default system cloud is virtual (not stored in DB).
-          # No after_create ensure_system_cloud.
+          def enable_redmineup_tags_module
+            return if module_enabled?(:redmineup_tags)
+
+            enabled_modules.create(name: 'redmineup_tags')
+          rescue StandardError => e
+            Rails.logger.warn("[redmineup_tags] enable module project=#{id}: #{e.class}: #{e.message}") if defined?(Rails) && Rails.logger
+          end
         end
       end
     end
