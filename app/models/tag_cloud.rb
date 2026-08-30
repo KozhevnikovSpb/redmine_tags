@@ -122,6 +122,12 @@ class TagCloud < ActiveRecord::Base
     user.allowed_to?(:view_tag_clouds, project) || user.allowed_to?(:manage_tag_clouds, project)
   end
 
+  def self.sidebar_clouds_for(project, user)
+    return [] unless can_see_custom_clouds?(user, project)
+
+    for_sidebar(project).select { |cloud| cloud.visible_for?(user, project: project) }
+  end
+
   def home_project_for(view_project)
     return nil unless view_project
     return view_project if linked_to?(view_project)
@@ -137,28 +143,33 @@ class TagCloud < ActiveRecord::Base
     visibility.to_s == 'owner'
   end
 
+  def author_ids
+    [created_by_id, owner_id].compact.map(&:to_i).reject(&:zero?).uniq
+  end
+
   def authored_by?(user)
     return false unless user&.logged?
-    ids = [created_by_id, owner_id].compact.map(&:to_i).reject(&:zero?)
-    ids.include?(user.id)
+
+    author_ids.include?(user.id.to_i)
   end
 
   def can_set_owner_visibility?(user = User.current)
     return false unless user&.logged?
     return true if user.admin?
     return true unless persisted?
-    return true if created_by_id.blank? && owner_id.blank?
+    return true if author_ids.empty?
+
     authored_by?(user)
   end
 
   def listed_in_settings_for?(user, project: nil)
     return false if user.nil?
     return true if user.admin?
-    return true unless author_only?
-    return false unless authored_by?(user)
     return false unless project
+    return false unless self.class.can_view_settings_list?(user, project)
+    return true unless author_only?
 
-    user.allowed_to?(:manage_tag_clouds, project)
+    authored_by?(user) && user.allowed_to?(:manage_tag_clouds, project)
   end
 
   def manageable_by?(user, project: nil)
@@ -174,26 +185,22 @@ class TagCloud < ActiveRecord::Base
 
     if author_only?
       return false unless user.admin? || authored_by?(user)
-      if user.logged? && project && self.class.can_select_display?(user, project)
-        pref = preferences.find_by(user_id: user.id)
-        return pref.visible? if pref
-      end
+
+      preferred = personal_visibility(user, project)
+      return preferred unless preferred.nil?
+
       return true
     end
 
-    if user.logged? && project && self.class.can_select_display?(user, project)
-      pref = preferences.find_by(user_id: user.id)
-      return pref.visible? if pref
-    end
+    preferred = personal_visibility(user, project)
+    return preferred unless preferred.nil?
 
-    case visibility
+    case visibility.to_s
     when 'all'
       visible_by_default?
     when 'roles'
       return true if user.admin?
-      return false unless user.logged? && project
-      user_role_ids = user.roles_for_project(project).map(&:id)
-      (assigned_role_ids & user_role_ids).any?
+      roles_match?(user, project)
     else
       false
     end
@@ -308,6 +315,22 @@ class TagCloud < ActiveRecord::Base
 
   private
 
+  def personal_visibility(user, project)
+    return nil unless user&.logged? && project && self.class.can_select_display?(user, project)
+
+    pref = preferences.find_by(user_id: user.id)
+    return nil unless pref
+
+    pref.visible?
+  end
+
+  def roles_match?(user, project)
+    return false unless user.logged? && project
+
+    user_role_ids = user.roles_for_project(project).map(&:id)
+    (assigned_role_ids & user_role_ids).any?
+  end
+
   def read_filter_operator(name)
     return '*' unless operator_columns?
     self[name].to_s.presence || '*'
@@ -354,7 +377,10 @@ class TagCloud < ActiveRecord::Base
 
   def normalize_owner_for_visibility
     return unless visibility == 'owner'
-    self.owner_id = created_by_id.presence || owner_id.presence || User.current&.id
+
+    author_id = created_by_id.presence || owner_id.presence || User.current&.id
+    self.created_by_id = author_id if created_by_id.blank? && author_id.present?
+    self.owner_id = author_id
     self.visible_by_default = true
   end
 
