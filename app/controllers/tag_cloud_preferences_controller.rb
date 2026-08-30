@@ -77,9 +77,7 @@ class TagCloudPreferencesController < ApplicationController
   end
 
   def selectable_cloud?(cloud)
-    return true if User.current.admin?
     return true if cloud.authored_by?(User.current)
-
     !cloud.author_only?
   end
 
