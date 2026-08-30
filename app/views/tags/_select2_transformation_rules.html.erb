@@ -1,4 +1,62 @@
-<%# Issues list Tags filter: Select2 autocomplete. Field name issue_tags. %>
+<%# Fill Issues list Tags filter options from the same tags the sidebar already shows. %>
+<%
+  tag_filter_values =
+    begin
+      names =
+        if respond_to?(:sidebar_tags)
+          Array(sidebar_tags).map { |tag| tag.respond_to?(:name) ? tag.name.to_s : tag.to_s }
+        else
+          []
+        end
+      names = names.reject(&:blank?).uniq
+      names.map { |name| [name, name] }
+    rescue StandardError
+      []
+    end
+%>
+<%= javascript_tag do %>
+(function () {
+  var tagValues = <%= raw_json(tag_filter_values) %>;
+  if (!tagValues || !tagValues.length) {
+    return;
+  }
+
+  function fillAvailable() {
+    if (typeof availableFilters === 'undefined') {
+      return;
+    }
+    if (!availableFilters.issue_tags) {
+      availableFilters.issue_tags = { name: 'Tags' };
+    }
+    availableFilters.issue_tags.type = 'list_optional';
+    availableFilters.issue_tags.remote = false;
+    availableFilters.issue_tags.values = tagValues;
+  }
+
+  function fillSelect() {
+    var $sel = $('select[name="v[issue_tags][]"]');
+    if (!$sel.length) {
+      return;
+    }
+    var selected = $sel.val() || [];
+    if (!$.isArray(selected)) {
+      selected = [selected];
+    }
+    $sel.empty();
+    $.each(tagValues, function (_, pair) {
+      $sel.append($('<option></option>').attr('value', pair[1]).text(pair[0]));
+    });
+    $sel.val(selected);
+  }
+
+  fillAvailable();
+  $(function () {
+    fillAvailable();
+    fillSelect();
+  });
+})();
+<% end %>
+
 <% if respond_to?(:transform_to_select2) && respond_to?(:auto_complete_redmine_tags_path) %>
   <%= transform_to_select2('issue_tags', url: auto_complete_redmine_tags_path) %>
 <% end %>

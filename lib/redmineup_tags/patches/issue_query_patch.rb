@@ -8,6 +8,8 @@ module RedmineupTags
           alias_method :statement, :statement_with_redmine_tags
           alias_method :available_filters_without_redmine_tags, :available_filters
           alias_method :available_filters, :available_filters_with_redmine_tags
+          alias_method :available_filters_as_json_without_redmine_tags, :available_filters_as_json
+          alias_method :available_filters_as_json, :available_filters_as_json_with_redmine_tags
           alias_method :build_from_params_without_redmine_tags, :build_from_params
           alias_method :build_from_params, :build_from_params_with_redmine_tags
           add_available_column QueryTagsColumn.new(:tags_relations, caption: :tags)
@@ -49,12 +51,27 @@ module RedmineupTags
             type: :list_optional,
             name: l(:tags),
             remote: false,
-            values: issue_tag_filter_values
+            values: -> { issue_tag_filter_values }
           )
           available
         rescue StandardError => e
           Rails.logger.warn("[redmineup_tags] Tag filter error: #{e.class}: #{e.message}")
           available || @available_filters || {}
+        end
+
+        def available_filters_as_json_with_redmine_tags
+          json = available_filters_as_json_without_redmine_tags || {}
+          json = json.stringify_keys
+          entry = (json['issue_tags'] || {}).stringify_keys
+          entry['type'] = 'list_optional'
+          entry['name'] ||= l(:tags)
+          entry['remote'] = false
+          entry['values'] = issue_tag_filter_values
+          json['issue_tags'] = entry
+          json
+        rescue StandardError => e
+          Rails.logger.warn("[redmineup_tags] Tag filter json: #{e.class}: #{e.message}")
+          available_filters_as_json_without_redmine_tags
         end
 
         def build_from_params_with_redmine_tags(params, defaults = {})
@@ -73,28 +90,31 @@ module RedmineupTags
         end
 
         def issue_tag_names_for_filter
+          opts = { user: User.current }
+          if project
+            projects = [project]
+            if respond_to?(:with_subprojects?) && with_subprojects?
+              projects.concat(Array(project.descendants.to_a))
+            end
+            opts[:projects] = projects
+          end
+          Issue.all_tags(opts).map { |tag| tag.name.to_s }.reject(&:blank?)
+        rescue StandardError => e
+          Rails.logger.warn("[redmineup_tags] Tag filter values via all_tags: #{e.class}: #{e.message}")
+          issue_tag_names_fallback
+        end
+
+        def issue_tag_names_fallback
           tags_table = Redmineup::Tag.table_name
           taggings_table = Redmineup::Tagging.table_name
-          issues_table = Issue.table_name
-
-          scope = Redmineup::Tag.unscoped
-                                .joins("INNER JOIN #{taggings_table} ON #{taggings_table}.tag_id = #{tags_table}.id")
-                                .where("#{taggings_table}.taggable_type = ?", 'Issue')
-
-          if project
-            project_ids = [project.id]
-            if respond_to?(:with_subprojects?) && with_subprojects?
-              project_ids.concat(Array(project.descendants.ids))
-            end
-            scope = scope.joins(
-                      "INNER JOIN #{issues_table} ON #{issues_table}.id = #{taggings_table}.taggable_id"
-                    )
-                    .where(issues_table => { project_id: project_ids.uniq })
-          end
-
-          scope.distinct.order(Arel.sql("#{tags_table}.name ASC")).pluck(Arel.sql("#{tags_table}.name"))
+          Redmineup::Tag.unscoped
+                        .joins("INNER JOIN #{taggings_table} ON #{taggings_table}.tag_id = #{tags_table}.id")
+                        .where("#{taggings_table}.taggable_type = ?", 'Issue')
+                        .distinct
+                        .order(Arel.sql("#{tags_table}.name ASC"))
+                        .pluck(Arel.sql("#{tags_table}.name"))
         rescue StandardError => e
-          Rails.logger.warn("[redmineup_tags] Tag filter values: #{e.class}: #{e.message}")
+          Rails.logger.warn("[redmineup_tags] Tag filter fallback: #{e.class}: #{e.message}")
           []
         end
 
