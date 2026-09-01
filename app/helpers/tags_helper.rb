@@ -11,7 +11,12 @@ module TagsHelper
         link_to_issue_filter(tag, filters)
       end
     content << content_tag('span', "(#{tag.count})", class: 'tag-count') if options[:show_count]
-    style = RedmineupTags.use_colors? ? { class: 'tag-label-color', style: "background-color: #{tag.color}" } : { class: 'tag-label' }
+    style =
+      if RedmineupTags.use_colors?
+        { class: 'tag-label-color', style: "background-color: #{RedmineupTags.display_tag_color(tag)}" }
+      else
+        { class: 'tag-label' }
+      end
     content_tag('span', content, style)
   end
 
