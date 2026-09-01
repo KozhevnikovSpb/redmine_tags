@@ -1,5 +1,6 @@
 <% content_for :header_tags do %>
   <%= stylesheet_link_tag(:redmine_tags, plugin: 'redmineup_tags') %>
+  <%= stylesheet_link_tag(:tag_colors, plugin: 'redmineup_tags') %>
   <%= javascript_include_tag(:redmine_tags, plugin: 'redmineup_tags') %>
   <%= javascript_include_tag(:redmine_tags_autocomplete, plugin: 'redmineup_tags') %>
   <%= select2_assets if respond_to?(:select2_assets) %>

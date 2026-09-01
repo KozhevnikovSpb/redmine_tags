@@ -1,0 +1,10 @@
+/* Soft tag chips: dark text on muted backgrounds. */
+.tag-label-color,
+.tag-label-color a,
+.tag-label-color .tag-count {
+  color: #1f2937 !important;
+  text-shadow: none !important;
+}
+.tag-label-color {
+  border: 1px solid rgba(17, 24, 39, 0.08);
+}
