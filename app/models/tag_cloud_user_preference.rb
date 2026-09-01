@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
-# Per-user display options for tag clouds.
-# Independent from TagCloudPreference (sidebar visibility / order).
-# NULL columns mean "inherit plugin settings".
+# Per-user tag display (count vs weight). Not cloud visibility.
+# NULL columns mean inherit plugin settings until the user saves My account.
 class TagCloudUserPreference < ActiveRecord::Base
   belongs_to :user
 
@@ -24,11 +23,20 @@ class TagCloudUserPreference < ActiveRecord::Base
     end
 
     def show_weight?(user = User.current)
-      inherited = RedmineupTags.tag_list_view == :cloud
-      pref = stored_for(user)
-      return inherited if pref.nil? || pref.show_weight.nil?
+      !show_count?(user)
+    end
 
-      pref.show_weight
+    def save_count_mode!(user, show_count)
+      return false unless user&.logged?
+      return false unless table_available?
+
+      rec = find_or_initialize_by(user_id: user.id)
+      rec.show_count = ActiveModel::Type::Boolean.new.cast(show_count)
+      rec.show_weight = !rec.show_count
+      rec.save
+    rescue StandardError => e
+      Rails.logger.warn("[redmineup_tags] save_count_mode: #{e.class}: #{e.message}") if defined?(Rails)
+      false
     end
 
     def stored_for(user)

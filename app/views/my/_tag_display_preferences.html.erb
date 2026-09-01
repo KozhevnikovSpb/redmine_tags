@@ -1,0 +1,11 @@
+<% user = local_assigns[:user] || @user || User.current %>
+<% show_count = TagCloudUserPreference.show_count?(user) %>
+<fieldset class="box tabular">
+  <legend><%= l(:label_tag_display_preferences) %></legend>
+  <p>
+    <%= hidden_field_tag 'tag_display[show_count]', '0' %>
+    <label for="tag_display_show_count"><%= l(:label_tag_display_show_count) %></label>
+    <%= check_box_tag 'tag_display[show_count]', '1', show_count, id: 'tag_display_show_count' %>
+  </p>
+  <p class="tag-display-hint"><%= l(:text_tag_display_show_count_hint) %></p>
+</fieldset>
