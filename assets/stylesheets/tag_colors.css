@@ -7,48 +7,4 @@
 }
 .tag-label-color {
   border: 1px solid rgba(17, 24, 39, 0.08);
-  padding: 0.15em 0.45em;
-  line-height: 1.25;
-  display: inline-block;
-  box-sizing: border-box;
-}
-
-/* Weight is independent of "Display amount of issues". */
-.tags-cloud .tag-nube-1 { font-size: 0.80em; }
-.tags-cloud .tag-nube-2 { font-size: 0.90em; }
-.tags-cloud .tag-nube-3 { font-size: 1.00em; }
-.tags-cloud .tag-nube-4 { font-size: 1.12em; }
-.tags-cloud .tag-nube-5 { font-size: 1.24em; }
-.tags-cloud .tag-nube-6 { font-size: 1.36em; }
-.tags-cloud .tag-nube-7 { font-size: 1.48em; }
-.tags-cloud .tag-nube-8 { font-size: 1.60em; }
-
-.tags-cloud.tags-cloud-simple .tag-nube-1,
-.tags-cloud.tags-cloud-simple .tag-nube-2,
-.tags-cloud.tags-cloud-simple .tag-nube-3,
-.tags-cloud.tags-cloud-simple .tag-nube-4,
-.tags-cloud.tags-cloud-simple .tag-nube-5,
-.tags-cloud.tags-cloud-simple .tag-nube-6,
-.tags-cloud.tags-cloud-simple .tag-nube-7,
-.tags-cloud.tags-cloud-simple .tag-nube-8 {
-  font-size: 1em;
-}
-
-.tags-cloud .tag-nube-1 .tag-label-color,
-.tags-cloud .tag-nube-2 .tag-label-color,
-.tags-cloud .tag-nube-3 .tag-label-color,
-.tags-cloud .tag-nube-4 .tag-label-color,
-.tags-cloud .tag-nube-5 .tag-label-color,
-.tags-cloud .tag-nube-6 .tag-label-color,
-.tags-cloud .tag-nube-7 .tag-label-color,
-.tags-cloud .tag-nube-8 .tag-label-color,
-.tags-cloud .tag-nube-1 .tag-label,
-.tags-cloud .tag-nube-2 .tag-label,
-.tags-cloud .tag-nube-3 .tag-label,
-.tags-cloud .tag-nube-4 .tag-label,
-.tags-cloud .tag-nube-5 .tag-label,
-.tags-cloud .tag-nube-6 .tag-label,
-.tags-cloud .tag-nube-7 .tag-label,
-.tags-cloud .tag-nube-8 .tag-label {
-  font-size: 1em;
 }
