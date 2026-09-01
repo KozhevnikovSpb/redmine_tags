@@ -43,7 +43,6 @@ module RedmineupTags
     settings['use_colors'].to_i > 0
   end
 
-  # Soften raw tag colors for display. Hue is kept so the same tag stays recognizable.
   def self.display_tag_color(tag_or_hex)
     hex = extract_tag_hex(tag_or_hex)
     mute_hex(hex)
@@ -65,7 +64,6 @@ module RedmineupTags
 
   def self.mute_hex(hex)
     r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
-    # Midpoint: mix original with white, then a light HSL clamp.
     t = 0.34
     r = r * (1 - t) + t
     g = g * (1 - t) + t
@@ -147,6 +145,15 @@ module RedmineupTags
   rescue StandardError => e
     Rails.logger.warn("[redmineup_tags] enable_project_module: #{e.class}: #{e.message}") if defined?(Rails) && Rails.logger
   end
+
+  def self.ensure_schema!
+    return unless defined?(RedmineupTags::SchemaRepair)
+
+    RedmineupTags::SchemaRepair.ensure_operators!(verbose: false)
+    RedmineupTags::SchemaRepair.ensure_user_display_prefs!(verbose: false)
+  rescue StandardError => e
+    Rails.logger.warn("[redmineup_tags] ensure_schema: #{e.class}: #{e.message}") if defined?(Rails) && Rails.logger
+  end
 end
 
 REDMINEUP_TAGS_REQUIRED_FILES = [
@@ -180,4 +187,5 @@ REDMINEUP_TAGS_REQUIRED_FILES.each { |file| require(base_url + '/' + file) }
 
 Rails.application.config.after_initialize do
   RedmineupTags.enable_project_module!
+  RedmineupTags.ensure_schema!
 end
