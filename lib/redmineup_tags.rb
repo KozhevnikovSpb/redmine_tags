@@ -129,7 +129,7 @@ module RedmineupTags
     return unless conn.data_source_exists?('enabled_modules')
 
     conn.execute(<<~SQL.squish)
-      INSERT INTO enabled_modules (project_id, 'redmineup_tags')
+      INSERT INTO enabled_modules (project_id, name)
       SELECT em.project_id, 'redmineup_tags'
       FROM enabled_modules em
       WHERE em.name = 'issue_tracking'
