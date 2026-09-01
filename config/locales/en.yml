@@ -14,6 +14,10 @@ en:
   issues_sort_by: Sort tags by
   use_colors: Use colors
 
+  label_tag_display_preferences: Tags
+  label_tag_display_show_count: Show issue counts
+  text_tag_display_show_count_hint: Checked — tags show the number of issues. Unchecked — tags use weight (font size by frequency).
+
   issue_tags_sidebar_none: None
   issue_tags_sidebar_list: List
   issue_tags_sidebar_cloud: Cloud

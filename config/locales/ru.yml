@@ -14,6 +14,10 @@ ru:
   issues_sort_by: Упорядочить теги по
   use_colors: Использовать цвета
 
+  label_tag_display_preferences: Теги
+  label_tag_display_show_count: Показывать количество задач
+  text_tag_display_show_count_hint: Галочка включена — у тегов число задач. Снята — вес тега (размер шрифта по частоте).
+
   issue_tags_sidebar_none: Не показывать
   issue_tags_sidebar_list: Список
   issue_tags_sidebar_cloud: Облако
