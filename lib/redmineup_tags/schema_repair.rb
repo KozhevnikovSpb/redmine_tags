@@ -1,16 +1,6 @@
 # frozen_string_literal: true
 
 module RedmineupTags
-  # V.0.0.2-beta schema installer / normalizer.
-  #
-  # - Fresh install: create target tables
-  # - Existing install: DROP our cloud tables and recreate (force)
-  # - ALWAYS preserve tags + taggings (real RedmineUP tags data)
-  #
-  # Usage:
-  #   RedmineupTags::SchemaRepair.run!(verbose: true)           # soft ensure + reshape
-  #   RedmineupTags::SchemaRepair.force_rebuild!(verbose: true) # wipe clouds, keep tags
-  #   RedmineupTags::SchemaRepair.ensure_operators!             # add operator columns only
   class SchemaRepair
     OUR_TABLES = %w[
       tag_cloud_preferences
@@ -20,7 +10,7 @@ module RedmineupTags
       tag_clouds
     ].freeze
 
-    PRESERVE_TABLES = %w[tags taggings].freeze
+    PRESERVE_TABLES = %w[tags taggings tag_cloud_user_preferences].freeze
     OPERATOR_COLUMNS = %w[status_operator version_operator tracker_operator tag_operator].freeze
 
     class << self
@@ -38,6 +28,10 @@ module RedmineupTags
 
       def ensure_operators!(verbose: false)
         new(verbose: verbose).ensure_operator_columns!
+      end
+
+      def ensure_user_display_prefs!(verbose: false)
+        new(verbose: verbose).ensure_user_display_prefs_table!
       end
     end
 
@@ -62,7 +56,7 @@ module RedmineupTags
 
     def force_rebuild!
       log '=== SchemaRepair FORCE REBUILD (V.0.0.2-beta) ==='
-      log 'Preserved: tags, taggings'
+      log 'Preserved: tags, taggings, tag_cloud_user_preferences'
       log "Will drop/recreate: #{OUR_TABLES.join(', ')}"
 
       ensure_tags_tables
@@ -90,6 +84,30 @@ module RedmineupTags
       false
     end
 
+    def ensure_user_display_prefs_table!
+      if table?(:tag_cloud_user_preferences)
+        ensure_user_display_pref_columns!
+        return true
+      end
+
+      log 'CREATE TABLE tag_cloud_user_preferences'
+      @connection.create_table :tag_cloud_user_preferences do |t|
+        t.bigint :user_id, null: false
+        t.boolean :show_count
+        t.boolean :show_weight
+        t.timestamps
+      end
+      unless index?(:tag_cloud_user_preferences, :user_id, unique: true)
+        @connection.add_index :tag_cloud_user_preferences, :user_id,
+                              unique: true, name: 'index_tag_cloud_user_preferences_on_user_id'
+      end
+      add_fk_safe :tag_cloud_user_preferences, :users, column: :user_id, on_delete: :cascade
+      true
+    rescue StandardError => e
+      log "WARNING: tag_cloud_user_preferences: #{e.class}: #{e.message}"
+      false
+    end
+
     def report_status
       log '--- status ---'
       (OUR_TABLES.reverse + PRESERVE_TABLES).each do |t|
@@ -106,6 +124,10 @@ module RedmineupTags
       if table?(:tag_cloud_preferences)
         cols = @connection.columns(:tag_cloud_preferences).map(&:name)
         log "  preferences columns: #{cols.join(', ')}"
+      end
+      if table?(:tag_cloud_user_preferences)
+        cols = @connection.columns(:tag_cloud_user_preferences).map(&:name)
+        log "  user display pref columns: #{cols.join(', ')}"
       end
       if table?(:tags)
         log "  tags count: #{safe_count('tags')}"
@@ -189,6 +211,7 @@ module RedmineupTags
         force_rebuild!
       end
       ensure_operator_columns!
+      ensure_user_display_prefs_table!
     end
 
     def create_target_schema!
@@ -271,6 +294,18 @@ module RedmineupTags
       end
 
       ensure_operator_columns!
+      ensure_user_display_prefs_table!
+    end
+
+    def ensure_user_display_pref_columns!
+      %i[show_count show_weight].each do |col|
+        next if column?(:tag_cloud_user_preferences, col)
+
+        log "ADD COLUMN tag_cloud_user_preferences.#{col}"
+        @connection.add_column :tag_cloud_user_preferences, col, :boolean
+      end
+    rescue StandardError => e
+      log "WARNING: user display pref columns: #{e.class}: #{e.message}"
     end
 
     def add_fk_safe(from_table, to_table, column:, on_delete: :cascade)
