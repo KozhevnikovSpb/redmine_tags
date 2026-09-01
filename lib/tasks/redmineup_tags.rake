@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# Plugin directory: plugins/redmineup_tags (id :redmineup_tags)
-
 def redmineup_tags_plugin_root
   begin
     return Redmine::Plugin.find(:redmineup_tags).directory
@@ -33,7 +31,7 @@ namespace :redmineup_tags do
   task force_rebuild: :environment do
     redmineup_tags_load_schema_repair!
     puts 'WARNING: tag_clouds / preferences / projects / roles / tags-links will be wiped.'
-    puts 'PRESERVED: tags, taggings (real issue tags).'
+    puts 'PRESERVED: tags, taggings, tag_cloud_user_preferences.'
     RedmineupTags::SchemaRepair.force_rebuild!(verbose: true)
   end
 
@@ -41,6 +39,15 @@ namespace :redmineup_tags do
   task repair_schema: :environment do
     redmineup_tags_load_schema_repair!
     RedmineupTags::SchemaRepair.run!(verbose: true)
+  end
+
+  desc 'Create tag_cloud_user_preferences if missing'
+  task ensure_user_prefs: :environment do
+    redmineup_tags_load_schema_repair!
+    ok = RedmineupTags::SchemaRepair.ensure_user_display_prefs!(verbose: true)
+    exists = ActiveRecord::Base.connection.table_exists?(:tag_cloud_user_preferences)
+    puts "tag_cloud_user_preferences exists=#{exists} ensure=#{ok.inspect}"
+    abort 'tag_cloud_user_preferences was not created' unless exists
   end
 
   desc 'Print schema status (no changes)'
@@ -58,6 +65,13 @@ namespace :redmine_tags do
   task repair_schema: :environment do
     redmineup_tags_load_schema_repair!
     RedmineupTags::SchemaRepair.run!(verbose: true)
+  end
+  task ensure_user_prefs: :environment do
+    redmineup_tags_load_schema_repair!
+    ok = RedmineupTags::SchemaRepair.ensure_user_display_prefs!(verbose: true)
+    exists = ActiveRecord::Base.connection.table_exists?(:tag_cloud_user_preferences)
+    puts "tag_cloud_user_preferences exists=#{exists} ensure=#{ok.inspect}"
+    abort 'tag_cloud_user_preferences was not created' unless exists
   end
   task schema_status: :environment do
     redmineup_tags_load_schema_repair!
