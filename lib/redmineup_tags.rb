@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with redmine_tags.  If not, see <http://www.gnu.org/licenses/>.
 
+require 'digest'
+
 module Redmineup
   module ActsAsTaggable
     module Taggable
@@ -41,6 +43,72 @@ module RedmineupTags
     settings['use_colors'].to_i > 0
   end
 
+  # Soften raw tag colors for display. Hue is kept so the same tag stays recognizable.
+  def self.display_tag_color(tag_or_hex)
+    hex = extract_tag_hex(tag_or_hex)
+    mute_hex(hex)
+  end
+
+  def self.extract_tag_hex(tag_or_hex)
+    raw =
+      if tag_or_hex.respond_to?(:color)
+        tag_or_hex.color.to_s
+      else
+        tag_or_hex.to_s
+      end
+    raw = raw.delete('#')
+    return "##{raw}" if raw.match?(/\A[0-9a-fA-F]{6}\z/)
+
+    name = tag_or_hex.respond_to?(:name) ? tag_or_hex.name.to_s : tag_or_hex.to_s
+    "##{Digest::MD5.hexdigest(name)[0, 6]}"
+  end
+
+  def self.mute_hex(hex)
+    r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
+    h, s, l = rgb_to_hsl(r, g, b)
+    s = [s * 0.36, 0.38].min
+    l = [[0.76 + (l - 0.5) * 0.18, 0.70].max, 0.88].min
+    nr, ng, nb = hsl_to_rgb(h, s, l)
+    format('#%02x%02x%02x', (nr * 255).round, (ng * 255).round, (nb * 255).round)
+  rescue StandardError
+    '#d1d5db'
+  end
+
+  def self.rgb_to_hsl(r, g, b)
+    max = [r, g, b].max
+    min = [r, g, b].min
+    l = (max + min) / 2.0
+    return [0.0, 0.0, l] if max == min
+
+    d = max - min
+    s = l > 0.5 ? d / (2.0 - max - min) : d / (max + min)
+    h =
+      case max
+      when r then ((g - b) / d + (g < b ? 6 : 0)) / 6.0
+      when g then ((b - r) / d + 2) / 6.0
+      else ((r - g) / d + 4) / 6.0
+      end
+    [h, s, l]
+  end
+
+  def self.hsl_to_rgb(h, s, l)
+    return [l, l, l] if s <= 0
+
+    q = l < 0.5 ? l * (1 + s) : l + s - l * s
+    p = 2 * l - q
+    [hue_to_rgb(p, q, h + 1.0 / 3), hue_to_rgb(p, q, h), hue_to_rgb(p, q, h - 1.0 / 3)]
+  end
+
+  def self.hue_to_rgb(p, q, t)
+    t += 1 if t < 0
+    t -= 1 if t > 1
+    return p + (q - p) * 6 * t if t < 1.0 / 6
+    return q if t < 1.0 / 2
+    return p + (q - p) * (2.0 / 3 - t) * 6 if t < 2.0 / 3
+
+    p
+  end
+
   VALID_TAG_LIST_VIEWS = %i[none list cloud simple_cloud].freeze
 
   def self.tag_list_view
@@ -56,7 +124,6 @@ module RedmineupTags
     false
   end
 
-  # Keep create_tags / edit_tags working after they moved out of issue_tracking.
   def self.enable_project_module!
     conn = ActiveRecord::Base.connection
     return unless conn.data_source_exists?('enabled_modules')
