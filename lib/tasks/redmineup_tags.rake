@@ -41,6 +41,12 @@ namespace :redmineup_tags do
     RedmineupTags::SchemaRepair.run!(verbose: true)
   end
 
+  desc 'Create any missing plugin tables. Never drops existing data.'
+  task ensure_tables: :environment do
+    redmineup_tags_load_schema_repair!
+    RedmineupTags::SchemaRepair.ensure_missing_tables!(verbose: true)
+  end
+
   desc 'Create tag_cloud_user_preferences if missing'
   task ensure_user_prefs: :environment do
     redmineup_tags_load_schema_repair!
@@ -65,6 +71,10 @@ namespace :redmine_tags do
   task repair_schema: :environment do
     redmineup_tags_load_schema_repair!
     RedmineupTags::SchemaRepair.run!(verbose: true)
+  end
+  task ensure_tables: :environment do
+    redmineup_tags_load_schema_repair!
+    RedmineupTags::SchemaRepair.ensure_missing_tables!(verbose: true)
   end
   task ensure_user_prefs: :environment do
     redmineup_tags_load_schema_repair!

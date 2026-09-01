@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Create/extend plugin tables that are not part of tag_cloud_preferences.
-# Usage from Redmine root or from this script:
+# Idempotent schema extension: create missing plugin tables, never drop data.
+# Called from deploy or by hand:
 #   RAILS_ENV=production plugins/redmine_tags/script/extend_database.sh
 set -euo pipefail
 
@@ -14,5 +14,5 @@ echo "Redmine: $REDMINE_ROOT"
 echo "Plugin:  $PLUGIN_DIR"
 echo "Env:     $RAILS_ENV"
 
-bundle exec rake redmineup_tags:ensure_user_prefs
+bundle exec rake redmineup_tags:ensure_tables
 bundle exec rake redmine:plugins:migrate NAME=redmineup_tags
