@@ -149,8 +149,7 @@ module RedmineupTags
   def self.ensure_schema!
     return unless defined?(RedmineupTags::SchemaRepair)
 
-    RedmineupTags::SchemaRepair.ensure_operators!(verbose: false)
-    RedmineupTags::SchemaRepair.ensure_user_display_prefs!(verbose: false)
+    RedmineupTags::SchemaRepair.ensure_missing_tables!(verbose: false)
   rescue StandardError => e
     Rails.logger.warn("[redmineup_tags] ensure_schema: #{e.class}: #{e.message}") if defined?(Rails) && Rails.logger
   end
@@ -161,6 +160,7 @@ REDMINEUP_TAGS_REQUIRED_FILES = [
   'redmineup_tags/hooks/views_context_menus_hook',
   'redmineup_tags/hooks/views_issues_hook',
   'redmineup_tags/hooks/views_layouts_hook',
+  'redmineup_tags/hooks/views_my_account_hook',
   'redmineup_tags/patches/add_helpers_for_issue_tags_patch',
   'redmineup_tags/patches/auto_completes_controller_patch',
   'redmineup_tags/patches/issue_patch',
@@ -173,6 +173,7 @@ REDMINEUP_TAGS_REQUIRED_FILES = [
   'redmineup_tags/patches/reports_controller_patch',
   'redmineup_tags/hooks/views_reports_hook',
   'redmineup_tags/patches/project_patch',
+  'redmineup_tags/patches/my_controller_patch',
   'redmineup_tags/schema_repair'
 ]
 
