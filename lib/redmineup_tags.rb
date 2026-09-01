@@ -66,12 +66,12 @@ module RedmineupTags
   def self.mute_hex(hex)
     r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
     h, s, l = rgb_to_hsl(r, g, b)
-    s = [s * 0.36, 0.38].min
-    l = [[0.76 + (l - 0.5) * 0.18, 0.70].max, 0.88].min
+    s = [[s * 0.72, 0.50].max, 0.68].min
+    l = [[0.58 + (l - 0.5) * 0.25, 0.52].max, 0.70].min
     nr, ng, nb = hsl_to_rgb(h, s, l)
     format('#%02x%02x%02x', (nr * 255).round, (ng * 255).round, (nb * 255).round)
   rescue StandardError
-    '#d1d5db'
+    '#93c5fd'
   end
 
   def self.rgb_to_hsl(r, g, b)
@@ -129,7 +129,7 @@ module RedmineupTags
     return unless conn.data_source_exists?('enabled_modules')
 
     conn.execute(<<~SQL.squish)
-      INSERT INTO enabled_modules (project_id, name)
+      INSERT INTO enabled_modules (project_id, 'redmineup_tags')
       SELECT em.project_id, 'redmineup_tags'
       FROM enabled_modules em
       WHERE em.name = 'issue_tracking'
