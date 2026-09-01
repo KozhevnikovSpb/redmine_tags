@@ -33,6 +33,11 @@ module RedmineupTags
       def ensure_user_display_prefs!(verbose: false)
         new(verbose: verbose).ensure_user_display_prefs_table!
       end
+
+      # Create any missing plugin tables / columns. Never drops data.
+      def ensure_missing_tables!(verbose: false)
+        new(verbose: verbose).ensure_missing_tables!
+      end
     end
 
     def initialize(verbose: true)
@@ -51,6 +56,13 @@ module RedmineupTags
         report_status
       end
       log '=== SchemaRepair (soft) finished ==='
+      true
+    end
+
+    def ensure_missing_tables!
+      log '=== ensure missing tables (no drop) ==='
+      create_target_schema!
+      report_status if @verbose
       true
     end
 
@@ -215,7 +227,7 @@ module RedmineupTags
     end
 
     def create_target_schema!
-      log 'CREATE target schema'
+      log 'CREATE target schema if missing'
 
       unless table?(:tag_clouds)
         @connection.create_table :tag_clouds do |t|
