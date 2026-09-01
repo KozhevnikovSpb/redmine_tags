@@ -65,9 +65,14 @@ module RedmineupTags
 
   def self.mute_hex(hex)
     r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
+    # Midpoint: mix original with white, then a light HSL clamp.
+    t = 0.34
+    r = r * (1 - t) + t
+    g = g * (1 - t) + t
+    b = b * (1 - t) + t
     h, s, l = rgb_to_hsl(r, g, b)
-    s = [[s * 0.72, 0.50].max, 0.68].min
-    l = [[0.58 + (l - 0.5) * 0.25, 0.52].max, 0.70].min
+    s = [[s * 0.88, 0.40].max, 0.56].min
+    l = [[l, 0.60].max, 0.76].min
     nr, ng, nb = hsl_to_rgb(h, s, l)
     format('#%02x%02x%02x', (nr * 255).round, (ng * 255).round, (nb * 255).round)
   rescue StandardError
