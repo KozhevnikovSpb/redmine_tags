@@ -25,12 +25,23 @@ module IssuesTagsHelper
     @sidebar_tags = []
   end
 
+  def personal_tag_show_count?
+    TagCloudUserPreference.show_count?(User.current)
+  end
+
+  def personal_tag_list_style
+    base = RedmineupTags.tag_list_view
+    return base if %i[none list].include?(base)
+
+    personal_tag_show_count? ? :simple_cloud : :cloud
+  end
+
   def render_sidebar_tags
     render_tags_list(
       sidebar_tags,
-      show_count: RedmineupTags.settings['issues_show_count'].to_i == 1,
+      show_count: personal_tag_show_count?,
       open_only: RedmineupTags.settings['issues_open_only'].to_i == 1,
-      style: RedmineupTags.tag_list_view
+      style: personal_tag_list_style
     )
   end
 
@@ -48,9 +59,9 @@ module IssuesTagsHelper
 
     render_tags_list(
       tags,
-      show_count: RedmineupTags.settings['issues_show_count'].to_i == 1,
+      show_count: personal_tag_show_count?,
       open_only: false,
-      style: RedmineupTags.tag_list_view,
+      style: personal_tag_list_style,
       tag_cloud: cloud
     )
   rescue StandardError => e
