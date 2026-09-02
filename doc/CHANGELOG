@@ -16,6 +16,8 @@ Boot / schema
   so rake redmine:plugins:migrate and Rails boot no longer raise NameError on Redmine 7 / Rails 8
 * tag_cloud_preferences.show_untagged is created by migration 007 and SchemaRepair
   (boot / rake redmineup_tags:ensure_tables / script/extend_database.sh)
+* tag_cloud_user_preferences.show_untagged is created by migration 008 and SchemaRepair
+  (My account master switch; not dropped on force_rebuild)
 
 Personal untagged caption
 * Per-user per-cloud checkbox in Select visible tag clouds (not in the cloud form)
@@ -24,6 +26,17 @@ Personal untagged caption
 * Reset deletes preference rows → visibility, order and untagged checkboxes all revert
 * Click opens the issue list with the cloud filters plus issue_tags !*
 * If matching issues exist but all are tagged → «all issues are tagged» / «все задачи затегированы»
+
+Personal untagged master switch (My account)
+* My account → Tags: «Show untagged issues» next to «Show issue counts»
+* Master off (default) hides modal Untagged column and all sidebar captions
+* Master on + select_tag_clouds → modal column, captions only for checked clouds
+* Master on + view/manage without select → no modal; captions on every visible custom cloud
+* Profile checkbox is shown only when the user can see custom clouds somewhere
+  (admin, or view_tag_clouds / select_tag_clouds / manage_tag_clouds on any role)
+* create_tags / edit_tags alone do not show the untagged profile checkbox
+* Show issue counts stays available to every logged-in user (system + custom clouds)
+* Modal Reset does not clear the My account master switch
 
 Permissions (iteration 2)
 * Split cloud permissions: view_tag_clouds / select_tag_clouds / manage_tag_clouds
