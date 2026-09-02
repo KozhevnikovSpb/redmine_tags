@@ -73,7 +73,7 @@
 #select-visible-tag-clouds-form .has-untagged-col .tag-cloud-row {
   grid-template-columns: minmax(0, 1fr) 76px 22px;
 }
-#select-visible-tag-clouds-form .tag-cloud-visible-option {
+#select-visible-tag-clouds-form .tag-cloud-row .tag-cloud-visible-option {
   display: flex;
   align-items: flex-start;
   min-width: 0;
@@ -81,8 +81,9 @@
   padding: 0;
   float: none;
   width: auto;
+  flex: 0 1 auto;
 }
-#select-visible-tag-clouds-form .tag-cloud-col-untagged {
+#select-visible-tag-clouds-form .tag-cloud-row .tag-cloud-col-untagged {
   display: block;
   align-self: end;
   text-align: center;
@@ -93,17 +94,18 @@
   white-space: nowrap;
   padding-bottom: 2px;
 }
-#select-visible-tag-clouds-form .tag-cloud-untagged-option {
+#select-visible-tag-clouds-form .tag-cloud-row .tag-cloud-untagged-option {
   display: flex;
   align-items: flex-start;
   justify-content: center;
+  flex: 0 0 auto;
+  width: auto;
   margin: 2px 0 0;
   padding: 0;
   float: none;
-  width: auto;
   cursor: pointer;
 }
-#select-visible-tag-clouds-form .tag-cloud-untagged-option input[type="checkbox"] {
+#select-visible-tag-clouds-form .tag-cloud-row .tag-cloud-untagged-option input[type="checkbox"] {
   margin: 0;
 }
 #select-visible-tag-clouds-form .tag-cloud-untagged-option-empty {
