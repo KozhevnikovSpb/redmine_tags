@@ -103,6 +103,15 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert_not_includes sidebar_ids(@user), hidden_default.id
   end
 
+  test 'manage permission includes display management' do
+    stub_cloud_permissions(@user, manage: true)
+
+    assert TagCloud.can_manage?(@user, @project)
+    assert TagCloud.can_select_display?(@user, @project)
+    assert TagCloud.can_see_custom_clouds?(@user, @project)
+    assert TagCloud.can_view_settings_list?(@user, @project)
+  end
+
   test 'manage permission cannot change another authors owner cloud' do
     stub_cloud_permissions(@user, manage: true)
 
@@ -111,7 +120,7 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
 
     assert TagCloud.can_view_settings_list?(@user, @project)
     assert TagCloud.can_manage?(@user, @project)
-    assert_not TagCloud.can_select_display?(@user, @project)
+    assert TagCloud.can_select_display?(@user, @project)
     assert public_cloud.manageable_by?(@user, project: @project)
     assert_not owner_cloud.manageable_by?(@user, project: @project)
     assert owner_cloud.manageable_by?(@admin, project: @project)
@@ -271,6 +280,14 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert_not cloud.visible_for?(@user, project: @project)
 
     stub_cloud_permissions(@user, view: true, select: true)
+    assert cloud.visible_for?(@user, project: @project)
+  end
+
+  test 'manage permission can override personal visibility without select flag' do
+    stub_cloud_permissions(@user, manage: true)
+    cloud = create_linked_cloud(name: 'Hidden default manage', visibility: 'all', visible_by_default: false, created_by: @admin)
+    cloud.preferences.create!(user: @user, visible: true)
+
     assert cloud.visible_for?(@user, project: @project)
   end
 end
