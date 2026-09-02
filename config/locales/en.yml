@@ -117,7 +117,7 @@ en:
   label_tag_cloud_issues_without_filter: Without tags
   label_tag_cloud_issues_unit: issues
   label_tag_cloud_show_untagged: Show untagged issues
-  label_tag_cloud_show_untagged_short: untagged
+  label_tag_cloud_show_untagged_short: Untagged
   text_tag_cloud_show_untagged_hint: Next to the cloud name shows a filter for matching issues that have no tags. Personal setting — only you see it, and Reset turns it off.
   label_tag_cloud_untagged_count: "untagged issues — %{count}"
   label_tag_cloud_all_tagged: all issues are tagged
