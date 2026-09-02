@@ -149,8 +149,14 @@ module IssuesTagsHelper
 
   private
 
+  def personal_untagged_cloud_ids
+    return @personal_untagged_cloud_ids if defined?(@personal_untagged_cloud_ids)
+
+    @personal_untagged_cloud_ids = TagCloudPreference.untagged_cloud_ids_for(User.current)
+  end
+
   def cloud_untagged_counts(cloud, aggregator)
-    return nil unless cloud.respond_to?(:show_untagged?) && cloud.show_untagged?
+    return nil unless cloud && personal_untagged_cloud_ids.include?(cloud.id)
 
     aggregator.modal_issue_counts
   rescue StandardError
