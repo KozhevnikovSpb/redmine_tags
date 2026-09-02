@@ -60,6 +60,21 @@ class TagCloudPreference < ActiveRecord::Base
       []
     end
 
+    def clear_untagged_for_user!(user)
+      return false unless user&.logged?
+      return false unless table_exists?
+      return false unless column_names.include?('show_untagged')
+
+      scope = where(user_id: user.id, show_untagged: true)
+      return false unless scope.exists?
+
+      scope.update_all(show_untagged: false)
+      true
+    rescue StandardError => e
+      Rails.logger.warn("[redmineup_tags] clear_untagged_for_user: #{e.class}: #{e.message}") if defined?(Rails)
+      false
+    end
+
     # Remove personal visibility/order/untagged rows for clouds on this project
     # and show the system Tags cloud again.
     def reset_for_user!(user, project)

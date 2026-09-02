@@ -163,6 +163,8 @@ module IssuesTagsHelper
     return false unless cloud
     return false unless personal_untagged_master_on?
     return false unless TagCloud.can_see_custom_clouds?(User.current, @project)
+    return false unless TagCloud.can_select_display?(User.current, @project) ||
+                        TagCloud.can_manage?(User.current, @project)
 
     if TagCloud.can_select_display?(User.current, @project)
       personal_untagged_cloud_ids.include?(cloud.id)

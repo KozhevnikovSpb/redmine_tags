@@ -30,13 +30,14 @@ class TagCloudUserPreferenceTest < ActiveSupport::TestCase
     assert_not TagCloudUserPreference.show_untagged?(@user)
   end
 
-  test 'view permission can enable untagged master switch' do
+  test 'view permission cannot enable untagged master switch' do
     stub_global_cloud_permissions(@user, view: true)
 
-    assert TagCloudUserPreference.can_configure_untagged?(@user)
+    assert_not TagCloudUserPreference.can_configure_untagged?(@user)
+    assert_not TagCloudUserPreference.save_display!(@user, show_untagged: true) &&
+               TagCloudUserPreference.show_untagged?(@user)
+    TagCloudUserPreference.save_display!(@user, show_untagged: true)
     assert_not TagCloudUserPreference.show_untagged?(@user)
-    assert TagCloudUserPreference.save_display!(@user, show_untagged: true)
-    assert TagCloudUserPreference.show_untagged?(@user)
   end
 
   test 'select permission can enable untagged master switch' do
@@ -60,7 +61,40 @@ class TagCloudUserPreferenceTest < ActiveSupport::TestCase
     assert TagCloudUserPreference.can_configure_untagged?(@admin)
   end
 
-  test 'save_display ignores untagged when user lacks cloud permissions' do
+  test 'losing management rights clears stored untagged master switch' do
+    stub_global_cloud_permissions(@user, select: true)
+    assert TagCloudUserPreference.save_display!(@user, show_untagged: true)
+    rec = TagCloudUserPreference.find_by(user_id: @user.id)
+    assert rec
+    assert ActiveModel::Type::Boolean.new.cast(rec[:show_untagged])
+
+    stub_global_cloud_permissions(@user, view: true)
+    assert_not TagCloudUserPreference.can_configure_untagged?(@user)
+    assert_not TagCloudUserPreference.show_untagged?(@user)
+    rec.reload
+    assert_not ActiveModel::Type::Boolean.new.cast(rec[:show_untagged])
+  end
+
+  test 'losing management rights clears per-cloud untagged flags' do
+    skip unless TagCloudPreference.table_exists? && TagCloudPreference.column_names.include?('show_untagged')
+    skip unless TagCloud.table_exists?
+
+    stub_global_cloud_permissions(@user, select: true)
+    cloud = TagCloud.create!(name: 'Untagged revoke', visibility: 'all', visible_by_default: true, created_by: @user)
+    pref = TagCloudPreference.create!(tag_cloud: cloud, user: @user, visible: true, show_untagged: true)
+    TagCloudUserPreference.save_display!(@user, show_untagged: true)
+
+    stub_global_cloud_permissions(@user, view: true)
+    TagCloudUserPreference.revoke_untagged_if_unauthorized!(@user)
+
+    pref.reload
+    assert_not pref.show_untagged_enabled?
+    rec = TagCloudUserPreference.find_by(user_id: @user.id)
+    assert rec
+    assert_not ActiveModel::Type::Boolean.new.cast(rec[:show_untagged])
+  end
+
+  test 'save_display ignores untagged when user lacks management permissions' do
     stub_global_cloud_permissions(@user)
     rec = TagCloudUserPreference.find_or_initialize_by(user_id: @user.id)
     rec.show_count = true

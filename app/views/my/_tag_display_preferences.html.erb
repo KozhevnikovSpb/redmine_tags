@@ -1,4 +1,5 @@
 <% user = local_assigns[:user] || @user || User.current %>
+<% TagCloudUserPreference.revoke_untagged_if_unauthorized!(user) %>
 <% show_count = TagCloudUserPreference.show_count?(user) %>
 <% can_untagged = TagCloudUserPreference.can_configure_untagged?(user) %>
 <% show_untagged = can_untagged && TagCloudUserPreference.show_untagged?(user) %>

@@ -31,7 +31,10 @@ class TagCloudUserPreference < ActiveRecord::Base
       return false unless user&.logged?
       return false unless table_available?
       return false unless column_names.include?('show_untagged')
-      return false unless can_configure_untagged?(user)
+      unless can_configure_untagged?(user)
+        revoke_untagged_if_unauthorized!(user)
+        return false
+      end
 
       pref = stored_for(user)
       return false if pref.nil? || pref[:show_untagged].nil?
@@ -41,15 +44,36 @@ class TagCloudUserPreference < ActiveRecord::Base
       false
     end
 
-    # Profile checkbox is only for users who can see custom clouds somewhere.
+    # Profile checkbox: select or manage tag clouds (or admin). view_tag_clouds is not enough.
     def can_configure_untagged?(user = User.current)
       return false unless user&.logged?
       return true if user.admin?
 
-      %i[view_tag_clouds select_tag_clouds manage_tag_clouds].any? do |permission|
+      %i[select_tag_clouds manage_tag_clouds].any? do |permission|
         user.allowed_to?(permission, nil, global: true)
       end
     rescue StandardError
+      false
+    end
+
+    # Drop stored master + per-cloud untagged flags when the user no longer has management rights.
+    def revoke_untagged_if_unauthorized!(user)
+      return false unless user&.logged?
+      return false if can_configure_untagged?(user)
+
+      changed = false
+      if table_available? && column_names.include?('show_untagged')
+        rec = stored_for(user)
+        if rec && !rec[:show_untagged].nil? && ActiveModel::Type::Boolean.new.cast(rec[:show_untagged])
+          rec.show_untagged = false
+          rec.save
+          changed = true
+        end
+      end
+      changed = true if TagCloudPreference.clear_untagged_for_user!(user)
+      changed
+    rescue StandardError => e
+      Rails.logger.warn("[redmineup_tags] revoke_untagged: #{e.class}: #{e.message}") if defined?(Rails)
       false
     end
 
@@ -60,6 +84,11 @@ class TagCloudUserPreference < ActiveRecord::Base
     def save_display!(user, attrs = {})
       return false unless user&.logged?
       return false unless table_available?
+
+      unless can_configure_untagged?(user)
+        revoke_untagged_if_unauthorized!(user)
+        attrs = attrs.except(:show_untagged)
+      end
 
       rec = find_or_initialize_by(user_id: user.id)
       if attrs.key?(:show_count)
