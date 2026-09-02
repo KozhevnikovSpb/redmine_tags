@@ -419,6 +419,7 @@ class TagCloudsController < ApplicationController
       :visibility,
       :tag_filter,
       :include_subprojects,
+      :show_untagged,
       :status_operator,
       :version_operator,
       :tracker_operator,
@@ -439,6 +440,11 @@ class TagCloudsController < ApplicationController
     raw[:status_filter] = Array(raw[:status_filter])
     raw[:version_filter] = Array(raw[:version_filter])
     raw[:tracker_filter] = Array(raw[:tracker_filter])
+    if TagCloud.column_names.include?('show_untagged')
+      raw[:show_untagged] = ActiveModel::Type::Boolean.new.cast(raw.fetch(:show_untagged, false))
+    else
+      raw.delete(:show_untagged)
+    end
     if force_without_operators || !TagCloud.operator_columns?
       raw.delete(:status_operator)
       raw.delete(:version_operator)
