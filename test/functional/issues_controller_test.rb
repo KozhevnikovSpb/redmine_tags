@@ -220,7 +220,7 @@ class IssuesControllerTest < ActionController::TestCase
     assert_response :redirect
 
     assert_equal([@tag.name].sort, Issue.find(1).tag_list.sort)
-    assert_equal([@last_tag.name].sort, Issue.find(2).tag_list.sort) 
+    assert_equal([@last_tag.name].sort, Issue.find(2).tag_list.sort)
 
   ensure
     issue1.tags = []
@@ -331,14 +331,40 @@ class IssuesControllerTest < ActionController::TestCase
     tags = %w(first second)
     compatible_request :get, :index, project_id: 1, set_filter: 1, f: ['issue_tags', ''], op: { issue_tags: '=' }, v: { issue_tags: tags }
     assert_response :success
-    issues_in_list.each { |issue| assert_equal (tags & issue.tag_list), tags }
+    issues_in_list.each { |issue| assert_not_empty (tags & issue.tag_list) }
   end
 
   def test_filter_by_tags_not_equal
     tags = %w(first second)
     compatible_request :get, :index, project_id: 1, set_filter: 1, f: ['issue_tags', ''], op: { issue_tags: '!' }, v: { issue_tags: tags }
     assert_response :success
-    issues_in_list.each { |issue| assert_not_equal (tags & issue.tag_list), tags }
+    issues_in_list.each { |issue| assert_empty (tags & issue.tag_list) }
+  end
+
+  def test_filter_by_tags_equal_is_or_not_and
+    issue_a = Issue.find(1)
+    issue_b = Issue.find(2)
+    issue_a.tag_list = ['alpha_only']
+    issue_a.save!
+    issue_b.tag_list = ['beta_only']
+    issue_b.save!
+
+    compatible_request(
+      :get,
+      :index,
+      project_id: 1,
+      set_filter: 1,
+      f: ['status_id', 'issue_tags', ''],
+      op: { status_id: '*', issue_tags: '=' },
+      v: { issue_tags: %w[alpha_only beta_only] }
+    )
+    assert_response :success
+    subjects = issues_in_list.map(&:subject)
+    assert_includes subjects, issue_a.subject
+    assert_includes subjects, issue_b.subject
+  ensure
+    issue_a.tags = []
+    issue_b.tags = []
   end
 
   def test_get_index_without_project
