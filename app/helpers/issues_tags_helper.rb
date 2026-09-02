@@ -46,27 +46,32 @@ module IssuesTagsHelper
   end
 
   def render_tag_cloud(cloud)
-    tags = TagCloudAggregator.new(
+    aggregator = TagCloudAggregator.new(
       cloud,
       project: @project,
       user: User.current,
       open_only: false
-    ).tags.to_a
-
-    if tags.empty?
-      return content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
-    end
-
-    render_tags_list(
-      tags,
-      show_count: personal_tag_show_count?,
-      open_only: false,
-      style: personal_tag_list_style,
-      tag_cloud: cloud
     )
+    tags = aggregator.tags.to_a
+    counts = cloud_untagged_counts(cloud, aggregator)
+
+    body =
+      if tags.empty?
+        content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
+      else
+        render_tags_list(
+          tags,
+          show_count: personal_tag_show_count?,
+          open_only: false,
+          style: personal_tag_list_style,
+          tag_cloud: cloud
+        )
+      end
+
+    { body: body, counts: counts }
   rescue StandardError => e
     log_tag_sidebar_error(e, "custom cloud #{cloud.id}")
-    content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
+    { body: content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty'), counts: nil }
   end
 
   def render_tags_sidebar
@@ -117,18 +122,20 @@ module IssuesTagsHelper
     end
 
     visible_inherited.each do |cloud|
+      rendered = render_tag_cloud(cloud)
       sections << tag_cloud_section(
-        custom_tag_cloud_title(cloud),
-        render_tag_cloud(cloud),
+        custom_tag_cloud_title(cloud, rendered[:counts]),
+        rendered[:body],
         'sidebar-tag-cloud sidebar-tag-cloud-inherited',
         data: { tag_cloud_id: cloud.id, container: 'inherited' }
       )
     end
 
     visible_local.each do |cloud|
+      rendered = render_tag_cloud(cloud)
       sections << tag_cloud_section(
-        custom_tag_cloud_title(cloud),
-        render_tag_cloud(cloud),
+        custom_tag_cloud_title(cloud, rendered[:counts]),
+        rendered[:body],
         'sidebar-tag-cloud sidebar-tag-cloud-local',
         data: { tag_cloud_id: cloud.id, container: 'local' }
       )
@@ -141,6 +148,14 @@ module IssuesTagsHelper
   end
 
   private
+
+  def cloud_untagged_counts(cloud, aggregator)
+    return nil unless cloud.respond_to?(:show_untagged?) && cloud.show_untagged?
+
+    aggregator.modal_issue_counts
+  rescue StandardError
+    nil
+  end
 
   def system_issues_open_only?
     RedmineupTags.settings['issues_open_only'].to_i == 1
@@ -157,13 +172,55 @@ module IssuesTagsHelper
     safe_join([l(:tags), ' '.html_safe, tag_cloud_letter_marker(:system), ' '.html_safe, scope])
   end
 
-  def custom_tag_cloud_title(cloud)
+  def custom_tag_cloud_title(cloud, counts = nil)
     parts = [h(cloud.name)]
     if @project && cloud.inherited_in?(@project)
       parts << ' '.html_safe
       parts << tag_cloud_letter_marker(:inherited)
     end
+    extra = untagged_issues_caption(cloud, counts)
+    if extra.present?
+      parts << ' '.html_safe
+      parts << extra
+    end
     safe_join(parts)
+  end
+
+  def untagged_issues_caption(cloud, counts)
+    return ''.html_safe unless counts.is_a?(Hash)
+
+    filtered = counts[:filtered].to_i
+    untagged = counts[:untagged].to_i
+    return ''.html_safe if filtered <= 0
+
+    if untagged <= 0
+      content_tag(
+        :span,
+        l(:label_tag_cloud_all_tagged, default: 'all issues are tagged'),
+        class: 'tag-cloud-untagged tag-cloud-untagged-none'
+      )
+    else
+      filters = issue_filters_for_untagged(cloud)
+      path =
+        if @project
+          project_issues_path(@project, link_to_issue_filter_options(filters))
+        else
+          issues_path(link_to_issue_filter_options(filters))
+        end
+      link_to(
+        l(:label_tag_cloud_untagged_count, count: untagged, default: "untagged issues — #{untagged}"),
+        path,
+        class: 'tag-cloud-untagged tag-cloud-untagged-link',
+        title: l(:text_tag_cloud_untagged_link_title, default: 'Open issues that match this cloud and have no tags')
+      )
+    end
+  end
+
+  def issue_filters_for_untagged(cloud)
+    dummy = Struct.new(:name).new('')
+    issue_filters_for_tag_link(dummy, tag_cloud: cloud).map do |name, operator, value|
+      name.to_s == 'issue_tags' ? ['issue_tags', '!*', ''] : [name, operator, value]
+    end
   end
 
   def clear_stale_tag_cloud_preferences!(user, clouds)
