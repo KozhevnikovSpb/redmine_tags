@@ -11,6 +11,11 @@ Plugin ID: :redmineup_tags
 Target: Redmine 7.0.0 / Ruby 3.4 / Rails 8.1
 Version in init.rb: 0.0.5 (Dev)
 
+Boot / schema
+* Zeitwerk: tag_cloud_untagged_patch.rb now defines RedmineupTags::Patches::TagCloudUntaggedPatch
+  so rake redmine:plugins:migrate and Rails boot no longer raise NameError on Redmine 7 / Rails 8
+* tag_clouds.show_untagged is permitted and cast in TagCloudsController#tag_cloud_params
+
 Permissions (iteration 2)
 * Split cloud permissions: view_tag_clouds / select_tag_clouds / manage_tag_clouds
 * No cloud permission → only the default Tags cloud
