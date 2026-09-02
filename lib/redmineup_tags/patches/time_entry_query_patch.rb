@@ -24,8 +24,8 @@ module RedmineupTags
           issues =
             case operator
             when '=', '!'
-              issues.tagged_with(values_for('issue_tags').clone, match_all: true)
-            when '!*'
+              issues.tagged_with(values_for('issue_tags').clone, any: true)
+            when '!'
               issues.joins(:tags).distinct
             else
               issues.joins(:tags).distinct
