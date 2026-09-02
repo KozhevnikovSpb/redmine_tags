@@ -86,7 +86,8 @@ class TagCloudPreferencesController < ApplicationController
 
   def untagged_column_available?
     TagCloudPreference.column_names.include?('show_untagged') &&
-      TagCloudUserPreference.show_untagged?(User.current)
+      TagCloudUserPreference.show_untagged?(User.current) &&
+      TagCloud.can_manage?(User.current, @project)
   end
 
   def save_group_preferences!(clouds, order_ids, selected_ids, untagged_ids)
