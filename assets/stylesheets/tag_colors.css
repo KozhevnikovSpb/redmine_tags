@@ -63,10 +63,36 @@
 }
 #sidebar .sidebar-tag-cloud h3 a.tag-cloud-untagged-link { color: #169; }
 #sidebar .sidebar-tag-cloud h3 a.tag-cloud-untagged-link:hover { text-decoration: underline; }
-.tag-cloud-form .tag-cloud-untagged-row { margin: 12px 0 0 0; }
-.tag-cloud-form .tag-cloud-untagged-row label {
-  display: inline;
+
+#select-visible-tag-clouds-form .tag-cloud-untagged-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
   float: none;
-  margin-left: 4px;
+  width: auto;
+  color: #6b7280;
+  font-size: 0.82em;
   font-weight: normal;
+  white-space: nowrap;
+  cursor: pointer;
+}
+#select-visible-tag-clouds-form .tag-cloud-untagged-option input[type="checkbox"] {
+  margin: 0;
+}
+#select-visible-tag-clouds-form .tag-clouds-visibility-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+#select-visible-tag-clouds-form .tag-clouds-visibility-buttons-left,
+#select-visible-tag-clouds-form .tag-clouds-visibility-buttons-right {
+  display: inline-flex;
+  align-items: center;
+}
+#select-visible-tag-clouds-form .tag-clouds-visibility-buttons-left input {
+  margin-left: 0;
 }
