@@ -34,7 +34,6 @@ module RedmineupTags
         new(verbose: verbose).ensure_user_display_prefs_table!
       end
 
-      # Create any missing plugin tables / columns. Never drops data.
       def ensure_missing_tables!(verbose: false)
         new(verbose: verbose).ensure_missing_tables!
       end
@@ -90,9 +89,22 @@ module RedmineupTags
         @connection.add_column :tag_clouds, col, :string, default: '*', null: false
         added = true
       end
+      ensure_show_untagged_column!
       added
     rescue StandardError => e
       log "WARNING: ensure_operator_columns: #{e.class}: #{e.message}"
+      false
+    end
+
+    def ensure_show_untagged_column!
+      return false unless table?(:tag_clouds)
+      return true if column?(:tag_clouds, :show_untagged)
+
+      log 'ADD COLUMN tag_clouds.show_untagged'
+      @connection.add_column :tag_clouds, :show_untagged, :boolean, default: false, null: false
+      true
+    rescue StandardError => e
+      log "WARNING: show_untagged: #{e.class}: #{e.message}"
       false
     end
 
@@ -127,25 +139,7 @@ module RedmineupTags
       end
       if table?(:tag_clouds)
         cols = @connection.columns(:tag_clouds).map(&:name)
-        legacy = (%w[project_id position is_system] & cols)
-        needed = (%w[tag_filter include_subprojects owner_id visibility name visible_by_default] + OPERATOR_COLUMNS - cols)
         log "  tag_clouds columns: #{cols.join(', ')}"
-        log "  tag_clouds legacy left: #{legacy.empty? ? 'none' : legacy.join(', ')}"
-        log "  tag_clouds missing: #{needed.empty? ? 'none' : needed.join(', ')}"
-      end
-      if table?(:tag_cloud_preferences)
-        cols = @connection.columns(:tag_cloud_preferences).map(&:name)
-        log "  preferences columns: #{cols.join(', ')}"
-      end
-      if table?(:tag_cloud_user_preferences)
-        cols = @connection.columns(:tag_cloud_user_preferences).map(&:name)
-        log "  user display pref columns: #{cols.join(', ')}"
-      end
-      if table?(:tags)
-        log "  tags count: #{safe_count('tags')}"
-      end
-      if table?(:taggings)
-        log "  taggings count: #{safe_count('taggings')}"
       end
     end
 
@@ -242,6 +236,7 @@ module RedmineupTags
           t.boolean :tag_filter, null: false, default: false
           t.boolean :include_subprojects, null: false, default: false
           t.boolean :visible_by_default, null: false, default: true
+          t.boolean :show_untagged, null: false, default: false
           t.bigint  :owner_id
           t.string  :visibility, null: false, default: 'all'
           t.bigint  :created_by_id
@@ -306,6 +301,7 @@ module RedmineupTags
       end
 
       ensure_operator_columns!
+      ensure_show_untagged_column!
       ensure_user_display_prefs_table!
     end
 
