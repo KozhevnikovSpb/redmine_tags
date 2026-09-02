@@ -184,8 +184,7 @@ module IssuesTagsHelper
     scope = content_tag(
       :span,
       open_only ? l(:label_system_tag_cloud_open_only) : l(:label_system_tag_cloud_all),
-      class: 'tag-cloud-system-scope',
-      title: open_only ? l(:text_system_tag_cloud_open_only_title) : l(:text_system_tag_cloud_all_title)
+      class: 'tag-cloud-system-scope'
     )
     safe_join([l(:tags), ' '.html_safe, tag_cloud_letter_marker(:system), ' '.html_safe, scope])
   end
@@ -226,7 +225,7 @@ module IssuesTagsHelper
           issues_path(link_to_issue_filter_options(filters))
         end
       link_to(
-        l(:label_tag_cloud_untagged_count, count: untagged, default: "untagged issues — #{untagged}"),
+        l(:label_tag_cloud_untagged_count, count: untagged, default: "untagged issues - #{untagged}"),
         path,
         class: 'tag-cloud-untagged tag-cloud-untagged-link'
       )
