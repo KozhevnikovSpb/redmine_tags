@@ -10,6 +10,15 @@ class TagCloud
   end
 end
 
+Rails.application.config.to_prepare do
+  next unless defined?(TagCloudsController)
+
+  patch = RedmineupTags::Patches::TagCloudsControllerUntaggedPatch
+  unless TagCloudsController.included_modules.include?(patch)
+    TagCloudsController.prepend patch
+  end
+end
+
 module RedmineupTags
   module Patches
     module TagCloudsControllerUntaggedPatch
@@ -23,9 +32,4 @@ module RedmineupTags
       end
     end
   end
-end
-
-if defined?(TagCloudsController) &&
-   !TagCloudsController.included_modules.include?(RedmineupTags::Patches::TagCloudsControllerUntaggedPatch)
-  TagCloudsController.prepend RedmineupTags::Patches::TagCloudsControllerUntaggedPatch
 end
