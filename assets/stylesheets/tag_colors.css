@@ -52,3 +52,21 @@
 .tags-cloud .tag-nube-8 .tag-label {
   font-size: 1em;
 }
+
+#sidebar .sidebar-tag-cloud h3 .tag-cloud-untagged {
+  margin-left: 8px;
+  color: #6b7280;
+  font-size: 0.78em;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+#sidebar .sidebar-tag-cloud h3 a.tag-cloud-untagged-link { color: #169; }
+#sidebar .sidebar-tag-cloud h3 a.tag-cloud-untagged-link:hover { text-decoration: underline; }
+.tag-cloud-form .tag-cloud-untagged-row { margin: 12px 0 0 0; }
+.tag-cloud-form .tag-cloud-untagged-row label {
+  display: inline;
+  float: none;
+  margin-left: 4px;
+  font-weight: normal;
+}
