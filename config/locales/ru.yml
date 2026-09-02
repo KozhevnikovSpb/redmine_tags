@@ -116,6 +116,11 @@ ru:
   label_tag_cloud_issues_with_filter: По фильтру
   label_tag_cloud_issues_without_filter: Без тегов
   label_tag_cloud_issues_unit: задач
+  label_tag_cloud_show_untagged: Показывать задачи без тегов
+  text_tag_cloud_show_untagged_hint: Рядом с названием облака показывается фильтр задач, подходящих под облако и не имеющих тегов.
+  label_tag_cloud_untagged_count: "без тегов — %{count}"
+  label_tag_cloud_all_tagged: все задачи затегированы
+  text_tag_cloud_untagged_link_title: Открыть задачи этого облака без тегов
 
   label_select_visible_tag_clouds: Выбрать видимые облака тегов
   label_tag_clouds_visibility: Видимые облака тегов
@@ -142,6 +147,7 @@ ru:
         tag_filter: Белый список тегов
         include_subprojects: Подпроекты
         visible_by_default: Видимо по умолчанию
+        show_untagged: Показывать задачи без тегов
     errors:
       models:
         tag_cloud:
