@@ -22,6 +22,7 @@ module RedmineupTags
     class ViewsLayoutsHook < Redmine::Hook::ViewListener
       render_on :view_layouts_base_html_head, partial: 'tags/additional_assets'
       render_on :view_layouts_base_body_bottom, partial: 'tags/select2_transformation_rules'
+      render_on :view_layouts_base_body_bottom, partial: 'roles/tag_cloud_permission_sync'
     end
   end
 end
