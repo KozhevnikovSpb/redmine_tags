@@ -99,7 +99,11 @@ module TagsHelper
       add_tags(style, tags, content, item_el, options)
     end
 
-    content_tag(list_el, content, class: 'tags-cloud', style: (style == :simple_cloud ? 'text-align: left;' : ''))
+    wrap_class = ['tags-cloud']
+    wrap_class << 'tags-cloud-simple' if style == :simple_cloud || options[:show_count]
+    wrap_class << 'tags-cloud-weighted' if style == :cloud && !options[:show_count]
+    wrap_style = style == :simple_cloud ? 'text-align: left;' : nil
+    content_tag(list_el, content, class: wrap_class.join(' '), style: wrap_style)
   end
 
   def link_to_issue_filter(title, filters, extra = {})
@@ -307,9 +311,20 @@ module TagsHelper
   def add_tags(style, tags, content, item_el, options)
     items = []
     tag_cloud tags, (1..8).to_a do |tag, weight|
-      items << content_tag(item_el, render_issue_tag_link(tag, options),
-                           class: "tag-nube-#{weight}",
-                           style: (style == :simple_cloud ? 'font-size: 1em;' : ''))
+      item_style =
+        if style == :simple_cloud || options[:show_count]
+          'font-size: 1em;'
+        elsif style == :cloud
+          format('font-size: %.2fem;', 0.80 + (weight - 1) * 0.114)
+        else
+          ''
+        end
+      items << content_tag(
+        item_el,
+        render_issue_tag_link(tag, options),
+        class: "tag-nube-#{weight}",
+        style: item_style
+      )
     end
     separator = style == :simple_cloud ? tag_separator : ' '
     content << safe_join(items, separator)
