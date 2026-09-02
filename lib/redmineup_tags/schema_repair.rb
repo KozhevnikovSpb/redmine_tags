@@ -132,6 +132,7 @@ module RedmineupTags
         t.bigint :user_id, null: false
         t.boolean :show_count
         t.boolean :show_weight
+        t.boolean :show_untagged
         t.timestamps
       end
       unless index?(:tag_cloud_user_preferences, :user_id, unique: true)
@@ -157,6 +158,10 @@ module RedmineupTags
       if table?(:tag_cloud_preferences)
         cols = @connection.columns(:tag_cloud_preferences).map(&:name)
         log "  tag_cloud_preferences columns: #{cols.join(', ')}"
+      end
+      if table?(:tag_cloud_user_preferences)
+        cols = @connection.columns(:tag_cloud_user_preferences).map(&:name)
+        log "  tag_cloud_user_preferences columns: #{cols.join(', ')}"
       end
     end
 
@@ -325,7 +330,7 @@ module RedmineupTags
     end
 
     def ensure_user_display_pref_columns!
-      %i[show_count show_weight].each do |col|
+      %i[show_count show_weight show_untagged].each do |col|
         next if column?(:tag_cloud_user_preferences, col)
 
         log "ADD COLUMN tag_cloud_user_preferences.#{col}"
