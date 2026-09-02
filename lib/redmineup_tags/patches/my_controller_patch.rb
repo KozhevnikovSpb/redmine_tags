@@ -17,8 +17,12 @@ module RedmineupTags
         return unless params.key?(:tag_display)
         return unless response.redirect? || performed?
 
-        show_count = params.dig(:tag_display, :show_count)
-        TagCloudUserPreference.save_count_mode!(User.current, show_count)
+        attrs = {}
+        attrs[:show_count] = params.dig(:tag_display, :show_count) if params[:tag_display].key?(:show_count)
+        if params[:tag_display].key?(:show_untagged) && TagCloudUserPreference.can_configure_untagged?(User.current)
+          attrs[:show_untagged] = params.dig(:tag_display, :show_untagged)
+        end
+        TagCloudUserPreference.save_display!(User.current, attrs) if attrs.any?
       rescue StandardError => e
         Rails.logger.warn("[redmineup_tags] my account tag display: #{e.class}: #{e.message}")
       end
