@@ -22,7 +22,7 @@ Boot / schema
 Personal untagged caption
 * Per-user per-cloud checkbox in Select visible tag clouds (not in the cloud form)
 * Stored in tag_cloud_preferences.show_untagged; default off
-* Only that user sees «untagged issues — N» / «без тегов — N» next to the cloud title
+* Only that user sees «untagged issues - N» / «без тегов - N» next to the cloud title
 * Reset deletes preference rows → visibility, order and untagged checkboxes all revert
 * Click opens the issue list with the cloud filters plus issue_tags !*
 * If matching issues exist but all are tagged → «all issues are tagged» / «все задачи затегированы»
@@ -30,15 +30,16 @@ Personal untagged caption
 Personal untagged master switch (My account)
 * My account → Tags: «Show untagged issues» next to «Show issue counts»
 * Master off (default) hides modal Untagged column and all sidebar captions
-* Master on + select_tag_clouds → modal column, captions only for checked clouds
-* Master on + manage_tag_clouds without select → no modal; captions on every visible custom cloud
-* Profile checkbox is shown only for admin or select_tag_clouds / manage_tag_clouds
-* view_tag_clouds alone does not show the profile checkbox and does not show captions
-* create_tags / edit_tags alone do not show the untagged profile checkbox
-* Losing select and manage (keeping view or nothing) clears the stored master switch
-  and all per-cloud show_untagged flags on the next account/sidebar read
+* Profile checkbox is shown only for manage_tag_clouds or admin
+* manage_tag_clouds includes select_tag_clouds (modal + personal order/visibility)
+* Losing manage clears the stored master switch and per-cloud show_untagged flags
 * Show issue counts stays available to every logged-in user (system + custom clouds)
 * Modal Reset does not clear the My account master switch
+
+Form copy
+* Em dash replaced with hyphen in form texts, hints and untagged captions
+* Hints shortened on My account, cloud form, plugin General and modal
+* Tooltips removed (modal drag handle, S/R markers, system-scope title)
 
 Permissions (iteration 2)
 * Split cloud permissions: view_tag_clouds / select_tag_clouds / manage_tag_clouds
