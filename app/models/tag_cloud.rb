@@ -162,8 +162,6 @@ class TagCloud < ActiveRecord::Base
     authored_by?(user)
   end
 
-  # context: :project — project sidebar / project settings
-  # context: :admin  — global plugin settings list
   def listed_in_settings_for?(user, project: nil, context: :project)
     return false if user.nil?
 
@@ -336,6 +334,14 @@ class TagCloud < ActiveRecord::Base
 
   def tag_operator_column?
     self.class.tag_operator_column?
+  end
+
+  def show_untagged?
+    return false unless self.class.column_names.include?('show_untagged')
+
+    ActiveModel::Type::Boolean.new.cast(self[:show_untagged])
+  rescue StandardError
+    false
   end
 
   private
