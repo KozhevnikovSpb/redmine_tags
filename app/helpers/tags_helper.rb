@@ -260,15 +260,13 @@ module TagsHelper
       content_tag(
         :span,
         l(:label_tag_cloud_badge_system),
-        class: 'tag-cloud-marker tag-cloud-marker-system',
-        title: l(:label_tag_cloud_badge_system_title)
+        class: 'tag-cloud-marker tag-cloud-marker-system'
       )
     when :inherited
       content_tag(
         :span,
         l(:label_tag_cloud_badge_inherited),
-        class: 'tag-cloud-marker tag-cloud-marker-inherited',
-        title: l(:label_tag_cloud_badge_inherited_title)
+        class: 'tag-cloud-marker tag-cloud-marker-inherited'
       )
     else
       ''.html_safe
@@ -281,7 +279,7 @@ module TagsHelper
     op_label = tag_cloud_operator_label(operator)
     text =
       if TagCloud::VALUE_OPERATORS.include?(operator.to_s) || TagCloud::TAG_VALUE_OPERATORS.include?(operator.to_s)
-        names = values.presence || ['—']
+        names = values.presence || ['-']
         "#{l(label)} #{op_label} #{names.join(', ')}"
       else
         "#{l(label)}: #{op_label}"
