@@ -1,5 +1,6 @@
+<% can_show_untagged = local_assigns.fetch(:can_show_untagged) { TagCloudPreference.column_names.include?('show_untagged') } %>
 <li class="tag-cloud-row tag-cloud-row-system" data-id="system">
-  <label for="system-tag-cloud-visible">
+  <label class="tag-cloud-visible-option" for="system-tag-cloud-visible">
     <%= check_box_tag 'system_tag_cloud_visible',
                       '1',
                       @system_visible,
@@ -9,5 +10,8 @@
       <%= tag_cloud_letter_marker(:system) %>
     </span>
   </label>
+  <% if can_show_untagged %>
+    <span class="tag-cloud-untagged-option tag-cloud-untagged-option-empty" aria-hidden="true"></span>
+  <% end %>
   <span class="tag-cloud-drag-handle-spacer" aria-hidden="true"></span>
 </li>

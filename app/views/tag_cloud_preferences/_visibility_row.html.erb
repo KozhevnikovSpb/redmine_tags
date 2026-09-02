@@ -1,9 +1,9 @@
 <% inherited = local_assigns.fetch(:inherited, false) %>
+<% can_show_untagged = local_assigns.fetch(:can_show_untagged) { TagCloudPreference.column_names.include?('show_untagged') } %>
 <% order_name = inherited ? 'inherited_tag_cloud_order[]' : 'tag_cloud_order[]' %>
-<% can_show_untagged = TagCloudPreference.column_names.include?('show_untagged') %>
 <% untagged_on = can_show_untagged && Array(@untagged_ids).include?(cloud.id) %>
 <li class="tag-cloud-row<%= ' inherited' if inherited %>" data-id="<%= cloud.id %>">
-  <label for="visible_tag_cloud_<%= cloud.id %>">
+  <label class="tag-cloud-visible-option" for="visible_tag_cloud_<%= cloud.id %>">
     <%= check_box_tag 'visible_tag_cloud_ids[]',
                       cloud.id,
                       @visible_ids.include?(cloud.id),
@@ -20,7 +20,6 @@
                         untagged_on,
                         id: "untagged_tag_cloud_#{cloud.id}",
                         title: l(:text_tag_cloud_show_untagged_hint) %>
-      <span><%= l(:label_tag_cloud_show_untagged_short) %></span>
     </label>
   <% end %>
   <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">

@@ -128,7 +128,9 @@ $(function () {
     });
 
     function visibleTagCloudBoxes() {
-        return $('#select-visible-tag-clouds-form .tag-clouds-visibility-list input[type="checkbox"]');
+        return $('#select-visible-tag-clouds-form').find(
+            'input[name="visible_tag_cloud_ids[]"], input[name="system_tag_cloud_visible"]'
+        );
     }
 
     function syncTagCloudsCheckAll() {
@@ -148,7 +150,7 @@ $(function () {
         $(this).prop('indeterminate', false);
     });
 
-    $(document).on('change', '#select-visible-tag-clouds-form .tag-clouds-visibility-list input[type="checkbox"]', function () {
+    $(document).on('change', '#select-visible-tag-clouds-form input[name="visible_tag_cloud_ids[]"], #select-visible-tag-clouds-form input[name="system_tag_cloud_visible"]', function () {
         syncTagCloudsCheckAll();
     });
 
