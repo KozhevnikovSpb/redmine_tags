@@ -33,7 +33,6 @@ module RedmineupTags
       module InstanceMethods
         def sql_for_issue_tags_field(_field, operator, value)
           none_op = '!' + '*'
-          any_op = '*'
           case operator
           when '=', '!'
             issues = Issue.tagged_with(value.clone, any: true)
