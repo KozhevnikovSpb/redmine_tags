@@ -14,7 +14,16 @@ Version in init.rb: 0.0.5 (Dev)
 Boot / schema
 * Zeitwerk: tag_cloud_untagged_patch.rb now defines RedmineupTags::Patches::TagCloudUntaggedPatch
   so rake redmine:plugins:migrate and Rails boot no longer raise NameError on Redmine 7 / Rails 8
-* tag_clouds.show_untagged is permitted and cast in TagCloudsController#tag_cloud_params
+* tag_cloud_preferences.show_untagged is created by migration 007 and SchemaRepair
+  (boot / rake redmineup_tags:ensure_tables / script/extend_database.sh)
+
+Personal untagged caption
+* Per-user per-cloud checkbox in Select visible tag clouds (not in the cloud form)
+* Stored in tag_cloud_preferences.show_untagged; default off
+* Only that user sees «untagged issues — N» / «без тегов — N» next to the cloud title
+* Reset deletes preference rows → visibility, order and untagged checkboxes all revert
+* Click opens the issue list with the cloud filters plus issue_tags !*
+* If matching issues exist but all are tagged → «all issues are tagged» / «все задачи затегированы»
 
 Permissions (iteration 2)
 * Split cloud permissions: view_tag_clouds / select_tag_clouds / manage_tag_clouds
