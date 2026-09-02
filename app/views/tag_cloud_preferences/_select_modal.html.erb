@@ -13,7 +13,7 @@
         <span class="tag-cloud-name"><%= l(:button_check_all) %> / <%= l(:button_uncheck_all) %></span>
       </label>
       <% if can_show_untagged %>
-        <span class="tag-cloud-col-untagged" title="<%= l(:text_tag_cloud_show_untagged_hint) %>">
+        <span class="tag-cloud-col-untagged">
           <%= l(:label_tag_cloud_show_untagged_short) %>
         </span>
       <% end %>
@@ -57,7 +57,6 @@
       <%= submit_tag l(:button_tag_cloud_preferences_reset),
                      name: 'reset_defaults',
                      id: 'tag-clouds-reset-defaults',
-                     title: l(:text_tag_cloud_preferences_reset_title),
                      data: { disable_with: false } %>
     </span>
     <span class="tag-clouds-visibility-buttons-right">

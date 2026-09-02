@@ -18,8 +18,7 @@
       <%= check_box_tag 'untagged_tag_cloud_ids[]',
                         cloud.id,
                         untagged_on,
-                        id: "untagged_tag_cloud_#{cloud.id}",
-                        title: l(:text_tag_cloud_show_untagged_hint) %>
+                        id: "untagged_tag_cloud_#{cloud.id}" %>
     </label>
   <% end %>
   <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
