@@ -1,7 +1,7 @@
 <h3 class="title"><%= l(:label_select_visible_tag_clouds) %></h3>
 
 <%= form_tag(project_tag_cloud_preferences_path(@project), method: :put, id: 'select-visible-tag-clouds-form') do %>
-  <% can_show_untagged = TagCloudPreference.column_names.include?('show_untagged') %>
+  <% can_show_untagged = @show_untagged_column %>
   <div class="box tag-clouds-visibility-box<%= ' has-untagged-col' if can_show_untagged %>">
     <% all_visible = @system_visible && @tag_clouds.all? { |cloud| @visible_ids.include?(cloud.id) } %>
     <div class="tag-cloud-row tag-cloud-row-bulk">

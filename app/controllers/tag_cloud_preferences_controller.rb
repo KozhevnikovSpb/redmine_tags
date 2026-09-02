@@ -13,6 +13,7 @@ class TagCloudPreferencesController < ApplicationController
     @visible_ids = @tag_clouds.select { |c| c.visible_for?(User.current, project: @project) }.map(&:id)
     @untagged_ids = TagCloudPreference.untagged_cloud_ids_for(User.current, @tag_clouds.map(&:id))
     @system_visible = TagCloudPreference.system_visible_for?(User.current, @project)
+    @show_untagged_column = untagged_column_available?
 
     respond_to do |format|
       format.js
@@ -83,13 +84,18 @@ class TagCloudPreferencesController < ApplicationController
     !cloud.author_only?
   end
 
+  def untagged_column_available?
+    TagCloudPreference.column_names.include?('show_untagged') &&
+      TagCloudUserPreference.show_untagged?(User.current)
+  end
+
   def save_group_preferences!(clouds, order_ids, selected_ids, untagged_ids)
     return if clouds.blank?
 
     allowed_ids = clouds.map(&:id)
     ordered = order_ids.select { |id| allowed_ids.include?(id) }.uniq
     ordered += allowed_ids - ordered
-    can_store_untagged = TagCloudPreference.column_names.include?('show_untagged')
+    can_store_untagged = untagged_column_available?
 
     ordered.each_with_index do |cloud_id, index|
       cloud = clouds.find { |c| c.id == cloud_id }

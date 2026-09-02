@@ -149,14 +149,30 @@ module IssuesTagsHelper
 
   private
 
+  def personal_untagged_master_on?
+    TagCloudUserPreference.show_untagged?(User.current)
+  end
+
   def personal_untagged_cloud_ids
     return @personal_untagged_cloud_ids if defined?(@personal_untagged_cloud_ids)
 
     @personal_untagged_cloud_ids = TagCloudPreference.untagged_cloud_ids_for(User.current)
   end
 
+  def show_untagged_caption_for?(cloud)
+    return false unless cloud
+    return false unless personal_untagged_master_on?
+    return false unless TagCloud.can_see_custom_clouds?(User.current, @project)
+
+    if TagCloud.can_select_display?(User.current, @project)
+      personal_untagged_cloud_ids.include?(cloud.id)
+    else
+      true
+    end
+  end
+
   def cloud_untagged_counts(cloud, aggregator)
-    return nil unless cloud && personal_untagged_cloud_ids.include?(cloud.id)
+    return nil unless show_untagged_caption_for?(cloud)
 
     aggregator.modal_issue_counts
   rescue StandardError
@@ -216,8 +232,7 @@ module IssuesTagsHelper
       link_to(
         l(:label_tag_cloud_untagged_count, count: untagged, default: "untagged issues — #{untagged}"),
         path,
-        class: 'tag-cloud-untagged tag-cloud-untagged-link',
-        title: l(:text_tag_cloud_untagged_link_title, default: 'Open issues that match this cloud and have no tags')
+        class: 'tag-cloud-untagged tag-cloud-untagged-link'
       )
     end
   end
