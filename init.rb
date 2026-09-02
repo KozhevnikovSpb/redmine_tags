@@ -27,6 +27,7 @@ Redmine::Plugin.register :redmineup_tags do
 
   # Separate Roles block: Tags and tag clouds.
   # Permission names stay the same for RedmineUP Q&A compatibility.
+  # manage_tag_clouds includes personal display (select) plus CRUD.
   project_module :redmineup_tags do
     permission :create_tags, {}
     permission :edit_tags, {}
@@ -37,7 +38,8 @@ Redmine::Plugin.register :redmineup_tags do
       tag_cloud_preferences: %i[toggle edit update]
     }
     permission :manage_tag_clouds, {
-      tag_clouds: %i[index new create edit update destroy reorder preview]
+      tag_clouds: %i[index new create edit update destroy reorder preview],
+      tag_cloud_preferences: %i[toggle edit update]
     }, require: :member
   end
 

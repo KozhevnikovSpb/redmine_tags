@@ -1,0 +1,29 @@
+<% if controller.controller_name == 'roles' && %w[new edit create update].include?(controller.action_name) %>
+<%= javascript_tag nonce: true do %>
+(function() {
+  var manage = document.querySelector('input[type="checkbox"][value="manage_tag_clouds"]');
+  var select = document.querySelector('input[type="checkbox"][value="select_tag_clouds"]');
+  if (!manage || !select) return;
+
+  function sync() {
+    if (manage.checked) {
+      select.checked = true;
+      select.disabled = true;
+    } else {
+      select.disabled = false;
+    }
+  }
+
+  manage.addEventListener('change', sync);
+  sync();
+
+  var form = manage.form;
+  if (!form) return;
+  form.addEventListener('submit', function() {
+    if (!manage.checked) return;
+    select.disabled = false;
+    select.checked = true;
+  });
+})();
+<% end %>
+<% end %>

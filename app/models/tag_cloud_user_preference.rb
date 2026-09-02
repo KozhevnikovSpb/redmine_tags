@@ -44,19 +44,17 @@ class TagCloudUserPreference < ActiveRecord::Base
       false
     end
 
-    # Profile checkbox: select or manage tag clouds (or admin). view_tag_clouds is not enough.
+    # Profile checkbox is a manage-tag-clouds function (or admin). view/select are not enough.
     def can_configure_untagged?(user = User.current)
       return false unless user&.logged?
       return true if user.admin?
 
-      %i[select_tag_clouds manage_tag_clouds].any? do |permission|
-        user.allowed_to?(permission, nil, global: true)
-      end
+      user.allowed_to?(:manage_tag_clouds, nil, global: true)
     rescue StandardError
       false
     end
 
-    # Drop stored master + per-cloud untagged flags when the user no longer has management rights.
+    # Drop stored master + per-cloud untagged flags when the user no longer has manage rights.
     def revoke_untagged_if_unauthorized!(user)
       return false unless user&.logged?
       return false if can_configure_untagged?(user)
