@@ -90,6 +90,7 @@ module RedmineupTags
         added = true
       end
       ensure_show_untagged_column!
+      ensure_preference_show_untagged_column!
       added
     rescue StandardError => e
       log "WARNING: ensure_operator_columns: #{e.class}: #{e.message}"
@@ -105,6 +106,18 @@ module RedmineupTags
       true
     rescue StandardError => e
       log "WARNING: show_untagged: #{e.class}: #{e.message}"
+      false
+    end
+
+    def ensure_preference_show_untagged_column!
+      return false unless table?(:tag_cloud_preferences)
+      return true if column?(:tag_cloud_preferences, :show_untagged)
+
+      log 'ADD COLUMN tag_cloud_preferences.show_untagged'
+      @connection.add_column :tag_cloud_preferences, :show_untagged, :boolean, default: false, null: false
+      true
+    rescue StandardError => e
+      log "WARNING: preference show_untagged: #{e.class}: #{e.message}"
       false
     end
 
@@ -140,6 +153,10 @@ module RedmineupTags
       if table?(:tag_clouds)
         cols = @connection.columns(:tag_clouds).map(&:name)
         log "  tag_clouds columns: #{cols.join(', ')}"
+      end
+      if table?(:tag_cloud_preferences)
+        cols = @connection.columns(:tag_cloud_preferences).map(&:name)
+        log "  tag_cloud_preferences columns: #{cols.join(', ')}"
       end
     end
 
@@ -291,6 +308,7 @@ module RedmineupTags
           t.bigint  :user_id, null: false
           t.boolean :visible, null: false, default: true
           t.integer :position
+          t.boolean :show_untagged, null: false, default: false
           t.timestamps
         end
         @connection.add_index :tag_cloud_preferences, %i[tag_cloud_id user_id],
@@ -302,6 +320,7 @@ module RedmineupTags
 
       ensure_operator_columns!
       ensure_show_untagged_column!
+      ensure_preference_show_untagged_column!
       ensure_user_display_prefs_table!
     end
 
