@@ -34,8 +34,8 @@ module RedmineupTags
         def sql_for_issue_tags_field(_field, operator, value)
           case operator
           when '=', '!'
-            issues = Issue.tagged_with(value.clone)
-          when '!*'
+            issues = Issue.tagged_with(value.clone, any: true)
+          when '!'
             issues = Issue.joins(:tags).uniq
           else
             issues = Issue.tagged_with(Redmineup::Tag.all.map(&:to_s), any: true)

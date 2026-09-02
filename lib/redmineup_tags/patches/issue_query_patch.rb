@@ -33,7 +33,7 @@ module RedmineupTags
               # is (=)  -> issues that have any of the selected tags
               # is not (!) -> issues that have none of the selected tags (NOT IN)
               issues.tagged_with(values_for('issue_tags').clone, any: true)
-            when '!'
+            when '!*', '*'
               issues.joins(:tags).distinct
             else
               issues.joins(:tags).distinct
