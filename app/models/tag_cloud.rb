@@ -105,7 +105,7 @@ class TagCloud < ActiveRecord::Base
     return false unless user
     return true if user.admin?
     return false unless project
-    user.allowed_to?(:select_tag_clouds, project)
+    user.allowed_to?(:select_tag_clouds, project) || user.allowed_to?(:manage_tag_clouds, project)
   end
 
   def self.can_manage?(user, project)
