@@ -31,10 +31,12 @@ Personal untagged master switch (My account)
 * My account → Tags: «Show untagged issues» next to «Show issue counts»
 * Master off (default) hides modal Untagged column and all sidebar captions
 * Master on + select_tag_clouds → modal column, captions only for checked clouds
-* Master on + view/manage without select → no modal; captions on every visible custom cloud
-* Profile checkbox is shown only when the user can see custom clouds somewhere
-  (admin, or view_tag_clouds / select_tag_clouds / manage_tag_clouds on any role)
+* Master on + manage_tag_clouds without select → no modal; captions on every visible custom cloud
+* Profile checkbox is shown only for admin or select_tag_clouds / manage_tag_clouds
+* view_tag_clouds alone does not show the profile checkbox and does not show captions
 * create_tags / edit_tags alone do not show the untagged profile checkbox
+* Losing select and manage (keeping view or nothing) clears the stored master switch
+  and all per-cloud show_untagged flags on the next account/sidebar read
 * Show issue counts stays available to every logged-in user (system + custom clouds)
 * Modal Reset does not clear the My account master switch
 
