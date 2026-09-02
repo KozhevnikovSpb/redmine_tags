@@ -1,0 +1,5 @@
+<p class="tag-cloud-untagged-row">
+  <%= f.check_box :show_untagged, {}, '1', '0' %>
+  <%= f.label :show_untagged, l(:label_tag_cloud_show_untagged, default: 'Show untagged issues') %>
+</p>
+<p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_show_untagged_hint, default: 'Shows a filter next to the cloud name for issues that match this cloud and have no tags.') %></p>
