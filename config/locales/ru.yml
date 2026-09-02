@@ -17,6 +17,8 @@ ru:
   label_tag_display_preferences: Теги
   label_tag_display_show_count: Показывать количество задач
   text_tag_display_show_count_hint: Галочка включена — у тегов число задач. Снята — вес тега (размер шрифта по частоте).
+  label_tag_display_show_untagged: Показывать задачи без тегов
+  text_tag_display_show_untagged_hint: Галочка включена — у пользовательских облаков может появиться подпись без тегов. Снята — подпись скрыта. Конкретные облака выбираются в «Выбрать видимые облака», если есть право управления отображением.
 
   issue_tags_sidebar_none: Не показывать
   issue_tags_sidebar_list: Список
