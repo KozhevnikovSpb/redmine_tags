@@ -174,6 +174,7 @@ REDMINEUP_TAGS_REQUIRED_FILES = [
   'redmineup_tags/hooks/views_reports_hook',
   'redmineup_tags/patches/project_patch',
   'redmineup_tags/patches/my_controller_patch',
+  'redmineup_tags/patches/tag_cloud_untagged_patch',
   'redmineup_tags/schema_repair'
 ]
 
