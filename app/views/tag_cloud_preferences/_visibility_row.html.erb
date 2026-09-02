@@ -21,7 +21,7 @@
                         id: "untagged_tag_cloud_#{cloud.id}" %>
     </label>
   <% end %>
-  <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
+  <span class="sort-handle tag-cloud-drag-handle">
     <%= sprite_icon('reorder', '') %>
   </span>
   <%= hidden_field_tag order_name, cloud.id, class: 'tag-cloud-order-input', id: nil %>
