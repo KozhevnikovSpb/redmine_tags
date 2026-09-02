@@ -41,6 +41,14 @@ Form copy
 * Hints shortened on My account, cloud form, plugin General and modal
 * Tooltips removed (modal drag handle, S/R markers, system-scope title)
 
+Issue list Tags filter
+* Tags is (=) / is not (!) with several values is OR, same as Status / Tracker / Version
+* Was match_all (AND: issue must have every selected tag)
+* Now tagged_with any: true (issue matches if it has at least one selected tag)
+* is not excludes issues that have any of the selected tags
+* Same change in Time log filter and Agile board filter
+* Field name stays issue_tags for RedmineUP Q&A
+
 Permissions (iteration 2)
 * Split cloud permissions: view_tag_clouds / select_tag_clouds / manage_tag_clouds
 * No cloud permission → only the default Tags cloud
