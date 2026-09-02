@@ -4,12 +4,13 @@ Redmine Tags plugin - Tags board plugin for redmine
 Copyright (C) 2011-2026 Kirill Bezrukov (RedmineUP)
 http://www.redmineup.com/
 
-== 2026-08-23 v0.0.5
+== 2026-09-02 v0.0.5
 
-Development start after 0.0.4 Stable freeze.
-Plugin ID: :redmineup_tags
+Stable freeze. Plugin ID: :redmineup_tags
 Target: Redmine 7.0.0 / Ruby 3.4 / Rails 8.1
-Version in init.rb: 0.0.5 (Dev)
+Version in init.rb: 0.0.5 (Stable)
+Git tag: v0.0.5 (to be created by maintainer)
+Docs: doc/RELEASE_0.0.5.md
 
 Boot / schema
 * Zeitwerk: tag_cloud_untagged_patch.rb now defines RedmineupTags::Patches::TagCloudUntaggedPatch
@@ -48,6 +49,7 @@ Issue list Tags filter
 * is not excludes issues that have any of the selected tags
 * Same change in Time log filter and Agile board filter
 * Field name stays issue_tags for RedmineUP Q&A
+* Functional tests updated for OR; added test_filter_by_tags_equal_is_or_not_and
 
 Permissions (iteration 2)
 * Split cloud permissions: view_tag_clouds / select_tag_clouds / manage_tag_clouds
@@ -102,10 +104,12 @@ UI
 * Hide core Apply button on plugin settings list tabs (Manage tags, Tag Clouds); keep it on General
 
 Schema notes
-* rake redmine:plugins:migrate NAME=redmineup_tags (migration 003) or redmineup_tags:repair_schema, then restart
+* rake redmine:plugins:migrate NAME=redmineup_tags (migrations 003, 007, 008)
+  or redmineup_tags:repair_schema / ensure_tables, then restart
 
 Docs
 * doc/TEST_V005_CLOUD_PERMISSIONS.md
+* doc/RELEASE_0.0.5.md
 
 == 2026-08-22 v0.0.4
 
