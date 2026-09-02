@@ -10,15 +10,15 @@ en:
   sidebar_tag_list_view: Display tags on sidebar as
   issues_show_count: Display amount of issues
   issues_open_only: Display open issues only
-  text_issues_open_only_hint: Applies only to the default Tags cloud. Custom tag clouds use their own status filter (Any = all issues, including closed).
+  text_issues_open_only_hint: Only the default Tags cloud. Custom clouds use their own status filter.
   issues_sort_by: Sort tags by
   use_colors: Use colors
 
   label_tag_display_preferences: Tags
   label_tag_display_show_count: Show issue counts
-  text_tag_display_show_count_hint: Checked — tags show the number of issues. Unchecked — tags use weight (font size by frequency).
+  text_tag_display_show_count_hint: On - issue counts. Off - tag weight (font size).
   label_tag_display_show_untagged: Show untagged issues
-  text_tag_display_show_untagged_hint: Shown only with Manage tag cloud display or Manage tag clouds. Checked — custom clouds can show a no-tags filter next to the name. Pick clouds in Select visible tag clouds if you can manage display.
+  text_tag_display_show_untagged_hint: Adds a no-tags link next to selected custom clouds.
 
   issue_tags_sidebar_none: None
   issue_tags_sidebar_list: List
@@ -72,7 +72,7 @@ en:
   label_tag_cloud_visible_by_default: Visible by default
   label_tag_cloud_include_subprojects: Subprojects
   label_tag_cloud_show_in_subprojects: Shown in subprojects
-  text_tag_cloud_include_subprojects_hint: Only controls whether this cloud appears in subproject sidebars. Tag counts always follow the issues list (including subprojects when Redmine «Display subprojects issues» is enabled).
+  text_tag_cloud_include_subprojects_hint: Show this cloud on subproject sidebars. Counts follow the issues list.
   label_tag_cloud_position: Position
   label_tag_cloud_system: system
   label_tag_cloud_system_cloud: System cloud
@@ -89,7 +89,7 @@ en:
   label_tag_cloud_drag_to_reorder: Drag to change display order
   button_collapse: Collapse
   text_tag_cloud_filters_empty_means_all: empty = Any / all
-  text_tag_clouds_permissions_info: "Permissions (Roles and permissions → Tags and tag clouds): View tag clouds — see custom clouds and a read-only project list (no author-only clouds). Manage tag cloud display — personal sidebar show/hide and order. Manage tag clouds — create/edit/delete (requires membership). Author-only clouds are hidden from these roles; only a full Redmine administrator can list and manage them from plugin settings."
+  text_tag_clouds_permissions_info: "Permissions (Roles → Tags and tag clouds): View - custom clouds and a read-only list. Manage display - personal show/hide and order. Manage tag clouds - create/edit/delete (membership required). Author-only clouds are listed only by a full Redmine administrator in plugin settings."
   notice_tag_cloud_created: Tag cloud was successfully created.
   notice_tag_cloud_updated: Tag cloud was successfully updated.
   notice_tag_cloud_deleted: Tag cloud was successfully deleted.
@@ -100,18 +100,18 @@ en:
   label_tag_cloud_visibility_owner: Author only
   label_tag_cloud_visibility_roles: Selected roles
   label_tag_cloud_owner: Author
-  text_tag_cloud_visibility_hint: Controls who can see this cloud in the issues sidebar (before personal preference). Users with «Manage tag cloud display» can override visibility for themselves, except author-only clouds that belong to another user.
-  text_tag_cloud_roles_required: Select at least one role. Users must have one of these roles in the project to see the cloud.
+  text_tag_cloud_visibility_hint: Who sees the cloud in the sidebar. Users with Manage tag clouds can override this for themselves, except another user's author-only cloud.
+  text_tag_cloud_roles_required: Select at least one role.
   text_tag_cloud_owner_only_author: Only the cloud author can choose «Author only».
   text_tag_cloud_no_roles: No assignable project roles were found.
-  text_tag_cloud_visible_by_default_hint: When visibility is «All users», unchecked means hidden until the user enables it in Select visible tag clouds.
+  text_tag_cloud_visible_by_default_hint: If All users and unchecked, hidden until enabled in Select visible tag clouds.
   text_tag_cloud_name_blank: Please enter a name.
   text_plugin_tag_display_options: plugin-wide tag display options (sidebar style, colors, sort).
   text_tag_clouds_managed_per_project_html: "Tag clouds are managed per project: <strong>Project → Settings → %{tab}</strong>."
 
   label_tag_cloud_tag_filter: Tag whitelist
   label_tag_cloud_tag_filter_enable: Restrict cloud to selected tags only
-  text_tag_cloud_tag_filter_hint: When enabled, only the selected tags appear in this cloud (still filtered by status/version/tracker). If enabled with no tags selected, the cloud is empty.
+  text_tag_cloud_tag_filter_hint: Only selected tags appear. Enabled with no tags selected - empty cloud.
   text_tag_cloud_no_tags_in_project: No tags found on issues in this project yet.
   label_tag_cloud_empty: No matching tags
   label_tag_cloud_matching_tags: Matching tags
@@ -120,8 +120,8 @@ en:
   label_tag_cloud_issues_unit: issues
   label_tag_cloud_show_untagged: Show untagged issues
   label_tag_cloud_show_untagged_short: Untagged
-  text_tag_cloud_show_untagged_hint: Next to the cloud name shows a filter for matching issues that have no tags. Personal setting — only you see it, and Reset turns it off.
-  label_tag_cloud_untagged_count: "untagged issues — %{count}"
+  text_tag_cloud_show_untagged_hint: Personal no-tags link next to the cloud name.
+  label_tag_cloud_untagged_count: "untagged issues - %{count}"
   label_tag_cloud_all_tagged: all issues are tagged
   text_tag_cloud_untagged_link_title: Open issues that match this cloud and have no tags
 
@@ -130,7 +130,7 @@ en:
   label_tag_cloud_issue_count:
     one: "%{count} issue"
     other: "%{count} issues"
-  text_select_visible_tag_clouds_hint: Choose which custom tag clouds to show in the issues sidebar. The untagged checkbox is personal per cloud. Inherited clouds stay above this project's clouds. Drag within a group to change order.
+  text_select_visible_tag_clouds_hint: Choose sidebar clouds. Untagged is personal per cloud. Drag within a group to reorder.
   button_tag_cloud_preferences_reset: Reset
   text_tag_cloud_preferences_reset_title: Reset personal visibility, order and untagged captions to defaults
   notice_tag_cloud_preferences_reset: Personal tag cloud settings were reset to defaults.
