@@ -30,8 +30,8 @@ module RedmineupTags
             case operator
             when '=', '!'
               # Same as Status / Tracker / Version: multiple values are OR.
-              # is (=)  → issues that have any of the selected tags
-              # is not (!) → issues that have none of the selected tags (NOT IN)
+              # is (=)  -> issues that have any of the selected tags
+              # is not (!) -> issues that have none of the selected tags (NOT IN)
               issues.tagged_with(values_for('issue_tags').clone, any: true)
             when '!'
               issues.joins(:tags).distinct
