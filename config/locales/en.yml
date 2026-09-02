@@ -116,6 +116,11 @@ en:
   label_tag_cloud_issues_with_filter: With filter
   label_tag_cloud_issues_without_filter: Without tags
   label_tag_cloud_issues_unit: issues
+  label_tag_cloud_show_untagged: Show untagged issues
+  text_tag_cloud_show_untagged_hint: Next to the cloud name shows a filter for matching issues that have no tags.
+  label_tag_cloud_untagged_count: "untagged issues — %{count}"
+  label_tag_cloud_all_tagged: all issues are tagged
+  text_tag_cloud_untagged_link_title: Open issues that match this cloud and have no tags
 
   label_select_visible_tag_clouds: Select visible tag clouds
   label_tag_clouds_visibility: Visible tag clouds
@@ -140,6 +145,7 @@ en:
         tag_filter: Tag whitelist
         include_subprojects: Subprojects
         visible_by_default: Visible by default
+        show_untagged: Show untagged issues
     errors:
       models:
         tag_cloud:
