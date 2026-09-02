@@ -11,6 +11,7 @@ class TagCloudPreferencesController < ApplicationController
   def edit
     load_custom_tag_clouds_for_user
     @visible_ids = @tag_clouds.select { |c| c.visible_for?(User.current, project: @project) }.map(&:id)
+    @untagged_ids = TagCloudPreference.untagged_cloud_ids_for(User.current, @tag_clouds.map(&:id))
     @system_visible = TagCloudPreference.system_visible_for?(User.current, @project)
 
     respond_to do |format|
@@ -29,14 +30,15 @@ class TagCloudPreferencesController < ApplicationController
 
     load_custom_tag_clouds_for_user
     selected_ids = Array(params[:visible_tag_cloud_ids]).map(&:to_i)
+    untagged_ids = Array(params[:untagged_tag_cloud_ids]).map(&:to_i)
     inherited_order = Array(params[:inherited_tag_cloud_order]).map(&:to_i)
     local_order = Array(params[:tag_cloud_order]).map(&:to_i)
     system_visible = params[:system_tag_cloud_visible].present?
 
     TagCloudPreference.transaction do
       TagCloudPreference.set_system_visible!(User.current, @project, system_visible)
-      save_group_preferences!(@inherited_clouds, inherited_order, selected_ids)
-      save_group_preferences!(@local_clouds, local_order, selected_ids)
+      save_group_preferences!(@inherited_clouds, inherited_order, selected_ids, untagged_ids)
+      save_group_preferences!(@local_clouds, local_order, selected_ids, untagged_ids)
     end
 
     redirect_back fallback_location: project_issues_path(@project)
@@ -81,12 +83,13 @@ class TagCloudPreferencesController < ApplicationController
     !cloud.author_only?
   end
 
-  def save_group_preferences!(clouds, order_ids, selected_ids)
+  def save_group_preferences!(clouds, order_ids, selected_ids, untagged_ids)
     return if clouds.blank?
 
     allowed_ids = clouds.map(&:id)
     ordered = order_ids.select { |id| allowed_ids.include?(id) }.uniq
     ordered += allowed_ids - ordered
+    can_store_untagged = TagCloudPreference.column_names.include?('show_untagged')
 
     ordered.each_with_index do |cloud_id, index|
       cloud = clouds.find { |c| c.id == cloud_id }
@@ -95,6 +98,7 @@ class TagCloudPreferencesController < ApplicationController
       preference = cloud.preferences.find_or_initialize_by(user_id: User.current.id)
       preference.visible = selected_ids.include?(cloud_id)
       preference.position = index
+      preference.show_untagged = untagged_ids.include?(cloud_id) if can_store_untagged
       preference.save!
     end
   end

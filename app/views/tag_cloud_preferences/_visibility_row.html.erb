@@ -1,5 +1,6 @@
 <% inherited = local_assigns.fetch(:inherited, false) %>
 <% order_name = inherited ? 'inherited_tag_cloud_order[]' : 'tag_cloud_order[]' %>
+<% untagged_on = Array(@untagged_ids).include?(cloud.id) %>
 <li class="tag-cloud-row<%= ' inherited' if inherited %>" data-id="<%= cloud.id %>">
   <label for="visible_tag_cloud_<%= cloud.id %>">
     <%= check_box_tag 'visible_tag_cloud_ids[]',
@@ -10,6 +11,13 @@
       <%= h(cloud.name) %>
       <%= tag_cloud_letter_marker(:inherited) if inherited %>
     </span>
+  </label>
+  <label class="tag-cloud-untagged-option" for="untagged_tag_cloud_<%= cloud.id %>">
+    <%= check_box_tag 'untagged_tag_cloud_ids[]',
+                      cloud.id,
+                      untagged_on,
+                      id: "untagged_tag_cloud_#{cloud.id}" %>
+    <span><%= l(:label_tag_cloud_show_untagged_short, default: 'untagged') %></span>
   </label>
   <span class="sort-handle tag-cloud-drag-handle" title="<%= l(:label_tag_cloud_drag_to_reorder) %>">
     <%= sprite_icon('reorder', '') %>
