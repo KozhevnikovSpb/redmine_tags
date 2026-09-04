@@ -37,7 +37,6 @@ end
 module RedmineupTags
   PROJECT_MODULE_NAME = 'redmineup_tags'
 
-  # Pastel swatches for the tag color editor (soft 200/300 range).
   PASTEL_PALETTE = %w[
     #e5e7eb #d1d5db #9ca3af
     #fecaca #f4b4b4 #e8a0a0
@@ -93,6 +92,16 @@ module RedmineupTags
 
   def self.extract_tag_hex(tag_or_hex)
     stored_color_from(tag_or_hex) || auto_tag_color(tag_or_hex)
+  end
+
+  def self.tag_text_color(bg_hex)
+    hex = normalize_stored_color(bg_hex) || '#93c5fd'
+    r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
+    lin = lambda do |c|
+      c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055)**2.4
+    end
+    luminance = 0.2126 * lin.call(r) + 0.7152 * lin.call(g) + 0.0722 * lin.call(b)
+    luminance < 0.45 ? '#f8fafc' : '#1f2937'
   end
 
   def self.soften_hex(hex)
