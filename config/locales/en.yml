@@ -6,6 +6,10 @@ en:
   label_tag_color_auto: Auto
   label_tag_color_custom: Custom color
   label_tag_color_palette: Pastel colors
+  label_tag_color_manual: Manual
+  button_tag_color_reset: Reset color
+  text_tag_color_reset_confirm: Reset this tag to the automatic color?
+  notice_tag_color_reset: Tag color was reset to automatic.
   text_tag_color_hint: Swatch or picker sets the chip color. Auto calculates a muted color from the name.
   label_tags_add_tags: Add tags
   notice_tags_added: Tags added

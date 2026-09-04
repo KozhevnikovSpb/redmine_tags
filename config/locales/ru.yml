@@ -6,6 +6,10 @@ ru:
   label_tag_color_auto: Авто
   label_tag_color_custom: Свой цвет
   label_tag_color_palette: Пастельные цвета
+  label_tag_color_manual: Вручную
+  button_tag_color_reset: Сбросить цвет
+  text_tag_color_reset_confirm: Сбросить цвет этого тега на автоматический?
+  notice_tag_color_reset: Цвет тега сброшен на автоматический.
   text_tag_color_hint: Квадрат или пикер задают цвет чипа. Авто считает приглушённый цвет из имени.
   label_tags_add_tags: Добавить теги
   notice_tags_added: Теги добавлены
