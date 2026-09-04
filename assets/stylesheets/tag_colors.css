@@ -130,3 +130,68 @@
 #select-visible-tag-clouds-form .tag-clouds-visibility-buttons-left input {
   margin-left: 0;
 }
+
+/* Tag color editor (admin Edit / Merge). */
+.tag-color-field .tag-color-editor {
+  display: inline-block;
+  max-width: 360px;
+  vertical-align: top;
+}
+.tag-color-editor-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tag-color-editor .tag-color-hex {
+  width: 7.5em;
+}
+.tag-color-editor .tag-color-native {
+  width: 2em;
+  height: 2em;
+  padding: 0;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+}
+.tag-color-editor .tag-color-preview {
+  min-width: 4.5em;
+  text-align: center;
+}
+.tag-color-editor .tag-color-auto {
+  height: 28px;
+  line-height: 26px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.tag-color-palette {
+  display: grid;
+  grid-template-columns: repeat(9, 22px);
+  gap: 5px;
+  margin: 10px 0 6px;
+}
+.tag-color-swatch {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(17, 24, 39, 0.18);
+  border-radius: 3px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.tag-color-swatch:hover {
+  outline: 2px solid #628db6;
+  outline-offset: 1px;
+}
+.tag-color-swatch.is-selected {
+  outline: 2px solid #1f2937;
+  outline-offset: 1px;
+}
+.tag-color-hint {
+  margin: 0;
+  color: #666;
+  font-size: 0.9em;
+  line-height: 1.35;
+}
