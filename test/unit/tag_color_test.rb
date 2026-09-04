@@ -24,13 +24,28 @@ class TagColorTest < ActiveSupport::TestCase
     assert_equal '#f87171', RedmineupTags.extract_tag_hex(tag)
   end
 
-  def test_display_mutes_auto_md5_color
+  def test_display_auto_uses_pastel_not_raw_md5
     tag = FakeTag.new('Bug', nil)
     raw = RedmineupTags.auto_tag_color(tag)
     shown = RedmineupTags.display_tag_color(tag)
     assert_equal raw, RedmineupTags.extract_tag_hex(tag)
+    assert_equal shown, RedmineupTags.auto_pastel_hex(tag)
     assert_not_equal raw, shown
     assert_match(/\A#[0-9a-f]{6}\z/, shown)
+  end
+
+  def test_auto_pastel_stays_in_pastel_band_and_varies
+    names = %w[Bug Feature Hotfix Review Docs Backend Frontend Support Design]
+    colors = names.map { |name| RedmineupTags.auto_pastel_hex(name) }
+    assert colors.uniq.size >= 6, colors.inspect
+    colors.each do |hex|
+      r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
+      _h, s, l = RedmineupTags.rgb_to_hsl(r, g, b)
+      assert_operator s, :>=, 0.26
+      assert_operator s, :<=, 0.56
+      assert_operator l, :>=, 0.58
+      assert_operator l, :<=, 0.80
+    end
   end
 
   def test_tag_text_color_dark_background_is_light
