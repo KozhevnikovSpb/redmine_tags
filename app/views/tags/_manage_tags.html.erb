@@ -42,10 +42,8 @@
                                            :class => 'icon icon-edit' %>
             <% if manual_hex.present? %>
               <button type="button"
-                      class="icon icon-reload js-reset-tag-color"
-                      data-id="<%= tag.id %>"
-                      data-url="<%= tag_path(tag) %>"
-                      data-confirm-text="<%= l(:text_tag_color_reset_confirm) %>">
+                      class="icon icon-reload"
+                      onclick="if (window.confirm('<%= j l(:text_tag_color_reset_confirm) %>')) { window.location = '<%= reset_color_tag_path(tag) %>'; } return false;">
                 <%= l(:button_tag_color_reset) %>
               </button>
             <% end %>
@@ -66,33 +64,6 @@
   <%= javascript_tag do %>
     $(document).ready(function(){
       $('#settings form').data('cmUrl', '<%= tags_context_menu_path %>');
-      $(document).off('click.tagColorReset', '.js-reset-tag-color');
-      $(document).on('click.tagColorReset', '.js-reset-tag-color', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var $btn = $(this);
-        var message = $btn.data('confirm-text');
-        if (message && !window.confirm(message)) {
-          return false;
-        }
-        var token = $('input[name="authenticity_token"]').first().val();
-        $.ajax({
-          url: $btn.data('url'),
-          type: 'POST',
-          data: {
-            _method: 'put',
-            authenticity_token: token,
-            tag: { color: '' }
-          },
-          success: function () {
-            window.location.reload();
-          },
-          error: function () {
-            window.alert('<%= j l(:notice_failed_to_add_tags) %>');
-          }
-        });
-        return false;
-      });
     });
   <% end %>
 <% else %>

@@ -47,13 +47,11 @@ class TagsController < ApplicationController
       flash[:notice] = l(:notice_successful_update)
       respond_to do |format|
         format.html { redirect_to controller: 'settings', action: 'plugin', id: 'redmineup_tags', tab: 'manage_tags' }
-        format.js { head :ok }
         format.xml  {}
       end
     else
       respond_to do |format|
         format.html { render action: 'edit' }
-        format.js { head :unprocessable_entity }
       end
     end
   end
@@ -63,7 +61,7 @@ class TagsController < ApplicationController
       @tag.update_column(:color, nil)
     elsif @tag.respond_to?(:color=)
       @tag.color = nil
-      @tag.save
+      @tag.save(validate: false)
     end
     flash[:notice] = l(:notice_tag_color_reset)
     redirect_to controller: 'settings', action: 'plugin', id: 'redmineup_tags', tab: 'manage_tags'
