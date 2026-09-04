@@ -22,19 +22,18 @@ class TagColorTest < ActiveSupport::TestCase
     assert_equal '#f87171', RedmineupTags.extract_tag_hex(tag)
   end
 
-  def test_display_auto_uses_pastel_not_raw_md5
+  def test_auto_color_is_pastel_and_same_for_display_and_extract
     tag = FakeTag.new('Bug', nil)
-    raw = RedmineupTags.auto_tag_color(tag)
-    shown = RedmineupTags.display_tag_color(tag)
-    assert_equal raw, RedmineupTags.extract_tag_hex(tag)
-    assert_equal shown, RedmineupTags.auto_pastel_hex(tag)
-    assert_not_equal raw, shown
-    assert_match(/\A#[0-9a-f]{6}\z/, shown)
+    auto = RedmineupTags.auto_tag_color(tag)
+    assert_equal auto, RedmineupTags.display_tag_color(tag)
+    assert_equal auto, RedmineupTags.extract_tag_hex(tag)
+    assert_equal auto, RedmineupTags.auto_pastel_hex(tag)
+    assert_match(/\A#[0-9a-f]{6}\z/, auto)
   end
 
-  def test_auto_pastel_stays_in_pastel_band_and_varies
+  def test_auto_color_stays_in_pastel_band_and_varies
     names = %w[Bug Feature Hotfix Review Docs Backend Frontend Support Design]
-    colors = names.map { |name| RedmineupTags.auto_pastel_hex(name) }
+    colors = names.map { |name| RedmineupTags.auto_tag_color(name) }
     assert colors.uniq.size >= 6, colors.inspect
     colors.each do |hex|
       r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }

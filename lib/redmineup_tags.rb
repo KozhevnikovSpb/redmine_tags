@@ -37,7 +37,7 @@ end
 module RedmineupTags
   PROJECT_MODULE_NAME = 'redmineup_tags'
 
-  # Admin swatches only. Auto colors use MD5 → HSL pastel, not this list.
+  # Admin swatches only. Auto colors are computed by auto_tag_color, not this list.
   PASTEL_PALETTE = %w[
     #e5e7eb #d1d5db #9ca3af
     #fecaca #f4b4b4 #e8a0a0
@@ -75,9 +75,21 @@ module RedmineupTags
     nil
   end
 
+  # Automatic color: MD5(name) → HSL pastel. This is the color, not a display filter.
   def self.auto_tag_color(tag_or_name)
     name = tag_or_name.respond_to?(:name) ? tag_or_name.name.to_s : tag_or_name.to_s
-    "##{Digest::MD5.hexdigest(name)[0, 6]}"
+    digest = Digest::MD5.hexdigest(name)
+    h = digest[0, 8].to_i(16) / 4_294_967_295.0
+    s = 0.28 + (digest[8, 4].to_i(16) / 65_535.0) * 0.26
+    l = 0.60 + (digest[12, 4].to_i(16) / 65_535.0) * 0.18
+    nr, ng, nb = hsl_to_rgb(h, s, l)
+    format('#%02x%02x%02x', (nr * 255).round, (ng * 255).round, (nb * 255).round)
+  rescue StandardError
+    '#93c5fd'
+  end
+
+  def self.auto_pastel_hex(tag_or_name)
+    auto_tag_color(tag_or_name)
   end
 
   def self.stored_color_from(tag_or_hex)
@@ -91,25 +103,11 @@ module RedmineupTags
   end
 
   def self.display_tag_color(tag_or_hex)
-    stored_color_from(tag_or_hex) || auto_pastel_hex(tag_or_hex)
+    stored_color_from(tag_or_hex) || auto_tag_color(tag_or_hex)
   end
 
   def self.extract_tag_hex(tag_or_hex)
     stored_color_from(tag_or_hex) || auto_tag_color(tag_or_hex)
-  end
-
-  # Pastel auto chip: full hue from MD5, S/L picked in pastel bands.
-  # Not mapped onto PASTEL_PALETTE, so the auto range stays large.
-  def self.auto_pastel_hex(tag_or_name)
-    name = tag_or_name.respond_to?(:name) ? tag_or_name.name.to_s : tag_or_name.to_s
-    digest = Digest::MD5.hexdigest(name)
-    h = digest[0, 8].to_i(16) / 4_294_967_295.0
-    s = 0.28 + (digest[8, 4].to_i(16) / 65_535.0) * 0.26
-    l = 0.60 + (digest[12, 4].to_i(16) / 65_535.0) * 0.18
-    nr, ng, nb = hsl_to_rgb(h, s, l)
-    format('#%02x%02x%02x', (nr * 255).round, (ng * 255).round, (nb * 255).round)
-  rescue StandardError
-    auto_tag_color(name)
   end
 
   def self.tag_text_color(bg_hex)
