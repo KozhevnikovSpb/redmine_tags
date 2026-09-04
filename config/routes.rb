@@ -2,11 +2,9 @@ RedmineApp::Application.routes.draw do
   match 'auto_completes/redmine_tags' => 'issue_tags#autocomplete', via: :get, as: 'auto_complete_redmine_tags'
   match '/tags/context_menu', to: 'tags#context_menu', as: 'tags_context_menu', via: %i[get post]
   match '/tags', controller: 'tags', action: 'destroy', via: :delete
+  match '/tags/:id/reset_color', to: 'tags#reset_color', via: %i[get post], as: 'reset_color_tag'
 
   resources :tags, only: %i[edit update] do
-    member do
-      post :reset_color
-    end
     collection do
       post :merge
       get :context_menu
