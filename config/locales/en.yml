@@ -3,6 +3,10 @@ en:
   field_tags: Tags
   field_tag_list: Tags
   field_color: Color
+  label_tag_color_auto: Auto
+  label_tag_color_custom: Custom color
+  label_tag_color_palette: Pastel colors
+  text_tag_color_hint: Swatch or picker sets the chip color. Auto calculates a muted color from the name.
   label_tags_add_tags: Add tags
   notice_tags_added: Tags added
   notice_failed_to_add_tags: Failed to add tags
