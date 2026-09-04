@@ -3,29 +3,20 @@
 <%= form_tag(tag_path(@tag, :tab => 'tags'), :class => "tabular", :method => :put) do %>
   <%= error_messages_for 'tag' %>
   <div class="box">
-  <!--[form:optvalue]-->
     <p>
       <label for="tag_name"><%=l(:field_name)%></label>
       <%= text_field 'tag', 'name' %>
     </p>
-    <p>
+    <p class="tag-color-field">
       <label for="tag_color"><%=l(:field_color)%></label>
-      <%= text_field 'tag', 'color', class: "colorpicker"  %>
+      <%= tag_color_field(@tag) %>
     </p>
   </div>
   <%= submit_tag l(:button_save) %>
 <% end %>
 
-<script>
-    $(function() {
-        //use this method to add new colors to pallete
-        //$.fn.colorPicker.addColors(['000', '000', 'fff', 'fff']);
-
-        $('#tag_color').colorPicker();
-    });
-
-</script>
-
 <% content_for :header_tags do %>
-  <%= redmineup_assets %>
+  <%= stylesheet_link_tag(:redmine_tags, plugin: 'redmineup_tags') %>
+  <%= stylesheet_link_tag(:tag_colors, plugin: 'redmineup_tags') %>
+  <%= javascript_include_tag(:redmine_tags, plugin: 'redmineup_tags') %>
 <% end %>
