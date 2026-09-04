@@ -1,6 +1,16 @@
 <% tags = Issue.all_tags(all_issues: true, sort_by: 'name').to_a %>
+<% color_by_id =
+     if tags.any? && Redmineup::Tag.column_names.include?('color')
+       Redmineup::Tag.where(id: tags.map(&:id)).pluck(:id, :color).each_with_object({}) { |(id, color), acc|
+         acc[id] = color
+         acc[id.to_i] = color
+         acc[id.to_s] = color
+       }
+     else
+       {}
+     end %>
 <% unless tags.empty? %>
-  <table class="list issues">
+  <table class="list issues" id="manage-tags-table">
     <thead>
       <tr>
         <th class="checkbox hide-when-print">
@@ -9,33 +19,41 @@
                                 :title => "#{l(:button_check_all)}/#{l(:button_uncheck_all)}" %>
         </th>
         <th><%= l(:field_name) %></th>
-        <th class="tag-manual-color" style="width:9%; text-align:center;"><%= l(:label_tag_color_manual) %></th>
+        <th class="tag-manual-color" style="width:12%; text-align:center;"><%= l(:label_tag_color_manual) %></th>
         <th align="center" style="width:22%;"> </th>
       </tr>
     </thead>
     <tbody>
       <% tags.each do |tag| %>
-        <% manual_hex = RedmineupTags.stored_color_from(tag) %>
+        <% raw_color = color_by_id[tag.id] || color_by_id[tag.id.to_s] || (tag.respond_to?(:color) ? tag.color : nil) %>
+        <% manual_hex = RedmineupTags.normalize_stored_color(raw_color) %>
         <tr id="<%= tag.id %>" class="<%= cycle("odd", "even") %> hascontextmenu ">
           <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, :id => nil) %></td>
           <td><%= render_issue_tag_link(tag) %></td>
           <td class="tag-manual-color" style="text-align:center;">
-            <%= check_box_tag("manual_color_#{tag.id}", '1', manual_hex.present?, disabled: true, title: manual_hex.presence || l(:label_tag_color_auto)) %>
+            <% if manual_hex.present? %>
+              ✓
+            <% else %>
+              —
+            <% end %>
           </td>
           <td class="buttons">
             <%= link_to sprite_icon('edit', l(:button_edit)), edit_tag_path(tag),
                                            :class => 'icon icon-edit' %>
             <% if manual_hex.present? %>
-              <%= link_to l(:button_tag_color_reset), reset_color_tag_path(tag),
-                                             :data => { :confirm => l(:text_tag_color_reset_confirm) },
-                                             :class => 'icon icon-reload',
-                                             :title => l(:button_tag_color_reset) %>
+              <button type="button"
+                      class="icon icon-reload js-reset-tag-color"
+                      data-id="<%= tag.id %>"
+                      data-url="<%= update_tag_path(tag) %>"
+                      data-confirm-text="<%= l(:text_tag_color_reset_confirm) %>">
+                <%= l(:button_tag_color_reset) %>
+              </button>
             <% end %>
             <%= link_to sprite_icon('del', l(:button_delete)), tags_path(:ids => tag),
                                            :method => :delete,
                                            :confirm => l(:text_are_you_sure),
                                            :class => 'icon icon-del' %>
-            </td>
+          </td>
         </tr>
       <% end %>
     </tbody>
@@ -47,8 +65,35 @@
 
   <%= javascript_tag do %>
     $(document).ready(function(){
-      $('#settings form').data('cmUrl', '<%= tags_context_menu_path %>')
-    })
+      $('#settings form').data('cmUrl', '<%= tags_context_menu_path %>');
+      $(document).off('click.tagColorReset', '.js-reset-tag-color');
+      $(document).on('click.tagColorReset', '.js-reset-tag-color', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $btn = $(this);
+        var message = $btn.data('confirm-text');
+        if (message && !window.confirm(message)) {
+          return false;
+        }
+        var token = $('input[name="authenticity_token"]').first().val();
+        $.ajax({
+          url: $btn.data('url'),
+          type: 'POST',
+          data: {
+            _method: 'put',
+            authenticity_token: token,
+            tag: { color: '' }
+          },
+          success: function () {
+            window.location.reload();
+          },
+          error: function () {
+            window.alert('<%= j l(:notice_failed_to_add_tags) %>');
+          }
+        });
+        return false;
+      });
+    });
   <% end %>
 <% else %>
   <p class="nodata"><%= l(:label_no_data) %></p>

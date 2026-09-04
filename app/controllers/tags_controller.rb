@@ -47,17 +47,21 @@ class TagsController < ApplicationController
       flash[:notice] = l(:notice_successful_update)
       respond_to do |format|
         format.html { redirect_to controller: 'settings', action: 'plugin', id: 'redmineup_tags', tab: 'manage_tags' }
+        format.js { head :ok }
         format.xml  {}
       end
     else
       respond_to do |format|
         format.html { render action: 'edit' }
+        format.js { head :unprocessable_entity }
       end
     end
   end
 
   def reset_color
-    if @tag.respond_to?(:color=)
+    if @tag.has_attribute?(:color)
+      @tag.update_column(:color, nil)
+    elsif @tag.respond_to?(:color=)
       @tag.color = nil
       @tag.save
     end
