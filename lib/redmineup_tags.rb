@@ -11,7 +11,7 @@
 #
 # redmine_tags is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -37,17 +37,17 @@ end
 module RedmineupTags
   PROJECT_MODULE_NAME = 'redmineup_tags'
 
-  # Pastel swatches for the tag color editor (stored as-is on the chip).
+  # Pastel swatches for the tag color editor (soft 200/300 range).
   PASTEL_PALETTE = %w[
     #e5e7eb #d1d5db #9ca3af
-    #fecaca #fca5a5 #f87171
-    #fed7aa #fdba74 #fb923c
-    #fef08a #fde047 #facc15
-    #bbf7d0 #86efac #4ade80
-    #a5f3fc #67e8f9 #22d3ee
-    #bfdbfe #93c5fd #60a5fa
-    #ddd6fe #c4b5fd #a78bfa
-    #fbcfe8 #f9a8d4 #f472b6
+    #fecaca #f4b4b4 #e8a0a0
+    #fed7aa #f3c49a #e8b086
+    #fef08a #f3e08a #e4d07a
+    #bbf7d0 #9ee0b8 #86c9a4
+    #a5f3fc #8edce6 #7ac8d4
+    #bfdbfe #a8c8f0 #8eb4e0
+    #ddd6fe #c8bcec #b4a8dc
+    #fbcfe8 #efb6d4 #e09ec0
   ].freeze
 
   def self.settings() Setting[:plugin_redmineup_tags].stringify_keys end
@@ -86,13 +86,26 @@ module RedmineupTags
 
   def self.display_tag_color(tag_or_hex)
     stored = stored_color_from(tag_or_hex)
-    return stored if stored
+    return soften_hex(stored) if stored
 
     mute_hex(auto_tag_color(tag_or_hex))
   end
 
   def self.extract_tag_hex(tag_or_hex)
     stored_color_from(tag_or_hex) || auto_tag_color(tag_or_hex)
+  end
+
+  def self.soften_hex(hex)
+    normalized = normalize_stored_color(hex)
+    return mute_hex(hex) unless normalized
+
+    r, g, b = normalized.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
+    h, s, l = rgb_to_hsl(r, g, b)
+    s *= 0.86
+    nr, ng, nb = hsl_to_rgb(h, s, l)
+    format('#%02x%02x%02x', (nr * 255).round, (ng * 255).round, (nb * 255).round)
+  rescue StandardError
+    normalized || '#93c5fd'
   end
 
   def self.mute_hex(hex)
@@ -103,7 +116,7 @@ module RedmineupTags
     g = g * (1 - t) + t
     b = b * (1 - t) + t
     h, s, l = rgb_to_hsl(r, g, b)
-    s = [[s * 0.88, 0.40].max, 0.56].min
+    s = [[s * 0.80, 0.36].max, 0.50].min
     l = [[l, 0.58].max, 0.72].min
     nr, ng, nb = hsl_to_rgb(h, s, l)
     format('#%02x%02x%02x', (nr * 255).round, (ng * 255).round, (nb * 255).round)
