@@ -92,6 +92,14 @@ class TagsControllerTest < ActionController::TestCase
     assert_nil tag1.reload.color.presence
   end
 
+  def test_should_post_reset_color
+    tag1 = Redmineup::Tag.find_by_name('a1')
+    tag1.update_column(:color, '#f87171') if tag1.respond_to?(:update_column)
+    compatible_request :post, :reset_color, id: tag1.id
+    assert_redirected_to controller: 'settings', action: 'plugin', id: 'redmineup_tags', tab: 'manage_tags'
+    assert_nil tag1.reload.color.presence
+  end
+
   test 'should delete destroy' do
     tag1 = Redmineup::Tag.find_by_name('a1')
     assert_difference 'Redmineup::Tag.count', -1 do
