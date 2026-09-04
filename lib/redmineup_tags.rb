@@ -11,7 +11,7 @@
 #
 # redmine_tags is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -37,40 +37,74 @@ end
 module RedmineupTags
   PROJECT_MODULE_NAME = 'redmineup_tags'
 
+  # Pastel swatches for the tag color editor (stored as-is on the chip).
+  PASTEL_PALETTE = %w[
+    #e5e7eb #d1d5db #9ca3af
+    #fecaca #fca5a5 #f87171
+    #fed7aa #fdba74 #fb923c
+    #fef08a #fde047 #facc15
+    #bbf7d0 #86efac #4ade80
+    #a5f3fc #67e8f9 #22d3ee
+    #bfdbfe #93c5fd #60a5fa
+    #ddd6fe #c4b5fd #a78bfa
+    #fbcfe8 #f9a8d4 #f472b6
+  ].freeze
+
   def self.settings() Setting[:plugin_redmineup_tags].stringify_keys end
 
   def self.use_colors?
     settings['use_colors'].to_i > 0
   end
 
-  def self.display_tag_color(tag_or_hex)
-    hex = extract_tag_hex(tag_or_hex)
-    mute_hex(hex)
+  def self.normalize_stored_color(value)
+    return nil if value.nil?
+
+    raw = value.to_s.strip
+    return nil if raw.empty?
+    return nil if raw.casecmp('auto').zero?
+
+    raw = raw.sub(/\A#/, '')
+    return "##{raw.downcase}" if raw.match?(/\A[0-9a-fA-F]{6}\z/)
+
+    nil
   end
 
-  def self.extract_tag_hex(tag_or_hex)
-    raw =
-      if tag_or_hex.respond_to?(:color)
-        tag_or_hex.color.to_s
-      else
-        tag_or_hex.to_s
-      end
-    raw = raw.delete('#')
-    return "##{raw}" if raw.match?(/\A[0-9a-fA-F]{6}\z/)
-
-    name = tag_or_hex.respond_to?(:name) ? tag_or_hex.name.to_s : tag_or_hex.to_s
+  def self.auto_tag_color(tag_or_name)
+    name = tag_or_name.respond_to?(:name) ? tag_or_name.name.to_s : tag_or_name.to_s
     "##{Digest::MD5.hexdigest(name)[0, 6]}"
   end
 
+  def self.stored_color_from(tag_or_hex)
+    raw =
+      if tag_or_hex.respond_to?(:color)
+        tag_or_hex.color
+      elsif tag_or_hex.is_a?(String)
+        tag_or_hex
+      end
+    normalize_stored_color(raw)
+  end
+
+  def self.display_tag_color(tag_or_hex)
+    stored = stored_color_from(tag_or_hex)
+    return stored if stored
+
+    mute_hex(auto_tag_color(tag_or_hex))
+  end
+
+  def self.extract_tag_hex(tag_or_hex)
+    stored_color_from(tag_or_hex) || auto_tag_color(tag_or_hex)
+  end
+
   def self.mute_hex(hex)
-    r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
-    t = 0.34
+    normalized = normalize_stored_color(hex) || auto_tag_color(hex)
+    r, g, b = normalized.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
+    t = 0.20
     r = r * (1 - t) + t
     g = g * (1 - t) + t
     b = b * (1 - t) + t
     h, s, l = rgb_to_hsl(r, g, b)
     s = [[s * 0.88, 0.40].max, 0.56].min
-    l = [[l, 0.60].max, 0.76].min
+    l = [[l, 0.58].max, 0.72].min
     nr, ng, nb = hsl_to_rgb(h, s, l)
     format('#%02x%02x%02x', (nr * 255).round, (ng * 255).round, (nb * 255).round)
   rescue StandardError
