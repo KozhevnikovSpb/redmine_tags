@@ -17,3 +17,153 @@ ru:
   text_issues_open_only_hint: Только для системного облака «Теги». Пользовательские облака используют свой фильтр статуса.
   issues_sort_by: Упорядочить теги по
   use_colors: Использовать цвета
+
+  label_tag_display_preferences: Теги
+  label_tag_display_show_count: Показывать количество задач
+  text_tag_display_show_count_hint: Вкл. - число задач. Выкл. - вес тега (размер шрифта).
+  label_tag_display_show_untagged: Показывать задачи без тегов
+  text_tag_display_show_untagged_hint: Ссылка «без тегов» у выбранных пользовательских облаков.
+
+  issue_tags_sidebar_none: Не показывать
+  issue_tags_sidebar_list: Список
+  issue_tags_sidebar_cloud: Облако
+  issue_tags_sidebar_simple_cloud: Простое облако
+
+  issues_sort_by_name: Названию
+  issues_sort_by_count: Кол-ву задач
+  issues_sort_order_asc: по возрастанию
+  issues_sort_order_desc: по убыванию
+
+  auto_complete_new_tag: Добавить...
+
+  label_tags_add_tag: + добавить тег
+  issue_tags_manage_tags: Управлять тегами
+  issue_tags_tag: Тег
+  issue_tags_button_merge: Объединить
+  issue_tags_label_merge: Объединить выбранные теги
+
+  tags_suggestion_order: Порядок подсказок
+  tags_order_by_name: Имя
+  tags_order_by_last_created: Последние созданные
+  tags_order_by_most_used: Часто используемые
+
+  project_module_redmineup_tags: Теги и облака тегов
+  permission_create_tags: Создание тегов
+  permission_edit_tags: Редактирование тегов
+  permission_view_tag_clouds: Видимость облаков тегов
+  permission_select_tag_clouds: Управление отображением облаков тегов
+  permission_manage_tag_clouds: Управление облаками тегов
+
+  label_tags_remove_tags: Убрать теги
+  tag_clouds: Облака тегов
+  label_none: Нет
+
+  label_new_tag_cloud: Новое облако тегов
+  label_edit_tag_cloud: Редактировать облако тегов
+  label_default_tag_cloud: Теги
+  label_hidden_tag_clouds: Скрытые облака тегов
+  label_tag_cloud_name: Название
+  label_tag_cloud_filters: Фильтры
+  label_tag_cloud_status_filter: Фильтр по статусам
+  label_tag_cloud_version_filter: Фильтр по версиям
+  label_tag_cloud_tracker_filter: Фильтр по трекерам
+  label_tag_cloud_filter_is: равно
+  label_tag_cloud_op_open: открытые
+  label_tag_cloud_op_closed: закрытые
+  label_tag_cloud_op_has_been: был
+  label_tag_cloud_op_never: никогда не был
+  label_tag_cloud_op_changed_from: изменён с
+  label_tag_cloud_visible_by_default: Видимо по умолчанию
+  label_tag_cloud_include_subprojects: Подпроекты
+  label_tag_cloud_show_in_subprojects: Показ в подпроектах
+  text_tag_cloud_include_subprojects_hint: Показ облака в сайдбаре подпроектов. Подсчёт совпадает со списком задач.
+  label_tag_cloud_position: Позиция
+  label_tag_cloud_system: системное
+  label_tag_cloud_system_cloud: Системное облако
+  label_tag_cloud_badge_system: С
+  label_tag_cloud_badge_inherited: К
+  label_tag_cloud_badge_system_title: Системное облако
+  label_tag_cloud_badge_inherited_title: Унаследовано из родительского проекта
+  label_system_tag_cloud_open_only: только открытые
+  label_system_tag_cloud_all: все
+  text_system_tag_cloud_open_only_title: Глобальная настройка «Только открытые задачи» включена
+  text_system_tag_cloud_all_title: Глобальная настройка «Только открытые задачи» выключена
+  label_tag_cloud_group_inherited: Из родительских проектов
+  label_tag_cloud_group_local: Этот проект
+  label_tag_cloud_drag_to_reorder: Перетащите, чтобы изменить порядок отображения
+  button_collapse: Свернуть
+  text_tag_cloud_filters_empty_means_all: пусто = Любые / все
+  text_tag_clouds_permissions_info: "Права (Роли → Теги и облака тегов): Видимость - показ облаков и список без правок. Управление отображением - личные показ/скрытие и порядок. Управление облаками - создание/правка/удаление (нужно членство). Авторские облака в общем списке видит только полный администратор Redmine."
+  notice_tag_cloud_created: Облако тегов успешно создано.
+  notice_tag_cloud_updated: Облако тегов успешно обновлено.
+  notice_tag_cloud_deleted: Облако тегов успешно удалено.
+  alert_cannot_delete_system_cloud: Облако «Теги» нельзя удалить.
+
+  label_tag_cloud_visibility_rule: Видимость
+  label_tag_cloud_visibility_all: Все пользователи
+  label_tag_cloud_visibility_owner: Только автор
+  label_tag_cloud_visibility_roles: Выбранные роли
+  label_tag_cloud_owner: Автор
+  text_tag_cloud_visibility_hint: Кто видит облако в сайдбаре. С правом «Управление облаками» можно переопределить для себя, кроме чужих авторских облаков.
+  text_tag_cloud_roles_required: Выберите хотя бы одну роль.
+  text_tag_cloud_owner_only_author: Режим «Только автор» может выбрать только автор облака.
+  text_tag_cloud_no_roles: Не найдено ролей, которые можно назначать участникам проекта.
+  text_tag_cloud_visible_by_default_hint: При «Все пользователи» снятие галочки скрывает облако, пока его не включат в «Выбрать видимые облака».
+  text_tag_cloud_name_blank: Укажите название.
+  text_plugin_tag_display_options: общие настройки отображения тегов (сайдбар, цвета, сортировка).
+  text_tag_clouds_managed_per_project_html: "Облака тегов настраиваются в проекте: <strong>Проект → Настройки → %{tab}</strong>."
+
+  label_tag_cloud_tag_filter: Белый список тегов
+  label_tag_cloud_tag_filter_enable: Ограничить облако выбранными тегами
+  text_tag_cloud_tag_filter_hint: Только выбранные теги. Включено без тегов - облако пустое.
+  text_tag_cloud_no_tags_in_project: В задачах этого проекта пока нет тегов.
+  label_tag_cloud_empty: Нет подходящих тегов
+  label_tag_cloud_matching_tags: Подходящие теги
+  label_tag_cloud_issues_with_filter: По фильтру
+  label_tag_cloud_issues_without_filter: Без тегов
+  label_tag_cloud_issues_unit: задач
+  label_tag_cloud_show_untagged: Показывать задачи без тегов
+  label_tag_cloud_show_untagged_short: Без тегов
+  text_tag_cloud_show_untagged_hint: Личная ссылка «без тегов» рядом с названием облака.
+  label_tag_cloud_untagged_count: "без тегов - %{count}"
+  label_tag_cloud_all_tagged: все задачи затегированы
+  text_tag_cloud_untagged_link_title: Открыть задачи этого облака без тегов
+
+  label_select_visible_tag_clouds: Выбрать видимые облака тегов
+  label_tag_clouds_visibility: Видимые облака тегов
+  label_tag_cloud_issue_count:
+    one: "%{count} задача"
+    few: "%{count} задачи"
+    many: "%{count} задач"
+    other: "%{count} задач"
+  text_select_visible_tag_clouds_hint: Выберите облака в сайдбаре. «Без тегов» - личная галочка. Перетаскивайте строки внутри группы.
+  button_tag_cloud_preferences_reset: Сброс
+  text_tag_cloud_preferences_reset_title: Сбросить персональную видимость, порядок и галочки «без тегов» к значениям по умолчанию
+  notice_tag_cloud_preferences_reset: Персональные настройки облаков сброшены к значениям по умолчанию.
+  notice_tag_cloud_preferences_updated: Настройки видимости облаков тегов обновлены.
+  notice_failed_to_update_tag_cloud_preferences: Не удалось обновить настройки видимости облаков тегов.
+
+  activerecord:
+    models:
+      tag_cloud: Облако тегов
+    attributes:
+      tag_cloud:
+        name: Название
+        visibility: Видимость
+        roles: Роли
+        tag_filter: Белый список тегов
+        include_subprojects: Подпроекты
+        visible_by_default: Видимо по умолчанию
+        show_untagged: Показывать задачи без тегов
+    errors:
+      models:
+        tag_cloud:
+          attributes:
+            name:
+              blank: не может быть пустым
+              too_long: слишком длинное (максимум %{count} символов)
+              taken: уже используется в этом проекте
+            roles:
+              blank: выберите хотя бы одну роль
+            visibility:
+              invalid: режим «только автор» может выбрать только автор облака
