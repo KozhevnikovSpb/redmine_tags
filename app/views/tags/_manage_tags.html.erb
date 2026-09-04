@@ -1,6 +1,12 @@
-<% tags = Issue.all_tag_counts(:order => :name) %>
-<% unless tags.to_a.empty? %>
-  <table class  = "list issues">
+<% tags = Issue.all_tag_counts(:order => :name).to_a %>
+<% color_by_id =
+     if tags.any? && Redmineup::Tag.column_names.include?('color')
+       Redmineup::Tag.where(id: tags.map(&:id)).pluck(:id, :color).to_h
+     else
+       {}
+     end %>
+<% unless tags.empty? %>
+  <table class="list issues">
     <thead>
       <tr>
         <th class="checkbox hide-when-print">
@@ -9,17 +15,29 @@
                                 :title => "#{l(:button_check_all)}/#{l(:button_uncheck_all)}" %>
         </th>
         <th><%= l(:field_name) %></th>
-        <th align="center" style="width:10%;"> </th>
+        <th class="tag-manual-color" style="width:8%; text-align:center;"><%= l(:label_tag_color_manual) %></th>
+        <th align="center" style="width:18%;"> </th>
       </tr>
     </thead>
     <tbody>
       <% tags.each do |tag| %>
+        <% manual_hex = RedmineupTags.normalize_stored_color(color_by_id[tag.id]) %>
         <tr id="<%= tag.id %>" class="<%= cycle("odd", "even") %> hascontextmenu ">
           <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, :id => nil) %></td>
           <td><%= render_issue_tag_link(tag) %></td>
+          <td class="tag-manual-color" style="text-align:center;">
+            <%= check_box_tag(nil, '1', manual_hex.present?, disabled: true, id: nil, name: nil, title: manual_hex.present? ? l(:label_tag_color_custom) : l(:label_tag_color_auto)) %>
+          </td>
           <td class="buttons">
-            <%= link_to sprite_icon('edit',l(:button_edit)), edit_tag_path(tag),
+            <%= link_to sprite_icon('edit', l(:button_edit)), edit_tag_path(tag),
                                            :class => 'icon icon-edit' %>
+            <% if manual_hex.present? %>
+              <%= link_to sprite_icon('reload', l(:button_tag_color_reset)), reset_color_tag_path(tag),
+                                             :method => :post,
+                                             :data => { :confirm => l(:text_tag_color_reset_confirm) },
+                                             :class => 'icon icon-reload',
+                                             :title => l(:button_tag_color_reset) %>
+            <% end %>
             <%= link_to sprite_icon('del', l(:button_delete)), tags_path(:ids => tag),
                                            :method => :delete,
                                            :confirm => l(:text_are_you_sure),
@@ -42,5 +60,3 @@
 <% else %>
   <p class="nodata"><%= l(:label_no_data) %></p>
 <% end %>
-
-

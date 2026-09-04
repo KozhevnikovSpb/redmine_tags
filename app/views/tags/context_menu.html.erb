@@ -2,6 +2,12 @@
   <% if @tag -%>
     <li><%= link_to sprite_icon('edit', l(:button_edit)), edit_tag_path(@tag),
             :class => 'icon icon-edit' %></li>
+    <% if RedmineupTags.stored_color_from(@tag) %>
+      <li><%= link_to sprite_icon('reload', l(:button_tag_color_reset)), reset_color_tag_path(@tag),
+              :method => :post,
+              :data => { :confirm => l(:text_tag_color_reset_confirm) },
+              :class => 'icon icon-reload' %></li>
+    <% end %>
   <% else %>
     <li><%= link_to sprite_icon('tag-merge', l(:issue_tags_button_merge), plugin: :redmineup_tags), merge_tags_path(:ids => @tags.collect(&:id)),
             :class => 'icon icon-tags-merge' %></li>

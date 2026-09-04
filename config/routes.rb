@@ -4,6 +4,9 @@ RedmineApp::Application.routes.draw do
   match '/tags', controller: 'tags', action: 'destroy', via: :delete
 
   resources :tags, only: %i[edit update] do
+    member do
+      post :reset_color
+    end
     collection do
       post :merge
       get :context_menu

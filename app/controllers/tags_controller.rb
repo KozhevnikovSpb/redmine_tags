@@ -19,7 +19,7 @@
 
 class TagsController < ApplicationController
   before_action :require_admin
-  before_action :find_tag, only: [:edit, :update]
+  before_action :find_tag, only: [:edit, :update, :reset_color]
   before_action :bulk_find_tags, only: [:context_menu, :merge, :destroy]
 
   helper :issues_tags
@@ -54,6 +54,15 @@ class TagsController < ApplicationController
         format.html { render action: 'edit' }
       end
     end
+  end
+
+  def reset_color
+    if @tag.respond_to?(:color=)
+      @tag.color = nil
+      @tag.save
+    end
+    flash[:notice] = l(:notice_tag_color_reset)
+    redirect_to controller: 'settings', action: 'plugin', id: 'redmineup_tags', tab: 'manage_tags'
   end
 
   def context_menu
