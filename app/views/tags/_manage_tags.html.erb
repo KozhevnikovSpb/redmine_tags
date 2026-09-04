@@ -26,7 +26,7 @@
             <%= link_to sprite_icon('edit', l(:button_edit)), edit_tag_path(tag),
                                            :class => 'icon icon-edit' %>
             <% if manual_hex.present? %>
-              <%= link_to sprite_icon('del', l(:button_tag_color_reset)), reset_color_tag_path(tag),
+              <%= link_to l(:button_tag_color_reset), reset_color_tag_path(tag),
                                              :data => { :confirm => l(:text_tag_color_reset_confirm) },
                                              :class => 'icon icon-reload',
                                              :title => l(:button_tag_color_reset) %>
