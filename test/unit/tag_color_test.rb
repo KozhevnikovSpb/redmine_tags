@@ -16,11 +16,9 @@ class TagColorTest < ActiveSupport::TestCase
     assert_nil RedmineupTags.normalize_stored_color(nil)
   end
 
-  def test_display_softens_stored_color
+  def test_display_uses_stored_color_as_is
     tag = FakeTag.new('Bug', '#f87171')
-    shown = RedmineupTags.display_tag_color(tag)
-    assert_not_equal '#f87171', shown
-    assert_match(/\A#[0-9a-f]{6}\z/, shown)
+    assert_equal '#f87171', RedmineupTags.display_tag_color(tag)
     assert_equal '#f87171', RedmineupTags.extract_tag_hex(tag)
   end
 

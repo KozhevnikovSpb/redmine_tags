@@ -91,10 +91,7 @@ module RedmineupTags
   end
 
   def self.display_tag_color(tag_or_hex)
-    stored = stored_color_from(tag_or_hex)
-    return soften_hex(stored) if stored
-
-    auto_pastel_hex(tag_or_hex)
+    stored_color_from(tag_or_hex) || auto_pastel_hex(tag_or_hex)
   end
 
   def self.extract_tag_hex(tag_or_hex)
@@ -112,7 +109,7 @@ module RedmineupTags
     nr, ng, nb = hsl_to_rgb(h, s, l)
     format('#%02x%02x%02x', (nr * 255).round, (ng * 255).round, (nb * 255).round)
   rescue StandardError
-    mute_hex(auto_tag_color(name))
+    auto_tag_color(name)
   end
 
   def self.tag_text_color(bg_hex)
@@ -123,35 +120,6 @@ module RedmineupTags
     end
     luminance = 0.2126 * lin.call(r) + 0.7152 * lin.call(g) + 0.0722 * lin.call(b)
     luminance < 0.45 ? '#f8fafc' : '#1f2937'
-  end
-
-  def self.soften_hex(hex)
-    normalized = normalize_stored_color(hex)
-    return mute_hex(hex) unless normalized
-
-    r, g, b = normalized.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
-    h, s, l = rgb_to_hsl(r, g, b)
-    s *= 0.86
-    nr, ng, nb = hsl_to_rgb(h, s, l)
-    format('#%02x%02x%02x', (nr * 255).round, (ng * 255).round, (nb * 255).round)
-  rescue StandardError
-    normalized || '#93c5fd'
-  end
-
-  def self.mute_hex(hex)
-    normalized = normalize_stored_color(hex) || auto_tag_color(hex)
-    r, g, b = normalized.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
-    t = 0.20
-    r = r * (1 - t) + t
-    g = g * (1 - t) + t
-    b = b * (1 - t) + t
-    h, s, l = rgb_to_hsl(r, g, b)
-    s = [[s * 0.80, 0.36].max, 0.50].min
-    l = [[l, 0.58].max, 0.72].min
-    nr, ng, nb = hsl_to_rgb(h, s, l)
-    format('#%02x%02x%02x', (nr * 255).round, (ng * 255).round, (nb * 255).round)
-  rescue StandardError
-    '#93c5fd'
   end
 
   def self.rgb_to_hsl(r, g, b)
