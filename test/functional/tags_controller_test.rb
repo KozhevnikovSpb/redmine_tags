@@ -62,6 +62,8 @@ class TagsControllerTest < ActionController::TestCase
     assert_response :success
     assert_select "input#tag_name[value='#{tag.name}']", 1
     assert_select "input#tag_color", 1
+    assert_select "input.tag-color-native", 1
+    assert_select ".tag-color-swatch", RedmineupTags::PASTEL_PALETTE.size
   end
 
   def test_should_put_update
@@ -73,6 +75,21 @@ class TagsControllerTest < ActionController::TestCase
     tag1.reload
     assert_equal new_name, tag1.name
     assert_equal new_color, tag1.color
+  end
+
+  def test_should_put_update_normalizes_color
+    tag1 = Redmineup::Tag.find_by_name('a1')
+    compatible_request :put, :update, id: tag1.id, tag: { name: tag1.name, color: 'F87171' }
+    assert_redirected_to controller: 'settings', action: 'plugin', id: 'redmineup_tags', tab: 'manage_tags'
+    assert_equal '#f87171', tag1.reload.color
+  end
+
+  def test_should_put_update_clears_color_on_auto
+    tag1 = Redmineup::Tag.find_by_name('a1')
+    tag1.update_column(:color, '#f87171') if tag1.respond_to?(:update_column)
+    compatible_request :put, :update, id: tag1.id, tag: { name: tag1.name, color: '' }
+    assert_redirected_to controller: 'settings', action: 'plugin', id: 'redmineup_tags', tab: 'manage_tags'
+    assert_nil tag1.reload.color.presence
   end
 
   test 'should delete destroy' do
