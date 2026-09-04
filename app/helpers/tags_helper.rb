@@ -4,7 +4,7 @@ module TagsHelper
   def tag_color_field(tag)
     stored = RedmineupTags.normalize_stored_color(tag.respond_to?(:color) ? tag.color : nil)
     auto = RedmineupTags.auto_tag_color(tag)
-    muted_auto = RedmineupTags.mute_hex(auto)
+    muted_auto = RedmineupTags.auto_pastel_hex(tag)
     render partial: 'tags/color_editor', locals: {
       stored_hex: stored,
       auto_hex: auto,
@@ -214,7 +214,7 @@ module TagsHelper
 
     parts = []
     sop = tag_cloud.respond_to?(:normalized_status_operator) ? tag_cloud.normalized_status_operator : '*'
-    vop = tag_cloud.respond_to?(:normalized_version_operator) ? tag_cloud.normalized_version_operator : '*'
+    vop = tag_cloud.respond_to?(:normalized_version_operator) ? cloud.normalized_version_operator : '*'
     top = tag_cloud.respond_to?(:normalized_tracker_operator) ? tag_cloud.normalized_tracker_operator : '*'
     tagop =
       if tag_cloud.respond_to?(:normalized_tag_operator)
@@ -243,101 +243,3 @@ module TagsHelper
 
     safe_join(parts, tag.br)
   end
-
-  def tag_cloud_visibility_summary(tag_cloud)
-    return '' unless tag_cloud
-
-    case tag_cloud.visibility
-    when 'owner'
-      author_name = tag_cloud.visibility_author&.name
-      if author_name.present?
-        "#{l(:label_tag_cloud_visibility_owner)} (#{author_name})"
-      else
-        l(:label_tag_cloud_visibility_owner)
-      end
-    when 'roles'
-      role_names = Role.where(id: tag_cloud.role_ids).order(:name).pluck(:name)
-      if role_names.any?
-        "#{l(:label_tag_cloud_visibility_roles)}: #{role_names.join(', ')}"
-      else
-        l(:label_tag_cloud_visibility_roles)
-      end
-    else
-      l(:label_tag_cloud_visibility_all)
-    end
-  end
-
-  def tag_cloud_letter_marker(kind)
-    case kind.to_sym
-    when :system
-      content_tag(
-        :span,
-        l(:label_tag_cloud_badge_system),
-        class: 'tag-cloud-marker tag-cloud-marker-system'
-      )
-    when :inherited
-      content_tag(
-        :span,
-        l(:label_tag_cloud_badge_inherited),
-        class: 'tag-cloud-marker tag-cloud-marker-inherited'
-      )
-    else
-      ''.html_safe
-    end
-  end
-
-  private
-
-  def operator_filter_summary(label, operator, values)
-    op_label = tag_cloud_operator_label(operator)
-    text =
-      if TagCloud::VALUE_OPERATORS.include?(operator.to_s) || TagCloud::TAG_VALUE_OPERATORS.include?(operator.to_s)
-        names = values.presence || ['-']
-        "#{l(label)} #{op_label} #{names.join(', ')}"
-      else
-        "#{l(label)}: #{op_label}"
-      end
-    content_tag(:span, text)
-  end
-
-  def safe_names(model, ids)
-    ids = Array(ids).map(&:to_i).reject(&:zero?)
-    return [] if ids.empty?
-
-    scope = model.where(id: ids)
-    scope = scope.sorted if scope.respond_to?(:sorted)
-    scope.pluck(:name)
-  end
-
-  def filter_summary(label, values)
-    text =
-      if values.blank?
-        "#{l(label)}: #{l(:label_all)}"
-      else
-        "#{l(label)}: #{values.join(', ')}"
-      end
-    content_tag(:span, text)
-  end
-
-  def add_tags(style, tags, content, item_el, options)
-    items = []
-    tag_cloud tags, (1..8).to_a do |tag, weight|
-      item_style =
-        if style == :simple_cloud || options[:show_count]
-          'font-size: 1em;'
-        elsif style == :cloud
-          format('font-size: %.2fem;', 0.80 + (weight - 1) * 0.114)
-        else
-          ''
-        end
-      items << content_tag(
-        item_el,
-        render_issue_tag_link(tag, options),
-        class: "tag-nube-#{weight}",
-        style: item_style
-      )
-    end
-    separator = style == :simple_cloud ? tag_separator : ' '
-    content << safe_join(items, separator)
-  end
-end
