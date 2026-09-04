@@ -44,7 +44,7 @@ class TagColorTest < ActiveSupport::TestCase
   end
 
   def test_pastel_palette_size_and_format
-    assert_equal 27, RedmineupTags::PASTEL_PALETTE.size
+    assert_equal 45, RedmineupTags::PASTEL_PALETTE.size
     RedmineupTags::PASTEL_PALETTE.each do |hex|
       assert_equal hex, RedmineupTags.normalize_stored_color(hex)
     end

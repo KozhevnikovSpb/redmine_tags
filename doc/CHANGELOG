@@ -12,10 +12,13 @@ Version in init.rb: 0.0.6 (Development)
 Docs: doc/RELEASE_0.0.6.md, doc/TEST_V006_TAG_COLORS.md
 
 Tag colors
-* Admin Edit / Merge: pastel swatch grid (27) + native color input + hex + Auto
+* Admin Edit / Merge: pastel swatch grid (45) + native color input + hex + Auto
+* First 27 swatches unchanged; added stone / lime / teal / indigo / rose / amber
+* Auto colors still MD5(name) + mute (palette is editor-only, not the auto range)
 * Replaces RedmineUP $.fn.colorPicker on those pages
-* Stored tags.color is shown as-is on chips (no mute)
+* Stored tags.color is slightly desaturated on chips (soften S×0.86), not muted
 * Empty color still uses MD5(name) + mute; less white (t 0.34 → 0.20, max L 0.76 → 0.72)
+* Chip text follows background luminance (light text on dark manual colors)
 * Save normalizes to #rrggbb; Auto / blank clears the column
 * Field name tag[color] unchanged for RedmineUP Q&A
 

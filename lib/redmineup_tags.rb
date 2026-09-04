@@ -37,6 +37,7 @@ end
 module RedmineupTags
   PROJECT_MODULE_NAME = 'redmineup_tags'
 
+  # Admin swatches only. Auto colors still come from MD5(name) + mute_hex.
   PASTEL_PALETTE = %w[
     #e5e7eb #d1d5db #9ca3af
     #fecaca #f4b4b4 #e8a0a0
@@ -47,6 +48,12 @@ module RedmineupTags
     #bfdbfe #a8c8f0 #8eb4e0
     #ddd6fe #c8bcec #b4a8dc
     #fbcfe8 #efb6d4 #e09ec0
+    #fafaf9 #e7e5e4 #d6d3d1
+    #ecfccb #d9f99d #c4e38a
+    #ccfbf1 #99e6dc #7ecfc4
+    #e0e7ff #c7d2fe #b0b8e0
+    #ffe4e6 #fecdd3 #f5b8c4
+    #fef3c7 #f5e0a8 #e8d08a
   ].freeze
 
   def self.settings() Setting[:plugin_redmineup_tags].stringify_keys end
