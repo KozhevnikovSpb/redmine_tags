@@ -7,6 +7,29 @@
     return '';
   }
 
+  function textColor(hex) {
+    var n = normalizeHex(hex);
+    if (!n) {
+      return '#1f2937';
+    }
+    function lin(c) {
+      c = c / 255;
+      return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    }
+    var r = parseInt(n.slice(1, 3), 16);
+    var g = parseInt(n.slice(3, 5), 16);
+    var b = parseInt(n.slice(5, 7), 16);
+    var lum = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    return lum < 0.45 ? '#f8fafc' : '#1f2937';
+  }
+
+  function paintPreview($preview, hex) {
+    $preview.css({
+      'background-color': hex,
+      color: textColor(hex)
+    });
+  }
+
   function initTagColorEditor($root) {
     var $text = $root.find('.tag-color-hex');
     var $native = $root.find('.tag-color-native');
@@ -26,13 +49,13 @@
       if (fromAuto || !hex) {
         $text.val('');
         $native.val(mutedAuto);
-        $preview.css('background-color', mutedAuto);
+        paintPreview($preview, mutedAuto);
         highlight('');
         return;
       }
       $text.val(hex);
       $native.val(hex);
-      $preview.css('background-color', hex);
+      paintPreview($preview, hex);
       highlight(hex);
     }
 

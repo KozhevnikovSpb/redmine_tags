@@ -33,6 +33,16 @@ class TagColorTest < ActiveSupport::TestCase
     assert_match(/\A#[0-9a-f]{6}\z/, shown)
   end
 
+  def test_tag_text_color_dark_background_is_light
+    assert_equal '#f8fafc', RedmineupTags.tag_text_color('#000000')
+    assert_equal '#f8fafc', RedmineupTags.tag_text_color('#1e3a8a')
+  end
+
+  def test_tag_text_color_light_background_is_dark
+    assert_equal '#1f2937', RedmineupTags.tag_text_color('#fecaca')
+    assert_equal '#1f2937', RedmineupTags.tag_text_color('#ffffff')
+  end
+
   def test_pastel_palette_size_and_format
     assert_equal 27, RedmineupTags::PASTEL_PALETTE.size
     RedmineupTags::PASTEL_PALETTE.each do |hex|

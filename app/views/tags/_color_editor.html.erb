@@ -2,13 +2,14 @@
 <% auto_hex = local_assigns[:auto_hex] %>
 <% muted_auto_hex = local_assigns[:muted_auto_hex] %>
 <% preview_hex = stored_hex.presence || muted_auto_hex %>
+<% preview_fg = RedmineupTags.tag_text_color(preview_hex) %>
 <div class="tag-color-editor"
      data-auto-hex="<%= auto_hex %>"
      data-auto-muted="<%= muted_auto_hex %>">
   <div class="tag-color-editor-row">
     <%= text_field_tag 'tag[color]', stored_hex, id: 'tag_color', class: 'tag-color-hex', maxlength: 7, placeholder: '#rrggbb' %>
     <input type="color" id="tag_color_native" class="tag-color-native" value="<%= preview_hex %>" title="<%= l(:label_tag_color_custom) %>">
-    <span class="tag-color-preview tag-label-color" style="background-color: <%= preview_hex %>;"><%= l(:field_color) %></span>
+    <span class="tag-color-preview tag-label-color" style="background-color: <%= preview_hex %>; color: <%= preview_fg %>;"><%= l(:field_color) %></span>
     <button type="button" class="tag-color-auto"><%= l(:label_tag_color_auto) %></button>
   </div>
   <div class="tag-color-palette" role="listbox" aria-label="<%= l(:label_tag_color_palette) %>">
