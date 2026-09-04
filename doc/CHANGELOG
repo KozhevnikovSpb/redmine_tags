@@ -4,6 +4,21 @@ Redmine Tags plugin - Tags board plugin for redmine
 Copyright (C) 2011-2026 Kirill Bezrukov (RedmineUP)
 http://www.redmineup.com/
 
+== 2026-09-04 v0.0.6
+
+Development. Plugin ID: :redmineup_tags
+Target: Redmine 7.0.0 / Ruby 3.4 / Rails 8.1
+Version in init.rb: 0.0.6 (Development)
+Docs: doc/RELEASE_0.0.6.md, doc/TEST_V006_TAG_COLORS.md
+
+Tag colors
+* Admin Edit / Merge: pastel swatch grid (27) + native color input + hex + Auto
+* Replaces RedmineUP $.fn.colorPicker on those pages
+* Stored tags.color is shown as-is on chips (no mute)
+* Empty color still uses MD5(name) + mute; less white (t 0.34 → 0.20, max L 0.76 → 0.72)
+* Save normalizes to #rrggbb; Auto / blank clears the column
+* Field name tag[color] unchanged for RedmineUP Q&A
+
 == 2026-09-02 v0.0.5
 
 Stable freeze. Plugin ID: :redmineup_tags
@@ -51,168 +66,4 @@ Issue list Tags filter
 * Field name stays issue_tags for RedmineUP Q&A
 * Functional tests updated for OR; added test_filter_by_tags_equal_is_or_not_and
 
-Permissions (iteration 2)
-* Split cloud permissions: view_tag_clouds / select_tag_clouds / manage_tag_clouds
-* No cloud permission → only the default Tags cloud
-* View: custom clouds in sidebar + read-only project settings list
-* Display (select): personal sidebar show/hide/reorder (modal)
-* Manage: create/edit/delete/reorder in the project (membership required)
-* Author still sees own author-only cloud in the sidebar when any cloud permission is granted
-* create_tags / edit_tags unchanged (issue tag field, not clouds)
-
-Permissions (iteration 3)
-* Author-only identity uses both created_by_id and owner_id; form save fills both
-* visible_by_default is forced on for Author only (checkbox disabled in the form)
-* Settings list requires project context; view never lists author-only rows
-* TagCloudsController#index passes the project into listed_in_settings_for?
-* Unit tests cover the view / select / manage / author-only matrix, including the form create path
-
-Permissions (iteration 4)
-* Author with manage keeps Edit / Delete for own author-only cloud on the project
-* Another user's author-only cloud is hidden on the project from everyone, including full Redmine admin
-* Full admin edits other authors' owner clouds only from plugin settings → Tag Clouds (`from=plugin`)
-* Project modal no longer lists other authors' owner clouds for admin
-
-Permissions (iteration 5)
-* All tag and tag-cloud permissions moved to a separate Roles block `project_module :redmineup_tags`
-* Block title: Tags and tag clouds / Теги и облака тегов
-* Permission names unchanged for RedmineUP Q&A (`create_tags`, `edit_tags`)
-* Module auto-enabled on projects that have Issue tracking (boot INSERT + project after_save)
-* Admin plugin list Tag Clouds stays a flat table; rows sorted by project name, then cloud name
-
-Custom clouds
-* Plugin setting «Display open issues only» applies only to the default Tags cloud
-* Custom clouds use project-level filters only (status Any = all issues, including closed)
-* Sidebar counts, preview and tag click links follow the same rule
-* Equal issue counts sort alphabetically (A–Z), independent of count direction
-* System cloud title shows current setting: open only / all
-
-Personal visibility
-* System Tags cloud can be hidden per user on the current project (Select visible tag clouds)
-* System row is first in the modal, not sortable
-* Stored in user preferences (no extra table)
-* Plugin / project settings for the system cloud stay read-only
-
-Filters
-* Restrict cloud is a Tags row in the same filter table as Status / Target version / Tracker
-* Operators match Issue List list/optional: is (=), is not (!), none (!*), any (*)
-* is = whitelist; is not = exclude selected; none = empty cloud; any = all matching tags
-* is with no values stays empty (same as the old enabled-empty whitelist)
-* tag_operator column; tag_filter boolean kept in sync for compatibility
-
-UI
-* Hide core Apply button on plugin settings list tabs (Manage tags, Tag Clouds); keep it on General
-
-Schema notes
-* rake redmine:plugins:migrate NAME=redmineup_tags (migrations 003, 007, 008)
-  or redmineup_tags:repair_schema / ensure_tables, then restart
-
-Docs
-* doc/TEST_V005_CLOUD_PERMISSIONS.md
-* doc/RELEASE_0.0.5.md
-
-== 2026-08-22 v0.0.4
-
-Stable freeze. Plugin ID: :redmineup_tags
-Target: Redmine 7.0.0 / Ruby 3.4 / Rails 8.1
-Version in init.rb: 0.0.4 (Stable)
-
-Admin
-* Tab «Tag Clouds» on plugin settings — global list of custom clouds
-* Columns: Name, Project, Filters, Visibility, Author, Visible by default, Include subprojects
-* Edit/Delete only (no create, no reorder)
-* Admin bypasses project membership; redirect back to the settings tab
-
-Inherited clouds (parent → subproject)
-* Shown in subproject settings with R/К marker; system cloud with S/С
-* Edit / delete / reorder inherited clouds from the subproject (home-project positions)
-* Select visible modal: inherited and local groups, in-group sort, no group titles
-* Sidebar containers: system → inherited → local
-* Settings tab hidden without manage_tag_clouds
-
-Filters
-* Operators match Redmine 7 Issue List (status / tracker / version + history)
-* Version values: open + locked only
-* Root cloud tracker/version lists union of project + descendants
-* Name limited to 100 characters
-
-Visibility & permissions
-* Author only selectable by the cloud author (disabled otherwise)
-* Author name shown on the Author only option
-* Roles list as checkboxes (givable roles fallback)
-* owner_id synced to created_by_id
-
-UI
-* Word wrap for long unbroken names
-* Modal bulk check/uncheck, width 560px
-* Settings table responsive + zebra from the system row
-* Small hint font for subprojects text
-
-Schema notes
-* If operators columns are missing: rake redmine:plugins:migrate NAME=redmineup_tags
-  or redmineup_tags:repair_schema, then restart
-
-Docs
-* doc/RELEASE_0.0.4.md
-
-== 2026-08-15 v0.0.3
-
-Release: remaining logic + permissions (tag_filter UI, visibility UI)
-Target: Redmine 7.0 / Ruby 3.4 / Rails 8.1
-Plugin ID: :redmineup_tags
-
-Form & visibility
-* UI for visibility: all / owner / roles (radio)
-* Roles multi-select when visibility=roles; validation requires ≥1 role
-* Owner auto-assigned to current user when visibility=owner
-* UI for tag_filter: whitelist of project tags; empty whitelist ⇒ empty cloud
-* Settings table shows visibility summary column
-* Locales EN/RU for all new labels and permission help text
-
-Permissions
-* manage_tag_clouds (require: :member) — CRUD + reorder
-* select_tag_clouds — personal sidebar visibility modal
-* Cloud-level visibility rule applied in visible_for? before preference override
-* Documented in settings info text
-
-Logic
-* Controller syncs role_ids / tag_ids on create/update; clears when not applicable
-* Model assigned_role_ids / assigned_tag_ids work for new records before save
-* Unit tests for owner, roles, tag_filter, uniqueness, preferences
-
-== 2026-08-10 v0.0.2-beta
-
-Release tag: v0.0.2-beta
-Target: Redmine 7.0 / Ruby 3.4 / Rails 8.1
-Plugin ID: :redmineup_tags (compatibility with RedmineUP Q&A and other tag plugins)
-
-Schema & models
-* Force-rebuild multi-project schema (tag_clouds, tag_cloud_projects, tag_cloud_tags, tag_cloud_roles, tag_cloud_preferences)
-* Tags/taggings preserved
-* TagCloud without project_id / is_system / position; join models for project link and order
-* Default Tags cloud is virtual (not stored in DB)
-* visible_for? with visibility all|owner|roles + user preference override
-
-Display & filtering
-* TagCloudAggregator: real RedmineUP tags only; empty filters = all; include_subprojects; open_only from plugin settings
-* Sidebar: system Tags + custom clouds ordered by tag_cloud_projects.position
-* Settings: filters summary, create/edit filters, include_subprojects, visible_by_default
-* Preferences modal: per-user visibility + drag order
-* Default plugin settings: simple_cloud sidebar, show issue counts
-
-Fixes
-* Tag click links use Redmine f/op/v + set_filter so issue list applies immediately (no second Apply)
-* Helpers on ProjectsController; plugin controllers declare helpers
-* Locales EN/RU for multi tag clouds
-
-Docs
-* doc/TEST_DISPLAY_FILTERS.md — manual QA checklist
-* doc/RELEASE_0.0.2-beta.md — release notes
-
-== 2026-08-07 v0.0.1-alpha
-
-* Start of multi Tag Clouds extension development
-* Version reset for new development line based on redmine_up_tags
-* Target: Redmine 7.0.0 / Ruby 3.4 / Rails 8.1
-* Compatibility with RedmineUP Q&A and other RedmineUP tag plugins preserved
-* Plugin ID remains :redmineup_tags
+See git history for 0.0.4 and earlier notes.
