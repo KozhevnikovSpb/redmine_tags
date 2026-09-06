@@ -105,7 +105,7 @@ module IssuesTagsHelper
     if can_select_clouds
       sections << content_tag(:div, class: 'sidebar-tag-cloud-controls') do
         link_to(
-          l(:label_select_visible_tag_clouds),
+          sprite_icon('settings', l(:label_select_visible_tag_clouds)),
           edit_project_tag_cloud_preferences_path(@project),
           remote: true,
           class: 'icon icon-settings'

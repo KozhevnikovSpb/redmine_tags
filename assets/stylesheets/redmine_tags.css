@@ -51,15 +51,22 @@
 }
 #sidebar .sidebar-tag-cloud-controls {
   display: flex;
-  justify-content: center;
-  margin: 2px 0 12px;
-  text-align: center;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 10px 0 12px;
+  padding: 0;
+  text-align: left;
 }
 #sidebar .sidebar-tag-cloud-controls a {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  gap: 4px;
   font-size: 0.9em;
+}
+#sidebar .sidebar-tag-cloud-controls a svg {
+  flex: 0 0 auto;
+  margin-right: 2px;
 }
 #sidebar .tags-cloud,
 #sidebar .tags-cloud li,
