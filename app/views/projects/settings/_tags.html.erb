@@ -45,7 +45,7 @@
       <td class="tag-cloud-col-visibility"><%= l(:label_tag_cloud_visibility_all) %></td>
       <td class="tag-cloud-col-author">—</td>
       <td class="tag-cloud-col-visible">
-        <input type="checkbox" class="tag-flag-checkbox" tabindex="-1" style="pointer-events:none" onclick="return false;" checked="checked">
+        <input type="checkbox" class="tag-flag-checkbox" disabled="disabled" tabindex="-1" checked="checked">
       </td>
       <% if can_manage %>
         <td class="buttons"></td>
@@ -74,7 +74,7 @@
           <%= cloud.created_by ? link_to_user(cloud.created_by) : '—' %>
         </td>
         <td class="tag-cloud-col-visible">
-          <input type="checkbox" class="tag-flag-checkbox" tabindex="-1" style="pointer-events:none" onclick="return false;" <%= 'checked="checked"' if cloud.visible_by_default %>>
+          <input type="checkbox" class="tag-flag-checkbox" disabled="disabled" tabindex="-1" <%= 'checked="checked"' if cloud.visible_by_default %>>
         </td>
         <% if can_manage %>
           <td class="buttons">
@@ -115,7 +115,7 @@
             <%= cloud.created_by ? link_to_user(cloud.created_by) : '—' %>
           </td>
           <td class="tag-cloud-col-visible">
-            <input type="checkbox" class="tag-flag-checkbox" tabindex="-1" style="pointer-events:none" onclick="return false;" <%= 'checked="checked"' if cloud.visible_by_default %>>
+            <input type="checkbox" class="tag-flag-checkbox" disabled="disabled" tabindex="-1" <%= 'checked="checked"' if cloud.visible_by_default %>>
           </td>
           <% if can_manage %>
             <td class="buttons">
