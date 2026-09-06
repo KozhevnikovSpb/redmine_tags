@@ -23,13 +23,16 @@
     </thead>
     <tbody>
       <% tags.each do |tag| %>
-        <% raw_color = color_by_id[tag.id.to_i] %>
+        <% raw_color = color_by_id[tag.id.to_i]
+           if raw_color.nil? && tag.respond_to?(:has_attribute?) && tag.has_attribute?(:color)
+             raw_color = tag.read_attribute(:color)
+           end %>
         <% manual = !raw_color.nil? && raw_color.to_s != '' %>
         <tr id="<%= tag.id %>" class="<%= cycle("odd", "even") %> hascontextmenu ">
           <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, :id => nil) %></td>
           <td><%= render_issue_tag_link(tag) %></td>
           <td class="tag-manual-color" style="text-align:center;">
-            <%= check_box_tag(nil, '1', manual, disabled: true, onclick: 'return false;', tabindex: -1, name: nil, id: nil, class: 'tag-manual-flag') %>
+            <input type="checkbox" class="tag-manual-flag" value="1" tabindex="-1" style="pointer-events:none" onclick="return false;" <%= 'checked="checked"' if manual %>>
           </td>
           <td class="buttons" style="white-space:nowrap;">
             <%= link_to sprite_icon('edit', l(:button_edit)), edit_tag_path(tag),
