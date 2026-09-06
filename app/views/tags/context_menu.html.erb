@@ -2,9 +2,8 @@
   <% if @tag -%>
     <li><%= link_to sprite_icon('edit', l(:button_edit)), edit_tag_path(@tag),
             :class => 'icon icon-edit' %></li>
-    <% if RedmineupTags.stored_color_from(@tag) %>
-      <li><%= link_to sprite_icon('reload', l(:button_tag_color_reset)), reset_color_tag_path(@tag),
-              :method => :post,
+    <% if RedmineupTags.manual_color?(@tag) %>
+      <li><%= link_to l(:button_tag_color_reset), reset_color_tag_path(@tag),
               :data => { :confirm => l(:text_tag_color_reset_confirm) },
               :class => 'icon icon-reload' %></li>
     <% end %>

@@ -19,34 +19,32 @@
                                 :title => "#{l(:button_check_all)}/#{l(:button_uncheck_all)}" %>
         </th>
         <th><%= l(:field_name) %></th>
-        <th class="tag-manual-color" style="width:12%; text-align:center;"><%= l(:label_tag_color_manual) %></th>
-        <th align="center" style="width:22%;"> </th>
+        <th class="tag-manual-color" style="width:10%; text-align:center;"><%= l(:label_tag_color_manual) %></th>
+        <th align="center" style="width:24%;"> </th>
       </tr>
     </thead>
     <tbody>
       <% tags.each do |tag| %>
-        <% raw_color = color_by_id[tag.id] || color_by_id[tag.id.to_s] || (tag.respond_to?(:color) ? tag.color : nil) %>
-        <% manual_hex = RedmineupTags.normalize_stored_color(raw_color) %>
+        <% raw_color = color_by_id[tag.id] || color_by_id[tag.id.to_s] %>
+        <% manual = RedmineupTags.normalize_stored_color(raw_color).present? %>
         <tr id="<%= tag.id %>" class="<%= cycle("odd", "even") %> hascontextmenu ">
           <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, :id => nil) %></td>
           <td><%= render_issue_tag_link(tag) %></td>
           <td class="tag-manual-color" style="text-align:center;">
-            <% if manual_hex.present? %>
-              ✓
-            <% else %>
-              —
-            <% end %>
+            <%= check_box_tag("manual_color_#{tag.id}", '1', manual, disabled: true, title: manual ? l(:label_tag_color_custom) : l(:label_tag_color_auto)) %>
           </td>
           <td class="buttons">
             <%= link_to sprite_icon('edit', l(:button_edit)), edit_tag_path(tag),
                                            :class => 'icon icon-edit' %>
-            <% if manual_hex.present? %>
-              <button type="button"
-                      class="icon icon-reload"
-                      onclick="if (window.confirm('<%= j l(:text_tag_color_reset_confirm) %>')) { window.location = '<%= reset_color_tag_path(tag) %>'; } return false;">
-                <%= l(:button_tag_color_reset) %>
-              </button>
-            <% end %>
+            <button type="button"
+                    class="icon icon-reload"
+                    <%= 'disabled="disabled"' unless manual %>
+                    <% if manual %>
+                      onclick="if (window.confirm('<%= j l(:text_tag_color_reset_confirm) %>')) { window.location = '<%= reset_color_tag_path(tag) %>'; } return false;"
+                    <% end %>
+                    title="<%= l(:button_tag_color_reset) %>">
+              <%= l(:button_tag_color_reset) %>
+            </button>
             <%= link_to sprite_icon('del', l(:button_delete)), tags_path(:ids => tag),
                                            :method => :delete,
                                            :confirm => l(:text_are_you_sure),

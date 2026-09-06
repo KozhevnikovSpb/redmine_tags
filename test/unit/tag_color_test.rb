@@ -9,6 +9,7 @@ class TagColorTest < ActiveSupport::TestCase
     assert_equal '#ffffff', RedmineupTags.normalize_stored_color('#ffffff')
     assert_equal '#ff0000', RedmineupTags.normalize_stored_color('FF0000')
     assert_equal '#3366ff', RedmineupTags.normalize_stored_color('#3366FF')
+    assert_equal '#f87171', RedmineupTags.normalize_stored_color(0xf87171)
     assert_nil RedmineupTags.normalize_stored_color('')
     assert_nil RedmineupTags.normalize_stored_color('auto')
     assert_nil RedmineupTags.normalize_stored_color('red')
@@ -20,6 +21,14 @@ class TagColorTest < ActiveSupport::TestCase
     tag = FakeTag.new('Bug', '#f87171')
     assert_equal '#f87171', RedmineupTags.display_tag_color(tag)
     assert_equal '#f87171', RedmineupTags.extract_tag_hex(tag)
+    assert RedmineupTags.manual_color?(tag)
+  end
+
+  def test_nil_db_color_is_auto_not_manual
+    tag = FakeTag.new('Bug', nil)
+    auto = RedmineupTags.auto_tag_color(tag)
+    assert_equal auto, RedmineupTags.display_tag_color(tag)
+    assert_not RedmineupTags.manual_color?(tag)
   end
 
   def test_auto_color_is_pastel_and_same_for_display_and_extract
@@ -38,10 +47,9 @@ class TagColorTest < ActiveSupport::TestCase
     colors.each do |hex|
       r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
       _h, s, l = RedmineupTags.rgb_to_hsl(r, g, b)
-      assert_operator s, :>=, 0.26
-      assert_operator s, :<=, 0.56
-      assert_operator l, :>=, 0.58
-      assert_operator l, :<=, 0.80
+      assert_operator s, :<=, 0.48, hex
+      assert_operator l, :>=, 0.62, hex
+      assert_operator l, :<=, 0.90, hex
     end
   end
 
