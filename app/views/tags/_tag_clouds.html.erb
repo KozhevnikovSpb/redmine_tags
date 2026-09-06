@@ -20,8 +20,8 @@
       <th class="tag-cloud-col-filters"><%= l(:label_tag_cloud_filters) %></th>
       <th class="tag-cloud-col-visibility"><%= l(:label_tag_cloud_visibility_rule) %></th>
       <th class="tag-cloud-col-author"><%= l(:field_author) %></th>
-      <th class="tag-cloud-col-visible"><%= l(:label_tag_cloud_visible_by_default) %></th>
-      <th class="tag-cloud-col-subprojects"><%= l(:label_tag_cloud_include_subprojects) %></th>
+      <th class="tag-cloud-col-visible" style="text-align:center;"><%= l(:label_tag_cloud_visible_by_default) %></th>
+      <th class="tag-cloud-col-subprojects" style="text-align:center;"><%= l(:label_tag_cloud_include_subprojects) %></th>
       <th class="buttons"></th>
     </tr>
   </thead>
@@ -41,8 +41,12 @@
           <td class="tag-cloud-col-author">
             <%= cloud.created_by ? link_to_user(cloud.created_by) : '—' %>
           </td>
-          <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
-          <td class="tag-cloud-col-subprojects"><%= cloud.include_subprojects ? '✓' : '—' %></td>
+          <td class="tag-cloud-col-visible" style="text-align:center;">
+            <input type="checkbox" class="tag-flag-checkbox" tabindex="-1" style="pointer-events:none" onclick="return false;" <%= 'checked="checked"' if cloud.visible_by_default %>>
+          </td>
+          <td class="tag-cloud-col-subprojects" style="text-align:center;">
+            <input type="checkbox" class="tag-flag-checkbox" tabindex="-1" style="pointer-events:none" onclick="return false;" <%= 'checked="checked"' if cloud.include_subprojects %>>
+          </td>
           <td class="buttons">
             <%= link_to sprite_icon('edit', l(:button_edit)),
                         edit_project_tag_cloud_path(project, cloud, from: 'plugin'),

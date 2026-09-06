@@ -18,6 +18,7 @@
 <style>
   .tag-clouds-settings-table > tbody > tr.even { background-color: #f6f7f8 !important; }
   .tag-clouds-settings-table > tbody > tr.odd { background-color: #fff !important; }
+  .tag-clouds-settings-table .tag-cloud-col-visible { text-align: center; }
 </style>
 
 <div class="tag-clouds-settings-wrap">
@@ -43,7 +44,9 @@
       <td class="tag-cloud-col-filters"><%= l(:label_all) %></td>
       <td class="tag-cloud-col-visibility"><%= l(:label_tag_cloud_visibility_all) %></td>
       <td class="tag-cloud-col-author">—</td>
-      <td class="tag-cloud-col-visible">✓</td>
+      <td class="tag-cloud-col-visible">
+        <input type="checkbox" class="tag-flag-checkbox" tabindex="-1" style="pointer-events:none" onclick="return false;" checked="checked">
+      </td>
       <% if can_manage %>
         <td class="buttons"></td>
       <% end %>
@@ -70,7 +73,9 @@
         <td class="tag-cloud-col-author">
           <%= cloud.created_by ? link_to_user(cloud.created_by) : '—' %>
         </td>
-        <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
+        <td class="tag-cloud-col-visible">
+          <input type="checkbox" class="tag-flag-checkbox" tabindex="-1" style="pointer-events:none" onclick="return false;" <%= 'checked="checked"' if cloud.visible_by_default %>>
+        </td>
         <% if can_manage %>
           <td class="buttons">
             <% if cloud_manageable %>
@@ -109,7 +114,9 @@
           <td class="tag-cloud-col-author">
             <%= cloud.created_by ? link_to_user(cloud.created_by) : '—' %>
           </td>
-          <td class="tag-cloud-col-visible"><%= cloud.visible_by_default ? '✓' : '—' %></td>
+          <td class="tag-cloud-col-visible">
+            <input type="checkbox" class="tag-flag-checkbox" tabindex="-1" style="pointer-events:none" onclick="return false;" <%= 'checked="checked"' if cloud.visible_by_default %>>
+          </td>
           <% if can_manage %>
             <td class="buttons">
               <% if cloud_manageable %>
