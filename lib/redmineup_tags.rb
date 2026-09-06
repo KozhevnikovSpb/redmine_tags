@@ -37,7 +37,6 @@ end
 module RedmineupTags
   PROJECT_MODULE_NAME = 'redmineup_tags'
 
-  # Admin swatches only. Auto colors are computed by auto_tag_color, not this list.
   PASTEL_PALETTE = %w[
     #e5e7eb #d1d5db #9ca3af
     #fecaca #f4b4b4 #e8a0a0
@@ -87,15 +86,26 @@ module RedmineupTags
     format('#%06x', n)
   end
 
-  # Raw tags.color from DB. Never Tag#color — that accessor always returns a hex.
   def self.raw_db_color(tag_or_value)
     return tag_or_value if tag_or_value.is_a?(String) || tag_or_value.is_a?(Numeric) || tag_or_value.nil?
 
     if tag_or_value.respond_to?(:read_attribute)
-      return tag_or_value.read_attribute(:color)
+      begin
+        return tag_or_value.read_attribute(:color)
+      rescue StandardError
+        return nil
+      end
     end
 
     tag_or_value.color if tag_or_value.respond_to?(:color)
+  end
+
+  def self.db_color_present?(tag_or_value)
+    raw = raw_db_color(tag_or_value)
+    return false if raw.nil?
+    return true if raw.is_a?(Numeric)
+
+    !raw.to_s.strip.empty?
   end
 
   def self.stored_color_from(tag_or_hex)
@@ -103,10 +113,9 @@ module RedmineupTags
   end
 
   def self.manual_color?(tag_or_hex)
-    stored_color_from(tag_or_hex).present?
+    db_color_present?(tag_or_hex)
   end
 
-  # Write hex through the gem setter (integer in DB). Blank → NULL via write_attribute.
   def self.apply_color!(tag, value)
     hex = normalize_stored_color(value)
     if hex && tag.respond_to?(:color=)
@@ -123,7 +132,6 @@ module RedmineupTags
     tag.write_attribute(:color, nil)
   end
 
-  # Automatic color: MD5 → muted HSL + white blend. This is the shown auto color.
   def self.auto_tag_color(tag_or_name)
     name = tag_or_name.respond_to?(:name) ? tag_or_name.name.to_s : tag_or_name.to_s
     digest = Digest::MD5.hexdigest(name)
