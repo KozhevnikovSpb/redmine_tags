@@ -8,6 +8,12 @@
      end
    end %>
 <% unless tags.empty? %>
+  <style>
+    #manage-tags-table input.tag-manual-flag:disabled {
+      accent-color: #6b7280;
+      opacity: 1;
+    }
+  </style>
   <table class="list issues" id="manage-tags-table">
     <thead>
       <tr>
@@ -36,6 +42,7 @@
                    class="tag-manual-flag"
                    value="1"
                    tabindex="-1"
+                   disabled="disabled"
                    data-on="<%= manual ? '1' : '0' %>"
                    <%= 'checked="checked"' if manual %>>
           </td>
