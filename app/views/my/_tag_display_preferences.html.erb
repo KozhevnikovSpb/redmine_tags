@@ -24,10 +24,14 @@
 (function() {
   var box = document.getElementById('tag-display-preferences');
   if (!box) return;
-  var parent = box.parentElement;
-  if (!parent || parent === box) return;
-  if (parent.tagName && parent.tagName.toLowerCase() === 'fieldset') {
-    parent.parentNode.insertBefore(box, parent.nextSibling);
+  var form = document.getElementById('my_account_form');
+  var left = form && form.querySelector('.splitcontentleft');
+  if (!left) return;
+  var save = left.querySelector('p.mobile-hide');
+  if (save) {
+    left.insertBefore(box, save);
+  } else {
+    left.appendChild(box);
   }
 })();
 <% end %>
