@@ -1,12 +1,19 @@
 <% tags = Issue.all_tags(all_issues: true, sort_by: 'name').to_a %>
-<% color_by_id = Redmineup::Tag.where(id: tags.map(&:id)).pluck(:id, :color).to_h.transform_keys(&:to_i) %>
+<% color_by_id = {}
+   ids = tags.map { |t| t.id.to_i }.uniq
+   if ids.any? && Redmineup::Tag.table_exists?
+     table = Redmineup::Tag.connection.quote_table_name(Redmineup::Tag.table_name)
+     Redmineup::Tag.connection.select_rows("SELECT id, color FROM #{table} WHERE id IN (#{ids.join(',')})").each do |id, color|
+       color_by_id[id.to_i] = color
+     end
+   end %>
 <% unless tags.empty? %>
   <table class="list issues" id="manage-tags-table">
     <thead>
       <tr>
         <th class="checkbox hide-when-print">
-          <%= link_to image_tag('toggle_check.png'), {},
-                                :onclick => 'toggleIssuesSelection(this); return false;',
+          <%= link_to image_tag('toggle_check.png'), '#',
+                                :onclick => "var $b=$('#manage-tags-table td.checkbox input[name=\\'ids[]\\']'); $b.prop('checked', $b.filter(':checked').length !== $b.length); return false;",
                                 :title => "#{l(:button_check_all)}/#{l(:button_uncheck_all)}" %>
         </th>
         <th><%= l(:field_name) %></th>
@@ -17,11 +24,13 @@
     <tbody>
       <% tags.each do |tag| %>
         <% raw_color = color_by_id[tag.id.to_i] %>
-        <% manual = !raw_color.nil? && raw_color != '' %>
+        <% manual = !raw_color.nil? && raw_color.to_s != '' %>
         <tr id="<%= tag.id %>" class="<%= cycle("odd", "even") %> hascontextmenu ">
           <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, :id => nil) %></td>
           <td><%= render_issue_tag_link(tag) %></td>
-          <td class="tag-manual-color" style="text-align:center;"><%= check_box_tag("manual_color_#{tag.id}", '1', manual, disabled: true) %></td>
+          <td class="tag-manual-color" style="text-align:center;">
+            <span class="tag-manual-flag<%= ' is-on' if manual %>" title="<%= raw_color.inspect %>"></span>
+          </td>
           <td class="buttons" style="white-space:nowrap;">
             <%= link_to sprite_icon('edit', l(:button_edit)), edit_tag_path(tag),
                                            :class => 'icon icon-edit' %>
