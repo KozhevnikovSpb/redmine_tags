@@ -1,12 +1,16 @@
 <% tags = Issue.all_tags(all_issues: true, sort_by: 'name').to_a %>
 <% color_by_id =
-     if tags.any? && Redmineup::Tag.column_names.include?('color')
-       Redmineup::Tag.unscoped.where(id: tags.map(&:id)).pluck(:id, :color).each_with_object({}) { |(id, color), acc|
-         acc[id] = color
-         acc[id.to_i] = color
-         acc[id.to_s] = color
-       }
-     else
+     begin
+       if tags.any?
+         Redmineup::Tag.unscoped.where(id: tags.map(&:id)).pluck(:id, :color).each_with_object({}) { |(id, color), acc|
+           acc[id] = color
+           acc[id.to_i] = color
+           acc[id.to_s] = color
+         }
+       else
+         {}
+       end
+     rescue StandardError
        {}
      end %>
 <% unless tags.empty? %>
@@ -19,34 +23,37 @@
                                 :title => "#{l(:button_check_all)}/#{l(:button_uncheck_all)}" %>
         </th>
         <th><%= l(:field_name) %></th>
-        <th class="tag-manual-color" style="width:10%; text-align:center;"><%= l(:label_tag_color_manual) %></th>
-        <th align="center" style="width:24%;"> </th>
+        <th class="tag-manual-color" style="width:72px; text-align:center;"><%= l(:label_tag_color_manual) %></th>
+        <th style="width:280px;"> </th>
       </tr>
     </thead>
     <tbody>
       <% tags.each do |tag| %>
-        <% raw_color = color_by_id[tag.id] || color_by_id[tag.id.to_i] || color_by_id[tag.id.to_s] %>
+        <% raw_color =
+             if tag.respond_to?(:attributes) && tag.attributes.key?('color')
+               tag.attributes['color']
+             else
+               color_by_id[tag.id] || color_by_id[tag.id.to_i] || color_by_id[tag.id.to_s]
+             end %>
         <% manual = RedmineupTags.db_color_present?(raw_color) %>
         <tr id="<%= tag.id %>" class="<%= cycle("odd", "even") %> hascontextmenu ">
           <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, :id => nil) %></td>
           <td><%= render_issue_tag_link(tag) %></td>
-          <td class="tag-manual-color" style="text-align:center;">
-            <%= check_box_tag("manual_color_#{tag.id}", '1', manual, disabled: true, title: manual ? l(:label_tag_color_custom) : l(:label_tag_color_auto)) %>
-          </td>
-          <td class="buttons">
+          <td class="tag-manual-color" style="text-align:center;"><%= check_box_tag("manual_color_#{tag.id}", '1', manual, disabled: true, title: manual ? l(:label_tag_color_custom) : l(:label_tag_color_auto)) %></td>
+          <td class="buttons" style="white-space:nowrap;">
             <%= link_to sprite_icon('edit', l(:button_edit)), edit_tag_path(tag),
                                            :class => 'icon icon-edit' %>
-            <% if manual %>
-              <%= link_to sprite_icon('reload', l(:button_tag_color_reset)), reset_color_tag_path(tag),
-                                             :data => { :confirm => l(:text_tag_color_reset_confirm) },
-                                             :class => 'icon icon-reload',
-                                             :title => l(:button_tag_color_reset) %>
-            <% else %>
-              <%= content_tag(:span, sprite_icon('reload', l(:button_tag_color_reset)),
-                              class: 'icon icon-reload disabled',
-                              title: l(:button_tag_color_reset),
-                              style: 'opacity:0.45; pointer-events:none; cursor:default;') %>
-            <% end %>
+            <span class="tag-reset-slot" style="display:inline-block; min-width:8.5em; vertical-align:middle;">
+              <% if manual %>
+                <%= link_to sprite_icon('reload', l(:button_tag_color_reset)), reset_color_tag_path(tag),
+                                               :data => { :confirm => l(:text_tag_color_reset_confirm) },
+                                               :class => 'icon icon-reload' %>
+              <% else %>
+                <%= content_tag(:span, sprite_icon('reload', l(:button_tag_color_reset)),
+                                class: 'icon icon-reload disabled',
+                                style: 'opacity:0.4; pointer-events:none; cursor:default; color:#999;') %>
+              <% end %>
+            </span>
             <%= link_to sprite_icon('del', l(:button_delete)), tags_path(:ids => tag),
                                            :method => :delete,
                                            :confirm => l(:text_are_you_sure),
