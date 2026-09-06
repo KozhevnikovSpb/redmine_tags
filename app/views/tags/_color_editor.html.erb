@@ -10,7 +10,7 @@
     <%= text_field_tag 'tag[color]', stored_hex, id: 'tag_color', class: 'tag-color-hex', maxlength: 7, placeholder: '#rrggbb' %>
     <input type="color" id="tag_color_native" class="tag-color-native" value="<%= preview_hex %>" title="<%= l(:label_tag_color_custom) %>">
     <span class="tag-color-preview tag-label-color" style="background-color: <%= preview_hex %>; color: <%= preview_fg %>;"><%= l(:field_color) %></span>
-    <button type="button" class="tag-color-auto"><%= l(:label_tag_color_auto) %></button>
+    <button type="button" class="tag-color-auto"><%= l(:button_reset) %></button>
   </div>
   <div class="tag-color-palette" role="listbox" aria-label="<%= l(:label_tag_color_palette) %>">
     <% RedmineupTags::PASTEL_PALETTE.each do |hex| %>
