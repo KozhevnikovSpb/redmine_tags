@@ -1,4 +1,14 @@
 <% tags = Issue.all_tags(all_issues: true, sort_by: 'name').to_a %>
+<% color_by_id =
+     if tags.any? && Redmineup::Tag.column_names.include?('color')
+       Redmineup::Tag.unscoped.where(id: tags.map(&:id)).pluck(:id, :color).each_with_object({}) { |(id, color), acc|
+         acc[id] = color
+         acc[id.to_i] = color
+         acc[id.to_s] = color
+       }
+     else
+       {}
+     end %>
 <% unless tags.empty? %>
   <table class="list issues" id="manage-tags-table">
     <thead>
@@ -15,7 +25,8 @@
     </thead>
     <tbody>
       <% tags.each do |tag| %>
-        <% manual = RedmineupTags.db_color_present?(tag) %>
+        <% raw_color = color_by_id[tag.id] || color_by_id[tag.id.to_i] || color_by_id[tag.id.to_s] %>
+        <% manual = RedmineupTags.db_color_present?(raw_color) %>
         <tr id="<%= tag.id %>" class="<%= cycle("odd", "even") %> hascontextmenu ">
           <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, :id => nil) %></td>
           <td><%= render_issue_tag_link(tag) %></td>
