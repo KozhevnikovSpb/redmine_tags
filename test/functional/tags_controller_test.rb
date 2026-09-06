@@ -43,7 +43,6 @@ class TagsControllerTest < ActionController::TestCase
            :custom_fields_trackers
 
   def setup
-    # run as the admin
     @request.session[:user_id] = 1
 
     @project_a = Project.generate!
@@ -75,6 +74,7 @@ class TagsControllerTest < ActionController::TestCase
     tag1.reload
     assert_equal new_name, tag1.name
     assert_equal new_color, tag1.color
+    assert RedmineupTags.manual_color?(tag1)
   end
 
   def test_should_put_update_normalizes_color
@@ -86,18 +86,24 @@ class TagsControllerTest < ActionController::TestCase
 
   def test_should_put_update_clears_color_on_auto
     tag1 = Redmineup::Tag.find_by_name('a1')
-    tag1.update_column(:color, '#f87171') if tag1.respond_to?(:update_column)
+    RedmineupTags.apply_color!(tag1, '#f87171')
+    tag1.save
     compatible_request :put, :update, id: tag1.id, tag: { name: tag1.name, color: '' }
     assert_redirected_to controller: 'settings', action: 'plugin', id: 'redmineup_tags', tab: 'manage_tags'
-    assert_nil tag1.reload.color.presence
+    tag1.reload
+    assert_nil tag1.read_attribute(:color)
+    assert_not RedmineupTags.manual_color?(tag1)
   end
 
-  def test_should_post_reset_color
+  def test_should_get_reset_color
     tag1 = Redmineup::Tag.find_by_name('a1')
-    tag1.update_column(:color, '#f87171') if tag1.respond_to?(:update_column)
-    compatible_request :post, :reset_color, id: tag1.id
+    RedmineupTags.apply_color!(tag1, '#f87171')
+    tag1.save
+    compatible_request :get, :reset_color, id: tag1.id
     assert_redirected_to controller: 'settings', action: 'plugin', id: 'redmineup_tags', tab: 'manage_tags'
-    assert_nil tag1.reload.color.presence
+    tag1.reload
+    assert_nil tag1.read_attribute(:color)
+    assert_not RedmineupTags.manual_color?(tag1)
   end
 
   test 'should delete destroy' do
