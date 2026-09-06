@@ -42,10 +42,10 @@
             <%= cloud.created_by ? link_to_user(cloud.created_by) : '—' %>
           </td>
           <td class="tag-cloud-col-visible" style="text-align:center;">
-            <input type="checkbox" class="tag-flag-checkbox" tabindex="-1" style="pointer-events:none" onclick="return false;" <%= 'checked="checked"' if cloud.visible_by_default %>>
+            <input type="checkbox" class="tag-flag-checkbox" disabled="disabled" tabindex="-1" <%= 'checked="checked"' if cloud.visible_by_default %>>
           </td>
           <td class="tag-cloud-col-subprojects" style="text-align:center;">
-            <input type="checkbox" class="tag-flag-checkbox" tabindex="-1" style="pointer-events:none" onclick="return false;" <%= 'checked="checked"' if cloud.include_subprojects %>>
+            <input type="checkbox" class="tag-flag-checkbox" disabled="disabled" tabindex="-1" <%= 'checked="checked"' if cloud.include_subprojects %>>
           </td>
           <td class="buttons">
             <%= link_to sprite_icon('edit', l(:button_edit)),
