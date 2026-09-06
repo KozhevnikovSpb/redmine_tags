@@ -71,6 +71,22 @@
   margin-bottom: 6px;
   padding: 0;
 }
+#sidebar .sidebar-tag-cloud-controls a {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding-inline-start: 0;
+}
+#sidebar .sidebar-tag-cloud-controls a svg,
+#sidebar .sidebar-tag-cloud-controls a .icon-svg {
+  margin: 0;
+  margin-inline-end: 0;
+}
+#sidebar .sidebar-tag-cloud-controls a .icon-label {
+  margin: 0;
+  padding: 0;
+  margin-inline-start: 2px;
+}
 #sidebar .sidebar-tag-cloud {
   margin: 6px 0 0;
   padding: 0;
