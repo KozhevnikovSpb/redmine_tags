@@ -64,10 +64,15 @@ module RedmineupTags
 
   def self.normalize_stored_color(value)
     return nil if value.nil?
+    return hex_from_integer(value) if value.is_a?(Numeric)
 
     raw = value.to_s.strip
     return nil if raw.empty?
     return nil if raw.casecmp('auto').zero?
+
+    if raw.match?(/\A\d+\z/) && raw.length != 6
+      return hex_from_integer(raw.to_i)
+    end
 
     raw = raw.sub(/\A#/, '')
     return "##{raw.downcase}" if raw.match?(/\A[0-9a-fA-F]{6}\z/)
@@ -75,31 +80,68 @@ module RedmineupTags
     nil
   end
 
-  # Automatic color: MD5(name) → HSL pastel. This is the color, not a display filter.
+  def self.hex_from_integer(value)
+    n = value.to_i
+    return nil if n.negative? || n > 0xffffff
+
+    format('#%06x', n)
+  end
+
+  # Raw tags.color from DB. Never Tag#color — that accessor always returns a hex.
+  def self.raw_db_color(tag_or_value)
+    return tag_or_value if tag_or_value.is_a?(String) || tag_or_value.is_a?(Numeric) || tag_or_value.nil?
+
+    if tag_or_value.respond_to?(:read_attribute)
+      return tag_or_value.read_attribute(:color)
+    end
+
+    tag_or_value.color if tag_or_value.respond_to?(:color)
+  end
+
+  def self.stored_color_from(tag_or_hex)
+    normalize_stored_color(raw_db_color(tag_or_hex))
+  end
+
+  def self.manual_color?(tag_or_hex)
+    stored_color_from(tag_or_hex).present?
+  end
+
+  # Write hex through the gem setter (integer in DB). Blank → NULL via write_attribute.
+  def self.apply_color!(tag, value)
+    hex = normalize_stored_color(value)
+    if hex && tag.respond_to?(:color=)
+      tag.color = hex
+    else
+      write_null_color!(tag)
+    end
+    hex
+  end
+
+  def self.write_null_color!(tag)
+    return unless tag.respond_to?(:write_attribute)
+
+    tag.write_attribute(:color, nil)
+  end
+
+  # Automatic color: MD5 → muted HSL + white blend. This is the shown auto color.
   def self.auto_tag_color(tag_or_name)
     name = tag_or_name.respond_to?(:name) ? tag_or_name.name.to_s : tag_or_name.to_s
     digest = Digest::MD5.hexdigest(name)
     h = digest[0, 8].to_i(16) / 4_294_967_295.0
-    s = 0.28 + (digest[8, 4].to_i(16) / 65_535.0) * 0.26
-    l = 0.60 + (digest[12, 4].to_i(16) / 65_535.0) * 0.18
+    s = 0.24 + (digest[8, 4].to_i(16) / 65_535.0) * 0.20
+    l = 0.62 + (digest[12, 4].to_i(16) / 65_535.0) * 0.12
     nr, ng, nb = hsl_to_rgb(h, s, l)
+    t = 0.22
+    nr = nr * (1.0 - t) + t
+    ng = ng * (1.0 - t) + t
+    nb = nb * (1.0 - t) + t
     format('#%02x%02x%02x', (nr * 255).round, (ng * 255).round, (nb * 255).round)
   rescue StandardError
-    '#93c5fd'
+    '#c7d2fe'
   end
 
   def self.auto_pastel_hex(tag_or_name)
     auto_tag_color(tag_or_name)
-  end
-
-  def self.stored_color_from(tag_or_hex)
-    raw =
-      if tag_or_hex.respond_to?(:color)
-        tag_or_hex.color
-      elsif tag_or_hex.is_a?(String)
-        tag_or_hex
-      end
-    normalize_stored_color(raw)
   end
 
   def self.display_tag_color(tag_or_hex)
@@ -111,7 +153,7 @@ module RedmineupTags
   end
 
   def self.tag_text_color(bg_hex)
-    hex = normalize_stored_color(bg_hex) || '#93c5fd'
+    hex = normalize_stored_color(bg_hex) || '#c7d2fe'
     r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
     lin = lambda do |c|
       c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055)**2.4

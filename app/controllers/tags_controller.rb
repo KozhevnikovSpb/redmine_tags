@@ -41,7 +41,7 @@ class TagsController < ApplicationController
   def update
     @tag.name = params[:tag][:name] if params[:tag]
     if params[:tag] && params[:tag].key?(:color)
-      @tag.color = RedmineupTags.normalize_stored_color(params[:tag][:color])
+      RedmineupTags.apply_color!(@tag, params[:tag][:color])
     end
     if @tag.save
       flash[:notice] = l(:notice_successful_update)
@@ -57,10 +57,10 @@ class TagsController < ApplicationController
   end
 
   def reset_color
+    RedmineupTags.write_null_color!(@tag)
     if @tag.has_attribute?(:color)
       @tag.update_column(:color, nil)
-    elsif @tag.respond_to?(:color=)
-      @tag.color = nil
+    else
       @tag.save(validate: false)
     end
     flash[:notice] = l(:notice_tag_color_reset)
@@ -75,10 +75,11 @@ class TagsController < ApplicationController
 
   def merge
     if request.post? && params[:tag] && params[:tag][:name]
-      params_hash = params[:tag].respond_to?(:to_unsafe_hash) ? params[:tag].to_unsafe_hash : params
+      params_hash = params[:tag].respond_to?(:to_unsafe_hash) ? params[:tag].to_unsafe_hash : params[:tag]
       Redmineup::Tagging.transaction do
-        tag = Redmineup::Tag.find_by_name(params_hash['name']) || Redmineup::Tag.create(params_hash)
-        tag.update(color: RedmineupTags.normalize_stored_color(params[:tag][:color]))
+        tag = Redmineup::Tag.find_by_name(params_hash['name']) || Redmineup::Tag.create(name: params_hash['name'])
+        RedmineupTags.apply_color!(tag, params[:tag][:color])
+        tag.save
         Redmineup::Tagging.where(tag_id: @tags.map(&:id)).update_all(tag_id: tag.id)
         @tags.select { |t| t.id != tag.id }.each{ |t| t.destroy }
         redirect_to controller: 'settings', action: 'plugin', id: 'redmineup_tags', tab: 'manage_tags'
