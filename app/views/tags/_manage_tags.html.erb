@@ -31,22 +31,21 @@
           <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, :id => nil) %></td>
           <td><%= render_issue_tag_link(tag) %></td>
           <td class="tag-manual-color" style="text-align:center;">
-            <% if manual %>
-              ✓
-            <% else %>
-              —
-            <% end %>
+            <%= check_box_tag("manual_color_#{tag.id}", '1', manual, disabled: true, title: manual ? l(:label_tag_color_custom) : l(:label_tag_color_auto)) %>
           </td>
           <td class="buttons">
             <%= link_to sprite_icon('edit', l(:button_edit)), edit_tag_path(tag),
                                            :class => 'icon icon-edit' %>
             <% if manual %>
-              <button type="button"
-                      class="icon icon-reload"
-                      onclick="if (window.confirm('<%= j l(:text_tag_color_reset_confirm) %>')) { window.location = '<%= reset_color_tag_path(tag) %>'; } return false;"
-                      title="<%= l(:button_tag_color_reset) %>">
-                <%= l(:button_tag_color_reset) %>
-              </button>
+              <%= link_to sprite_icon('reload', l(:button_tag_color_reset)), reset_color_tag_path(tag),
+                                             :data => { :confirm => l(:text_tag_color_reset_confirm) },
+                                             :class => 'icon icon-reload',
+                                             :title => l(:button_tag_color_reset) %>
+            <% else %>
+              <%= content_tag(:span, sprite_icon('reload', l(:button_tag_color_reset)),
+                              class: 'icon icon-reload disabled',
+                              title: l(:button_tag_color_reset),
+                              style: 'opacity:0.45; pointer-events:none; cursor:default;') %>
             <% end %>
             <%= link_to sprite_icon('del', l(:button_delete)), tags_path(:ids => tag),
                                            :method => :delete,
