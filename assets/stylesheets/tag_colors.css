@@ -65,13 +65,23 @@
 #sidebar .sidebar-tag-cloud h3 a.tag-cloud-untagged-link { color: #169; }
 #sidebar .sidebar-tag-cloud h3 a.tag-cloud-untagged-link:hover { text-decoration: underline; }
 
-/* Gap between sidebar clouds: above the title, not under the tags. */
+/* Extra space only at the top of the tags block; tight between clouds. */
+#sidebar .sidebar-tag-cloud-controls {
+  margin-top: 16px;
+  margin-bottom: 6px;
+  padding: 0;
+}
 #sidebar .sidebar-tag-cloud {
-  margin: 0;
-  padding: 16px 0 0;
+  margin: 6px 0 0;
+  padding: 0;
 }
 #sidebar .sidebar-tag-cloud-controls + .sidebar-tag-cloud {
-  padding-top: 10px;
+  margin-top: 4px;
+  padding-top: 0;
+}
+#sidebar .sidebar-tag-cloud + .sidebar-tag-cloud {
+  margin-top: 6px;
+  padding-top: 0;
 }
 #sidebar .sidebar-tag-cloud h3 {
   margin-block-start: 0;
