@@ -1,18 +1,5 @@
 <% tags = Issue.all_tags(all_issues: true, sort_by: 'name').to_a %>
-<% color_by_id =
-     begin
-       if tags.any?
-         Redmineup::Tag.unscoped.where(id: tags.map(&:id)).pluck(:id, :color).each_with_object({}) { |(id, color), acc|
-           acc[id] = color
-           acc[id.to_i] = color
-           acc[id.to_s] = color
-         }
-       else
-         {}
-       end
-     rescue StandardError
-       {}
-     end %>
+<% color_by_id = Redmineup::Tag.where(id: tags.map(&:id)).pluck(:id, :color).to_h.transform_keys(&:to_i) %>
 <% unless tags.empty? %>
   <table class="list issues" id="manage-tags-table">
     <thead>
@@ -29,17 +16,12 @@
     </thead>
     <tbody>
       <% tags.each do |tag| %>
-        <% raw_color =
-             if tag.respond_to?(:attributes) && tag.attributes.key?('color')
-               tag.attributes['color']
-             else
-               color_by_id[tag.id] || color_by_id[tag.id.to_i] || color_by_id[tag.id.to_s]
-             end %>
-        <% manual = RedmineupTags.db_color_present?(raw_color) %>
+        <% raw_color = color_by_id[tag.id.to_i] %>
+        <% manual = !raw_color.nil? && raw_color != '' %>
         <tr id="<%= tag.id %>" class="<%= cycle("odd", "even") %> hascontextmenu ">
           <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, :id => nil) %></td>
           <td><%= render_issue_tag_link(tag) %></td>
-          <td class="tag-manual-color" style="text-align:center;"><%= check_box_tag("manual_color_#{tag.id}", '1', manual, disabled: true, title: manual ? l(:label_tag_color_custom) : l(:label_tag_color_auto)) %></td>
+          <td class="tag-manual-color" style="text-align:center;"><%= check_box_tag("manual_color_#{tag.id}", '1', manual, disabled: true) %></td>
           <td class="buttons" style="white-space:nowrap;">
             <%= link_to sprite_icon('edit', l(:button_edit)), edit_tag_path(tag),
                                            :class => 'icon icon-edit' %>
