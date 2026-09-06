@@ -32,7 +32,12 @@
           <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, :id => nil) %></td>
           <td><%= render_issue_tag_link(tag) %></td>
           <td class="tag-manual-color" style="text-align:center;">
-            <input type="checkbox" class="tag-manual-flag" value="1" tabindex="-1" style="pointer-events:none" onclick="return false;" <%= 'checked="checked"' if manual %>>
+            <input type="checkbox"
+                   class="tag-manual-flag"
+                   value="1"
+                   tabindex="-1"
+                   data-on="<%= manual ? '1' : '0' %>"
+                   <%= 'checked="checked"' if manual %>>
           </td>
           <td class="buttons" style="white-space:nowrap;">
             <%= link_to sprite_icon('edit', l(:button_edit)), edit_tag_path(tag),
@@ -65,6 +70,15 @@
   <%= javascript_tag do %>
     $(document).ready(function(){
       $('#settings form').data('cmUrl', '<%= tags_context_menu_path %>');
+      function restoreTagManualFlags() {
+        $('#manage-tags-table input.tag-manual-flag').each(function () {
+          this.checked = this.getAttribute('data-on') === '1';
+        });
+      }
+      restoreTagManualFlags();
+      $(document).on('click change contextmenu', '#manage-tags-table', function () {
+        setTimeout(restoreTagManualFlags, 0);
+      });
     });
   <% end %>
 <% else %>
