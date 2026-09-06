@@ -8,30 +8,6 @@
      end
    end %>
 <% unless tags.empty? %>
-  <style>
-    #manage-tags-table .tag-manual-flag {
-      display: inline-block;
-      width: 14px;
-      height: 14px;
-      border: 1px solid #6b7280;
-      border-radius: 2px;
-      background: #fff;
-      vertical-align: middle;
-      box-sizing: border-box;
-      position: relative;
-    }
-    #manage-tags-table .tag-manual-flag.is-on::after {
-      content: '';
-      position: absolute;
-      left: 4px;
-      top: 1px;
-      width: 4px;
-      height: 8px;
-      border: solid #111827;
-      border-width: 0 2px 2px 0;
-      transform: rotate(45deg);
-    }
-  </style>
   <table class="list issues" id="manage-tags-table">
     <thead>
       <tr>
@@ -53,7 +29,7 @@
           <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, :id => nil) %></td>
           <td><%= render_issue_tag_link(tag) %></td>
           <td class="tag-manual-color" style="text-align:center;">
-            <span class="tag-manual-flag<%= ' is-on' if manual %>" title="<%= h(raw_color.inspect) %>"></span>
+            <%= check_box_tag(nil, '1', manual, disabled: true, onclick: 'return false;', tabindex: -1, name: nil, id: nil, class: 'tag-manual-flag') %>
           </td>
           <td class="buttons" style="white-space:nowrap;">
             <%= link_to sprite_icon('edit', l(:button_edit)), edit_tag_path(tag),
