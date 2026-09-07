@@ -1,3 +1,10 @@
+<style>
+  .tag-cloud-system-form .tag-cloud-subprojects-row.is-disabled {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+</style>
+
 <h2><%= l(:label_edit_system_tag_cloud) %></h2>
 
 <%= form_tag update_system_project_tag_clouds_path(@project), method: :patch do %>
@@ -10,7 +17,7 @@
     </p>
     <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_system_visible_by_default_hint) %></p>
 
-    <p class="tag-cloud-subprojects-row">
+    <p class="tag-cloud-subprojects-row<%= ' is-disabled' if @system_visible_by_default %>">
       <%= hidden_field_tag :include_subprojects, '0' %>
       <%= check_box_tag :include_subprojects, '1', @system_include_subprojects && !@system_visible_by_default,
                         id: 'system_include_subprojects',
@@ -31,9 +38,14 @@
   function syncSystemCloudSubprojects() {
     var visible = document.getElementById('system_visible_by_default');
     var sub = document.getElementById('system_include_subprojects');
+    var row = sub && sub.closest('.tag-cloud-subprojects-row');
     if (!visible || !sub) return;
     sub.disabled = visible.checked;
     if (visible.checked) sub.checked = false;
+    if (row) {
+      if (visible.checked) row.classList.add('is-disabled');
+      else row.classList.remove('is-disabled');
+    }
   }
   var visible = document.getElementById('system_visible_by_default');
   if (visible) visible.addEventListener('change', syncSystemCloudSubprojects);
