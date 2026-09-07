@@ -4,6 +4,7 @@
   <% @tag_clouds = TagCloud.for_project(@project).includes(:created_by).to_a.select { |cloud| cloud.listed_in_settings_for?(User.current, project: @project) } %>
 <% end %>
 <% system_visible_default = TagCloudProjectSetting.system_visible_by_default?(@project) %>
+<% system_include_subprojects = !system_visible_default && TagCloudProjectSetting.local_include_subprojects?(@project) %>
 <% system_locked = TagCloudProjectSetting.locked_by_ancestor?(@project) %>
 <% reset_cycle('tag_cloud_rows') %>
 
@@ -20,7 +21,22 @@
 <style>
   .tag-clouds-settings-table > tbody > tr.even { background-color: #f6f7f8 !important; }
   .tag-clouds-settings-table > tbody > tr.odd { background-color: #fff !important; }
-  .tag-clouds-settings-table .tag-cloud-col-visible { text-align: center; }
+  .tag-clouds-settings-table .tag-cloud-col-visible,
+  .tag-clouds-settings-table .tag-cloud-col-subprojects { text-align: center; }
+  .tag-clouds-settings-table .tag-cloud-row-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px;
+  }
+  .tag-clouds-settings-table .tag-cloud-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    min-height: 18px;
+  }
+  .tag-clouds-settings-table .tag-cloud-action-handle { min-width: 20px; }
 </style>
 
 <div class="tag-clouds-settings-wrap">
@@ -32,6 +48,7 @@
       <th class="tag-cloud-col-visibility"><%= l(:label_tag_cloud_visibility_rule) %></th>
       <th class="tag-cloud-col-author"><%= l(:field_author) %></th>
       <th class="tag-cloud-col-visible"><%= l(:label_tag_cloud_visible_by_default) %></th>
+      <th class="tag-cloud-col-subprojects"><%= l(:label_tag_cloud_include_subprojects) %></th>
       <% if can_manage %>
         <th class="buttons"></th>
       <% end %>
@@ -52,15 +69,22 @@
       <td class="tag-cloud-col-visible">
         <input type="checkbox" class="tag-flag-checkbox" disabled="disabled" tabindex="-1" <%= 'checked="checked"' if system_visible_default %>>
       </td>
+      <td class="tag-cloud-col-subprojects">
+        <input type="checkbox" class="tag-flag-checkbox" disabled="disabled" tabindex="-1" <%= 'checked="checked"' if system_include_subprojects %>>
+      </td>
       <% if can_manage %>
         <td class="buttons">
-          <% if system_locked %>
-            <span class="icon"><%= l(:text_tag_cloud_system_locked) %></span>
-          <% else %>
-            <%= link_to sprite_icon('edit', l(:button_edit)),
-                        edit_system_project_tag_clouds_path(@project),
-                        class: 'icon icon-edit' %>
-          <% end %>
+          <span class="tag-cloud-row-actions">
+            <span class="tag-cloud-action tag-cloud-action-handle"></span>
+            <span class="tag-cloud-action tag-cloud-action-edit">
+              <% unless system_locked %>
+                <%= link_to sprite_icon('edit', l(:button_edit)),
+                            edit_system_project_tag_clouds_path(@project),
+                            class: 'icon icon-edit' %>
+              <% end %>
+            </span>
+            <span class="tag-cloud-action tag-cloud-action-delete"></span>
+          </span>
         </td>
       <% end %>
     </tr>
@@ -89,21 +113,36 @@
         <td class="tag-cloud-col-visible">
           <input type="checkbox" class="tag-flag-checkbox" disabled="disabled" tabindex="-1" <%= 'checked="checked"' if cloud.visible_by_default %>>
         </td>
+        <td class="tag-cloud-col-subprojects">
+          <input type="checkbox" class="tag-flag-checkbox" disabled="disabled" tabindex="-1" <%= 'checked="checked"' if cloud.include_subprojects %>>
+        </td>
         <% if can_manage %>
           <td class="buttons">
-            <% if cloud_manageable %>
-              <span class="sort-handle tag-cloud-drag-handle">
-                <%= sprite_icon('reorder', '') %>
+            <span class="tag-cloud-row-actions">
+              <span class="tag-cloud-action tag-cloud-action-handle">
+                <% if cloud_manageable %>
+                  <span class="sort-handle tag-cloud-drag-handle">
+                    <%= sprite_icon('reorder', '') %>
+                  </span>
+                <% end %>
               </span>
-              <%= link_to sprite_icon('edit', l(:button_edit)),
-                          edit_project_tag_cloud_path(@project, cloud),
-                          class: 'icon icon-edit' %>
-              <%= link_to sprite_icon('del', l(:button_delete)),
-                          project_tag_cloud_path(@project, cloud),
-                          method: :delete,
-                          data: { confirm: l(:text_are_you_sure) },
-                          class: 'icon icon-del' %>
-            <% end %>
+              <span class="tag-cloud-action tag-cloud-action-edit">
+                <% if cloud_manageable %>
+                  <%= link_to sprite_icon('edit', l(:button_edit)),
+                              edit_project_tag_cloud_path(@project, cloud),
+                              class: 'icon icon-edit' %>
+                <% end %>
+              </span>
+              <span class="tag-cloud-action tag-cloud-action-delete">
+                <% if cloud_manageable %>
+                  <%= link_to sprite_icon('del', l(:button_delete)),
+                              project_tag_cloud_path(@project, cloud),
+                              method: :delete,
+                              data: { confirm: l(:text_are_you_sure) },
+                              class: 'icon icon-del' %>
+                <% end %>
+              </span>
+            </span>
           </td>
         <% end %>
       </tr>
@@ -130,21 +169,36 @@
           <td class="tag-cloud-col-visible">
             <input type="checkbox" class="tag-flag-checkbox" disabled="disabled" tabindex="-1" <%= 'checked="checked"' if cloud.visible_by_default %>>
           </td>
+          <td class="tag-cloud-col-subprojects">
+            <input type="checkbox" class="tag-flag-checkbox" disabled="disabled" tabindex="-1" <%= 'checked="checked"' if cloud.include_subprojects %>>
+          </td>
           <% if can_manage %>
             <td class="buttons">
-              <% if cloud_manageable %>
-                <span class="sort-handle tag-cloud-drag-handle">
-                  <%= sprite_icon('reorder', '') %>
+              <span class="tag-cloud-row-actions">
+                <span class="tag-cloud-action tag-cloud-action-handle">
+                  <% if cloud_manageable %>
+                    <span class="sort-handle tag-cloud-drag-handle">
+                      <%= sprite_icon('reorder', '') %>
+                    </span>
+                  <% end %>
                 </span>
-                <%= link_to sprite_icon('edit', l(:button_edit)),
-                            edit_project_tag_cloud_path(@project, cloud),
-                            class: 'icon icon-edit' %>
-                <%= link_to sprite_icon('del', l(:button_delete)),
-                            project_tag_cloud_path(@project, cloud),
-                            method: :delete,
-                            data: { confirm: l(:text_are_you_sure) },
-                            class: 'icon icon-del' %>
-              <% end %>
+                <span class="tag-cloud-action tag-cloud-action-edit">
+                  <% if cloud_manageable %>
+                    <%= link_to sprite_icon('edit', l(:button_edit)),
+                                edit_project_tag_cloud_path(@project, cloud),
+                                class: 'icon icon-edit' %>
+                  <% end %>
+                </span>
+                <span class="tag-cloud-action tag-cloud-action-delete">
+                  <% if cloud_manageable %>
+                    <%= link_to sprite_icon('del', l(:button_delete)),
+                                project_tag_cloud_path(@project, cloud),
+                                method: :delete,
+                                data: { confirm: l(:text_are_you_sure) },
+                                class: 'icon icon-del' %>
+                  <% end %>
+                </span>
+              </span>
             </td>
           <% end %>
         </tr>
