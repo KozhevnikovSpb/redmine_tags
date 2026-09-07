@@ -20,6 +20,7 @@ RedmineApp::Application.routes.draw do
       collection do
         post :reorder
         post :preview
+        post :toggle_system_visible
       end
       resource :preference,
                only: [],
