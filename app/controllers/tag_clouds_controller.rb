@@ -113,6 +113,17 @@ class TagCloudsController < ApplicationController
     head :no_content
   end
 
+  def toggle_system_visible
+    unless User.current.admin? || TagCloud.can_manage?(User.current, @project)
+      deny_access
+      return
+    end
+
+    visible = ActiveModel::Type::Boolean.new.cast(params[:visible])
+    TagCloudProjectSetting.set_system_visible_by_default!(@project, visible)
+    head :no_content
+  end
+
   def preview
     cloud = build_preview_cloud(
       status_operator: params[:status_operator].presence || '*',
