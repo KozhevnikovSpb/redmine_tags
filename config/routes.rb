@@ -21,6 +21,8 @@ RedmineApp::Application.routes.draw do
         post :reorder
         post :preview
         post :toggle_system_visible
+        get :edit_system
+        match :update_system, via: %i[patch put]
       end
       resource :preference,
                only: [],

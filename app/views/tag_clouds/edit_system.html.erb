@@ -1,0 +1,27 @@
+<h2><%= l(:label_edit_system_tag_cloud) %></h2>
+
+<%= form_tag update_system_project_tag_clouds_path(@project), method: :patch do %>
+  <div class="box tag-cloud-form tag-cloud-system-form">
+    <p class="tag-cloud-visible-row">
+      <%= hidden_field_tag :system_visible_by_default, '0' %>
+      <%= check_box_tag :system_visible_by_default, '1', @system_visible_by_default,
+                        id: 'system_visible_by_default' %>
+      <%= label_tag :system_visible_by_default, l(:label_tag_cloud_visible_by_default) %>
+    </p>
+    <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_system_visible_by_default_hint) %></p>
+
+    <p class="tag-cloud-subprojects-row">
+      <%= hidden_field_tag :include_subprojects, '0' %>
+      <%= check_box_tag :include_subprojects, '1', @system_include_subprojects && !@system_visible_by_default,
+                        id: 'system_include_subprojects',
+                        disabled: @system_visible_by_default %>
+      <%= label_tag :include_subprojects, l(:label_tag_cloud_include_subprojects) %>
+    </p>
+    <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_system_include_subprojects_hint) %></p>
+  </div>
+
+  <p class="buttons">
+    <%= submit_tag l(:button_save) %>
+    <%= link_to l(:button_cancel), { controller: 'projects', action: 'settings', id: @project, tab: 'tags' } %>
+  </p>
+<% end %>
