@@ -113,6 +113,7 @@ ru:
   text_tag_cloud_owner_only_author: Режим «Только автор» может выбрать только автор облака.
   text_tag_cloud_no_roles: Не найдено ролей, которые можно назначать участникам проекта.
   text_tag_cloud_visible_by_default_hint: При «Все пользователи» снятие галочки скрывает облако, пока его не включат в «Выбрать видимые облака».
+  text_tag_cloud_system_visible_by_default_hint: Проектное значение по умолчанию для системного облака «Теги». С правом управления отображением можно переопределить для себя.
   text_tag_cloud_name_blank: Укажите название.
   text_plugin_tag_display_options: общие настройки отображения тегов (сайдбар, цвета, сортировка).
   text_tag_clouds_managed_per_project_html: "Облака тегов настраиваются в проекте: <strong>Проект → Настройки → %{tab}</strong>."
