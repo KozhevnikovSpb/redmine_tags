@@ -4,6 +4,7 @@
   <% @tag_clouds = TagCloud.for_project(@project).includes(:created_by).to_a.select { |cloud| cloud.listed_in_settings_for?(User.current, project: @project) } %>
 <% end %>
 <% system_visible_default = TagCloudProjectSetting.system_visible_by_default?(@project) %>
+<% system_locked = TagCloudProjectSetting.locked_by_ancestor?(@project) %>
 <% reset_cycle('tag_cloud_rows') %>
 
 <h3><%= l(:tag_clouds) %></h3>
@@ -41,23 +42,26 @@
       <td class="tag-cloud-col-name name">
         <%= l(:tags) %>
         <%= tag_cloud_letter_marker(:system) %>
+        <% if system_locked %>
+          <%= tag_cloud_letter_marker(:inherited) %>
+        <% end %>
       </td>
       <td class="tag-cloud-col-filters"><%= l(:label_all) %></td>
       <td class="tag-cloud-col-visibility"><%= l(:label_tag_cloud_visibility_all) %></td>
       <td class="tag-cloud-col-author">—</td>
       <td class="tag-cloud-col-visible">
-        <% if can_manage %>
-          <input type="checkbox"
-                 class="tag-flag-checkbox tag-cloud-system-visible-toggle"
-                 title="<%= l(:text_tag_cloud_system_visible_by_default_hint) %>"
-                 data-url="<%= toggle_system_visible_project_tag_clouds_path(@project) %>"
-                 <%= 'checked="checked"' if system_visible_default %>>
-        <% else %>
-          <input type="checkbox" class="tag-flag-checkbox" disabled="disabled" tabindex="-1" <%= 'checked="checked"' if system_visible_default %>>
-        <% end %>
+        <input type="checkbox" class="tag-flag-checkbox" disabled="disabled" tabindex="-1" <%= 'checked="checked"' if system_visible_default %>>
       </td>
       <% if can_manage %>
-        <td class="buttons"></td>
+        <td class="buttons">
+          <% if system_locked %>
+            <span class="icon"><%= l(:text_tag_cloud_system_locked) %></span>
+          <% else %>
+            <%= link_to sprite_icon('edit', l(:button_edit)),
+                        edit_system_project_tag_clouds_path(@project),
+                        class: 'icon icon-edit' %>
+          <% end %>
+        </td>
       <% end %>
     </tr>
   </tbody>
