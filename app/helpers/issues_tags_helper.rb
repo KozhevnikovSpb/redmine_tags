@@ -84,7 +84,10 @@ module IssuesTagsHelper
     can_select_clouds = TagCloud.can_select_display?(User.current, @project)
 
     unless can_see_custom
-      return render_global_tags_sidebar
+      if TagCloudPreference.system_visible_for?(User.current, @project)
+        return render_global_tags_sidebar
+      end
+      return ''.html_safe
     end
 
     unless can_select_clouds
@@ -98,7 +101,7 @@ module IssuesTagsHelper
 
     visible_inherited = inherited_clouds.select { |c| c.visible_for?(User.current, project: @project) }
     visible_local = local_clouds.select { |c| c.visible_for?(User.current, project: @project) }
-    show_system_cloud = !can_select_clouds || TagCloudPreference.system_visible_for?(User.current, @project)
+    show_system_cloud = TagCloudPreference.system_visible_for?(User.current, @project)
 
     sections = []
 
