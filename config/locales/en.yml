@@ -64,6 +64,7 @@ en:
 
   label_new_tag_cloud: New Tag Cloud
   label_edit_tag_cloud: Edit Tag Cloud
+  label_edit_system_tag_cloud: Edit system Tags cloud
   label_default_tag_cloud: Tags
   label_hidden_tag_clouds: Hidden tag clouds
   label_tag_cloud_name: Name
@@ -114,6 +115,8 @@ en:
   text_tag_cloud_no_roles: No assignable project roles were found.
   text_tag_cloud_visible_by_default_hint: If All users and unchecked, hidden until enabled in Select visible tag clouds.
   text_tag_cloud_system_visible_by_default_hint: Project default for the system Tags cloud. Users with Manage display can override it for themselves.
+  text_tag_cloud_system_include_subprojects_hint: When Visible by default is off, hide the default Tags cloud on all subprojects and lock their Edit.
+  text_tag_cloud_system_locked: Locked by parent project
   text_tag_cloud_name_blank: Please enter a name.
   text_plugin_tag_display_options: plugin-wide tag display options (sidebar style, colors, sort).
   text_tag_clouds_managed_per_project_html: "Tag clouds are managed per project: <strong>Project → Settings → %{tab}</strong>."

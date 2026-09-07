@@ -347,22 +347,36 @@ module RedmineupTags
     end
 
     def ensure_project_settings_table!
-      return true if table?(:tag_cloud_project_settings)
-
-      log 'CREATE TABLE tag_cloud_project_settings'
-      @connection.create_table :tag_cloud_project_settings do |t|
-        t.bigint :project_id, null: false
-        t.boolean :system_visible_by_default, null: false, default: true
-        t.timestamps
+      unless table?(:tag_cloud_project_settings)
+        log 'CREATE TABLE tag_cloud_project_settings'
+        @connection.create_table :tag_cloud_project_settings do |t|
+          t.bigint :project_id, null: false
+          t.boolean :system_visible_by_default, null: false, default: true
+          t.boolean :include_subprojects, null: false, default: false
+          t.timestamps
+        end
       end
       unless index?(:tag_cloud_project_settings, :project_id, unique: true)
         @connection.add_index :tag_cloud_project_settings, :project_id,
                               unique: true, name: 'index_tag_cloud_project_settings_on_project_id'
       end
       add_fk_safe :tag_cloud_project_settings, :projects, column: :project_id, on_delete: :cascade
+      ensure_project_settings_columns!
       true
     rescue StandardError => e
       log "WARNING: tag_cloud_project_settings: #{e.class}: #{e.message}"
+      false
+    end
+
+    def ensure_project_settings_columns!
+      return false unless table?(:tag_cloud_project_settings)
+      return true if column?(:tag_cloud_project_settings, :include_subprojects)
+
+      log 'ADD COLUMN tag_cloud_project_settings.include_subprojects'
+      @connection.add_column :tag_cloud_project_settings, :include_subprojects, :boolean, null: false, default: false
+      true
+    rescue StandardError => e
+      log "WARNING: tag_cloud_project_settings.include_subprojects: #{e.class}: #{e.message}"
       false
     end
 
