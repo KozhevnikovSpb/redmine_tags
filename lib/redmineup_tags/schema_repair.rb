@@ -10,7 +10,7 @@ module RedmineupTags
       tag_clouds
     ].freeze
 
-    PRESERVE_TABLES = %w[tags taggings tag_cloud_user_preferences].freeze
+    PRESERVE_TABLES = %w[tags taggings tag_cloud_user_preferences tag_cloud_project_settings].freeze
     OPERATOR_COLUMNS = %w[status_operator version_operator tracker_operator tag_operator].freeze
 
     class << self
@@ -67,7 +67,7 @@ module RedmineupTags
 
     def force_rebuild!
       log '=== SchemaRepair FORCE REBUILD (V.0.0.2-beta) ==='
-      log 'Preserved: tags, taggings, tag_cloud_user_preferences'
+      log 'Preserved: tags, taggings, tag_cloud_user_preferences, tag_cloud_project_settings'
       log "Will drop/recreate: #{OUR_TABLES.join(', ')}"
 
       ensure_tags_tables
@@ -163,6 +163,10 @@ module RedmineupTags
         cols = @connection.columns(:tag_cloud_user_preferences).map(&:name)
         log "  tag_cloud_user_preferences columns: #{cols.join(', ')}"
       end
+      if table?(:tag_cloud_project_settings)
+        cols = @connection.columns(:tag_cloud_project_settings).map(&:name)
+        log "  tag_cloud_project_settings columns: #{cols.join(', ')}"
+      end
     end
 
     private
@@ -240,6 +244,7 @@ module RedmineupTags
       end
       ensure_operator_columns!
       ensure_user_display_prefs_table!
+      ensure_project_settings_table!
     end
 
     def create_target_schema!
@@ -327,6 +332,7 @@ module RedmineupTags
       ensure_show_untagged_column!
       ensure_preference_show_untagged_column!
       ensure_user_display_prefs_table!
+      ensure_project_settings_table!
     end
 
     def ensure_user_display_pref_columns!
@@ -338,6 +344,26 @@ module RedmineupTags
       end
     rescue StandardError => e
       log "WARNING: user display pref columns: #{e.class}: #{e.message}"
+    end
+
+    def ensure_project_settings_table!
+      return true if table?(:tag_cloud_project_settings)
+
+      log 'CREATE TABLE tag_cloud_project_settings'
+      @connection.create_table :tag_cloud_project_settings do |t|
+        t.bigint :project_id, null: false
+        t.boolean :system_visible_by_default, null: false, default: true
+        t.timestamps
+      end
+      unless index?(:tag_cloud_project_settings, :project_id, unique: true)
+        @connection.add_index :tag_cloud_project_settings, :project_id,
+                              unique: true, name: 'index_tag_cloud_project_settings_on_project_id'
+      end
+      add_fk_safe :tag_cloud_project_settings, :projects, column: :project_id, on_delete: :cascade
+      true
+    rescue StandardError => e
+      log "WARNING: tag_cloud_project_settings: #{e.class}: #{e.message}"
+      false
     end
 
     def add_fk_safe(from_table, to_table, column:, on_delete: :cascade)
