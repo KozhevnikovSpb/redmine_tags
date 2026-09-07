@@ -11,6 +11,7 @@ class TagCloudPreference < ActiveRecord::Base
   # show_untagged is personal: Reset deletes these rows, so the caption turns off.
 
   SYSTEM_HIDDEN_KEY = 'system_tag_cloud_hidden_project_ids'
+  SYSTEM_SHOWN_KEY = 'system_tag_cloud_shown_project_ids'
 
   def show_untagged_enabled?
     return false unless self.class.column_names.include?('show_untagged')
@@ -22,30 +23,41 @@ class TagCloudPreference < ActiveRecord::Base
 
   class << self
     def system_visible_for?(user, project)
-      return true unless user&.logged? && project
+      project_default = project_system_default(project)
+      return project_default unless user&.logged? && project
 
-      !system_hidden_project_ids(user).include?(project.id)
+      if system_hidden_project_ids(user).include?(project.id)
+        false
+      elsif system_shown_project_ids(user).include?(project.id)
+        true
+      else
+        project_default
+      end
     end
 
     def set_system_visible!(user, project, visible)
       return false unless user&.logged? && project
 
-      ids = system_hidden_project_ids(user)
+      hidden = system_hidden_project_ids(user)
+      shown = system_shown_project_ids(user)
       if visible
-        ids.delete(project.id)
+        hidden.delete(project.id)
+        shown |= [project.id]
       else
-        ids |= [project.id]
+        shown.delete(project.id)
+        hidden |= [project.id]
       end
-      user.pref[SYSTEM_HIDDEN_KEY] = ids
+      user.pref[SYSTEM_HIDDEN_KEY] = hidden
+      user.pref[SYSTEM_SHOWN_KEY] = shown
       user.pref.save
     end
 
     def system_hidden_project_ids(user)
-      return [] unless user&.logged? && user.pref
+      pref_id_list(user, SYSTEM_HIDDEN_KEY)
+    end
 
-      Array(user.pref[SYSTEM_HIDDEN_KEY]).map(&:to_i)
-    rescue StandardError
-      []
+    def system_shown_project_ids(user)
+      pref_id_list(user, SYSTEM_SHOWN_KEY)
     end
 
     def untagged_cloud_ids_for(user, cloud_ids = nil)
@@ -76,7 +88,7 @@ class TagCloudPreference < ActiveRecord::Base
     end
 
     # Remove personal visibility/order/untagged rows for clouds on this project
-    # and show the system Tags cloud again.
+    # and drop personal system-cloud overrides so the project default applies.
     def reset_for_user!(user, project)
       return false unless user&.logged? && project
 
@@ -85,8 +97,38 @@ class TagCloudPreference < ActiveRecord::Base
         TagCloud.for_project(project).map(&:id)
       ).uniq
       where(user_id: user.id, tag_cloud_id: cloud_ids).delete_all if cloud_ids.any?
-      set_system_visible!(user, project, true)
+      clear_system_override!(user, project)
       true
+    end
+
+    def clear_system_override!(user, project)
+      return false unless user&.logged? && project
+
+      hidden = system_hidden_project_ids(user)
+      shown = system_shown_project_ids(user)
+      hidden.delete(project.id)
+      shown.delete(project.id)
+      user.pref[SYSTEM_HIDDEN_KEY] = hidden
+      user.pref[SYSTEM_SHOWN_KEY] = shown
+      user.pref.save
+    end
+
+    private
+
+    def project_system_default(project)
+      if defined?(TagCloudProjectSetting)
+        TagCloudProjectSetting.system_visible_by_default?(project)
+      else
+        true
+      end
+    end
+
+    def pref_id_list(user, key)
+      return [] unless user&.logged? && user.pref
+
+      Array(user.pref[key]).map(&:to_i)
+    rescue StandardError
+      []
     end
   end
 end
