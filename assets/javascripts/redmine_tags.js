@@ -127,6 +127,25 @@ $(function () {
         syncTagCloudsCheckAll();
     });
 
+    $(document).on('change', '.tag-cloud-system-visible-toggle', function () {
+        var $cb = $(this);
+        var url = $cb.data('url');
+        if (!url) {
+            return;
+        }
+        $.ajax({
+            url: url,
+            type: 'POST',
+            dataType: 'text',
+            data: {
+                visible: $cb.is(':checked') ? '1' : '0',
+                authenticity_token: $('meta[name="csrf-token"]').attr('content')
+            }
+        }).fail(function () {
+            $cb.prop('checked', !$cb.is(':checked'));
+        });
+    });
+
     function visibleTagCloudBoxes() {
         return $('#select-visible-tag-clouds-form').find(
             'input[name="visible_tag_cloud_ids[]"], input[name="system_tag_cloud_visible"]'
