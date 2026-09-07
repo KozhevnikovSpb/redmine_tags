@@ -25,3 +25,18 @@
     <%= link_to l(:button_cancel), { controller: 'projects', action: 'settings', id: @project, tab: 'tags' } %>
   </p>
 <% end %>
+
+<%= javascript_tag nonce: true do %>
+(function () {
+  function syncSystemCloudSubprojects() {
+    var visible = document.getElementById('system_visible_by_default');
+    var sub = document.getElementById('system_include_subprojects');
+    if (!visible || !sub) return;
+    sub.disabled = visible.checked;
+    if (visible.checked) sub.checked = false;
+  }
+  var visible = document.getElementById('system_visible_by_default');
+  if (visible) visible.addEventListener('change', syncSystemCloudSubprojects);
+  syncSystemCloudSubprojects();
+})();
+<% end %>

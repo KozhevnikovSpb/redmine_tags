@@ -21,8 +21,8 @@ RedmineApp::Application.routes.draw do
         post :reorder
         post :preview
         post :toggle_system_visible
-        get :edit_system
-        match :update_system, via: %i[patch put]
+        get :edit_system, to: 'tag_cloud_system_settings#edit'
+        match :update_system, to: 'tag_cloud_system_settings#update', via: %i[patch put]
       end
       resource :preference,
                only: [],
