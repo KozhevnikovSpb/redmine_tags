@@ -23,25 +23,12 @@ module RedmineupTags
           return clauses unless filter
 
           filters['issue_tags'] = filter
-          issues = Issue.all
           operator = operator_for('issue_tags')
+          tagged_sql = tagged_issue_ids_sql(issues_for_tag_operator(operator))
+          compare = %w[!].include?(operator) ? 'NOT IN' : 'IN'
 
-          issues =
-            case operator
-            when '=', '!'
-              # Same as Status / Tracker / Version: multiple values are OR.
-              # is (=)  -> issues that have any of the selected tags
-              # is not (!) -> issues that have none of the selected tags (NOT IN)
-              issues.tagged_with(values_for('issue_tags').clone, any: true)
-            when '!*', '*'
-              issues.joins(:tags).distinct
-            else
-              issues.joins(:tags).distinct
-            end
-
-          compare = operator.include?('!') ? 'NOT IN' : 'IN'
           clauses << ' AND ' unless clauses.empty?
-          clauses << "(#{Issue.table_name}.id #{compare} (#{tagged_issue_ids_sql(issues)}))"
+          clauses << "(#{Issue.table_name}.id #{compare} (#{tagged_sql}))"
           clauses
         ensure
           filters['issue_tags'] = filter if filter
@@ -85,6 +72,23 @@ module RedmineupTags
         end
 
         private
+
+        def issues_for_tag_operator(operator)
+          case operator
+          when '=', '!'
+            Issue.tagged_with(values_for('issue_tags').clone, any: true)
+          when '*'
+            Issue.joins(:tags).distinct
+          when '! *', '!*'
+            Issue.where.not(id: tagging_issue_id_subquery)
+          else
+            Issue.joins(:tags).distinct
+          end
+        end
+
+        def tagging_issue_id_subquery
+          Redmineup::Tagging.where(taggable_type: 'Issue').select(:taggable_id)
+        end
 
         def issue_tag_filter_values
           names = issue_tag_names_for_filter
