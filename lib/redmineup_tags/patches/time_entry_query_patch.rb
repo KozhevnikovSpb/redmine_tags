@@ -19,21 +19,12 @@ module RedmineupTags
           return clauses unless filter
 
           filters['issue_tags'] = filter
-          issues = Issue.all
           operator = operator_for('issue_tags')
-          issues =
-            case operator
-            when '=', '!'
-              issues.tagged_with(values_for('issue_tags').clone, any: true)
-            when '!*', '*'
-              issues.joins(:tags).distinct
-            else
-              issues.joins(:tags).distinct
-            end
+          tagged_sql = tagged_issue_ids_sql(issues_for_tag_operator(operator))
+          compare = operator == '!' ? 'NOT IN' : 'IN'
 
-          compare = operator.include?('!') ? 'NOT IN' : 'IN'
           clauses << ' AND ' unless clauses.empty?
-          clauses << "(#{TimeEntry.table_name}.issue_id #{compare} (#{tagged_issue_ids_sql(issues)}))"
+          clauses << "(#{TimeEntry.table_name}.issue_id #{compare} (#{tagged_sql}))"
           clauses
         ensure
           filters['issue_tags'] = filter if filter
@@ -51,6 +42,19 @@ module RedmineupTags
         end
 
         private
+
+        def issues_for_tag_operator(operator)
+          case operator
+          when '=', '!'
+            Issue.tagged_with(values_for('issue_tags').clone, any: true)
+          when '*'
+            Issue.joins(:tags).distinct
+          when '! *', '!*'
+            Issue.where.not(id: Redmineup::Tagging.where(taggable_type: 'Issue').select(:taggable_id))
+          else
+            Issue.joins(:tags).distinct
+          end
+        end
 
         def issue_tag_filter_values
           names = issue_tag_names_for_filter
