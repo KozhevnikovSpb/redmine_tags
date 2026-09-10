@@ -44,12 +44,24 @@ class TagCloudUserPreference < ActiveRecord::Base
       false
     end
 
-    # Profile checkbox is a manage-tag-clouds function (or admin). view/select are not enough.
+    # Profile checkbox requires an assigned project role with manage_tag_clouds (or admin).
+    # Default is off. No assigned role → option stays disabled and off.
     def can_configure_untagged?(user = User.current)
       return false unless user&.logged?
       return true if user.admin?
+      return false unless assigned_project_role?(user)
 
       user.allowed_to?(:manage_tag_clouds, nil, global: true)
+    rescue StandardError
+      false
+    end
+
+    def assigned_project_role?(user)
+      return false unless user&.logged?
+      return true if user.admin?
+
+      memberships = user.respond_to?(:memberships) ? Array(user.memberships) : []
+      memberships.any? { |membership| Array(membership.roles).any? }
     rescue StandardError
       false
     end
