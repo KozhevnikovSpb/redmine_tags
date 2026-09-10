@@ -57,7 +57,7 @@
   <tbody>
     <tr id="tag-cloud-system" class="<%= cycle('even', 'odd', name: 'tag_cloud_rows') %> system" data-id="system">
       <td class="tag-cloud-col-name name">
-        <%= l(:tags) %>
+        <%= l(:label_default_tag_cloud) %>
         <%= tag_cloud_letter_marker(:system) %>
         <% if system_locked %>
           <%= tag_cloud_letter_marker(:inherited) %>
