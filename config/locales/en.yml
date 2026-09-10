@@ -18,7 +18,7 @@ en:
   sidebar_tag_list_view: Display tags on sidebar as
   issues_show_count: Display amount of issues
   issues_open_only: Display open issues only
-  text_issues_open_only_hint: Only the default Tags cloud. Custom clouds use their own status filter.
+  text_issues_open_only_hint: Only the Default Tags cloud. Custom clouds use their own status filter.
   issues_sort_by: Sort tags by
   use_colors: Use colors
 
@@ -64,8 +64,8 @@ en:
 
   label_new_tag_cloud: New Tag Cloud
   label_edit_tag_cloud: Edit Tag Cloud
-  label_edit_system_tag_cloud: Edit system Tags cloud
-  label_default_tag_cloud: Tags
+  label_edit_system_tag_cloud: Edit Default Tags
+  label_default_tag_cloud: Default Tags
   label_hidden_tag_clouds: Hidden tag clouds
   label_tag_cloud_name: Name
   label_tag_cloud_filters: Filters
@@ -102,7 +102,7 @@ en:
   notice_tag_cloud_created: Tag cloud was successfully created.
   notice_tag_cloud_updated: Tag cloud was successfully updated.
   notice_tag_cloud_deleted: Tag cloud was successfully deleted.
-  alert_cannot_delete_system_cloud: Tags cloud cannot be deleted.
+  alert_cannot_delete_system_cloud: Default Tags cannot be deleted.
 
   label_tag_cloud_visibility_rule: Visibility
   label_tag_cloud_visibility_all: All users
@@ -114,8 +114,8 @@ en:
   text_tag_cloud_owner_only_author: Only the cloud author can choose «Author only».
   text_tag_cloud_no_roles: No assignable project roles were found.
   text_tag_cloud_visible_by_default_hint: If All users and unchecked, hidden until enabled in Select visible tag clouds.
-  text_tag_cloud_system_visible_by_default_hint: Project default for the system Tags cloud. Users with Manage display can override it for themselves.
-  text_tag_cloud_system_include_subprojects_hint: When Visible by default is off, hide the default Tags cloud on all subprojects and lock their Edit.
+  text_tag_cloud_system_visible_by_default_hint: Project default for Default Tags. Users with Manage display can override it for themselves.
+  text_tag_cloud_system_include_subprojects_hint: When Visible by default is off, hide Default Tags on all subprojects and lock their Edit.
   text_tag_cloud_system_locked: Locked by parent project
   text_tag_cloud_name_blank: Please enter a name.
   text_plugin_tag_display_options: plugin-wide tag display options (sidebar style, colors, sort).
