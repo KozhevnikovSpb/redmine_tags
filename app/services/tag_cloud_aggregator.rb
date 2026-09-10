@@ -59,7 +59,7 @@ class TagCloudAggregator
 
   def issue_count
     return 0 if @project.nil? || @tag_cloud.nil?
-    return 0 if empty_tag_restriction?
+    return 0 if empty_tag_restriction? && !none_tag_operator?
 
     issue_ids = matching_issue_ids
     return 0 if issue_ids.empty?
@@ -69,8 +69,8 @@ class TagCloudAggregator
       tagged_issue_count(issue_ids, tag_ids)
     when '!'
       tag_ids.any? ? issue_ids.size - tagged_issue_count(issue_ids, tag_ids) : issue_ids.size
-    when '!='
-      issue_ids.size - tagged_issue_count(issue_ids)
+    when '!*', '!='
+      issue_ids.size
     else
       issue_ids.size
     end
@@ -129,13 +129,17 @@ class TagCloudAggregator
     end
   end
 
+  def none_tag_operator?
+    %w[!* !=].include?(tag_operator)
+  end
+
   def tag_ids
     Array(@tag_cloud.tag_ids).map(&:to_i).reject(&:zero?)
   end
 
   def empty_tag_restriction?
     case tag_operator
-    when '!='
+    when '!*', '!='
       true
     when '='
       tag_ids.empty?
@@ -144,16 +148,18 @@ class TagCloudAggregator
     end
   end
 
-  def tag_ids_restricted?
-    TAG_VALUE_OPS.include?(tag_operator) && tag_ids.any?
-  end
-
   TAG_VALUE_OPS = %w[= !].freeze
 
   def tagged_issue_count(issue_ids, ids = nil)
     scope = Redmineup::Tagging.where(taggable_type: Issue.name, taggable_id: issue_ids)
     scope = scope.where(tag_id: ids) if ids
     scope.distinct.count(:taggable_id).to_i
+  end
+
+  def tagged_issue_id_subquery(ids = nil)
+    scope = Redmineup::Tagging.where(taggable_type: Issue.name)
+    scope = scope.where(tag_id: ids) if ids
+    scope.select(:taggable_id)
   end
 
   def apply_tag_restriction(scope, tags_table)
@@ -179,7 +185,21 @@ class TagCloudAggregator
     issues = apply_status_filter(issues)
     issues = apply_tracker_filter(issues)
     issues = apply_version_filter(issues)
+    issues = apply_tag_issue_filter(issues)
     issues.unscope(:order, :select).distinct.pluck(:id)
+  end
+
+  def apply_tag_issue_filter(issues)
+    case tag_operator
+    when '!*', '!='
+      issues.where.not(id: tagged_issue_id_subquery)
+    when '='
+      tag_ids.any? ? issues.where(id: tagged_issue_id_subquery(tag_ids)) : issues.none
+    when '!'
+      tag_ids.any? ? issues.where.not(id: tagged_issue_id_subquery(tag_ids)) : issues
+    else
+      issues
+    end
   end
 
   def apply_status_filter(issues)
@@ -237,7 +257,7 @@ class TagCloudAggregator
       return issues unless ids.any?
 
       issues.where('issues.fixed_version_id IS NULL OR issues.fixed_version_id NOT IN (?)', ids)
-    when '!='
+    when '!*', '!='
       issues.where(fixed_version_id: nil)
     when 'ev'
       ids.any? ? issues.where(id: attr_ever_issue_ids('fixed_version_id', ids, :fixed_version_id)) : issues
