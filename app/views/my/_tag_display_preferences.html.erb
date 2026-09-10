@@ -11,14 +11,14 @@
     <%= check_box_tag 'tag_display[show_count]', '1', show_count, id: 'tag_display_show_count' %>
   </p>
   <p class="tag-display-hint"><%= l(:text_tag_display_show_count_hint) %></p>
-  <% if can_untagged %>
-    <p>
-      <%= hidden_field_tag 'tag_display[show_untagged]', '0' %>
-      <label for="tag_display_show_untagged"><%= l(:label_tag_display_show_untagged) %></label>
-      <%= check_box_tag 'tag_display[show_untagged]', '1', show_untagged, id: 'tag_display_show_untagged' %>
-    </p>
-    <p class="tag-display-hint"><%= l(:text_tag_display_show_untagged_hint) %></p>
-  <% end %>
+  <p class="tag-display-untagged-row<%= ' disabled' unless can_untagged %>">
+    <%= hidden_field_tag 'tag_display[show_untagged]', '0' %>
+    <label for="tag_display_show_untagged"><%= l(:label_tag_display_show_untagged) %></label>
+    <%= check_box_tag 'tag_display[show_untagged]', '1', show_untagged,
+                      id: 'tag_display_show_untagged',
+                      disabled: !can_untagged %>
+  </p>
+  <p class="tag-display-hint"><%= l(:text_tag_display_show_untagged_hint) %></p>
 </fieldset>
 <%= javascript_tag nonce: true do %>
 (function() {
