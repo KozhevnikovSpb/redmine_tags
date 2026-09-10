@@ -18,7 +18,7 @@ ru:
   sidebar_tag_list_view: Боковую панель как
   issues_show_count: Показать кол-во задач
   issues_open_only: Только открытые задачи
-  text_issues_open_only_hint: Только для системного облака «Теги». Пользовательские облака используют свой фильтр статуса.
+  text_issues_open_only_hint: Только для облака Default Tags. Пользовательские облака используют свой фильтр статуса.
   issues_sort_by: Упорядочить теги по
   use_colors: Использовать цвета
 
@@ -64,8 +64,8 @@ ru:
 
   label_new_tag_cloud: Новое облако тегов
   label_edit_tag_cloud: Редактировать облако тегов
-  label_edit_system_tag_cloud: Системное облако «Теги»
-  label_default_tag_cloud: Теги
+  label_edit_system_tag_cloud: Default Tags
+  label_default_tag_cloud: Default Tags
   label_hidden_tag_clouds: Скрытые облака тегов
   label_tag_cloud_name: Название
   label_tag_cloud_filters: Фильтры
@@ -102,7 +102,7 @@ ru:
   notice_tag_cloud_created: Облако тегов успешно создано.
   notice_tag_cloud_updated: Облако тегов успешно обновлено.
   notice_tag_cloud_deleted: Облако тегов успешно удалено.
-  alert_cannot_delete_system_cloud: Облако «Теги» нельзя удалить.
+  alert_cannot_delete_system_cloud: Облако Default Tags нельзя удалить.
 
   label_tag_cloud_visibility_rule: Видимость
   label_tag_cloud_visibility_all: Все пользователи
@@ -114,8 +114,8 @@ ru:
   text_tag_cloud_owner_only_author: Режим «Только автор» может выбрать только автор облака.
   text_tag_cloud_no_roles: Не найдено ролей, которые можно назначать участникам проекта.
   text_tag_cloud_visible_by_default_hint: При «Все пользователи» снятие галочки скрывает облако, пока его не включат в «Выбрать видимые облака».
-  text_tag_cloud_system_visible_by_default_hint: Проектное значение по умолчанию для системного облака «Теги». С правом управления отображением можно переопределить для себя.
-  text_tag_cloud_system_include_subprojects_hint: Если «Видимо по умолчанию» снято, системное облако скрывается во всех подпроектах и их Edit блокируется.
+  text_tag_cloud_system_visible_by_default_hint: Проектное значение по умолчанию для Default Tags. С правом управления отображением можно переопределить для себя.
+  text_tag_cloud_system_include_subprojects_hint: Если «Видимо по умолчанию» снято, Default Tags скрывается во всех подпроектах и их Edit блокируется.
   text_tag_cloud_system_locked: Заблокировано родителем
   text_tag_cloud_name_blank: Укажите название.
   text_plugin_tag_display_options: общие настройки отображения тегов (сайдбар, цвета, сортировка).
