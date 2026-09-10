@@ -189,7 +189,7 @@ module IssuesTagsHelper
       open_only ? l(:label_system_tag_cloud_open_only) : l(:label_system_tag_cloud_all),
       class: 'tag-cloud-system-scope'
     )
-    safe_join([l(:tags), ' '.html_safe, tag_cloud_letter_marker(:system), ' '.html_safe, scope])
+    safe_join([l(:label_default_tag_cloud), ' '.html_safe, tag_cloud_letter_marker(:system), ' '.html_safe, scope])
   end
 
   def custom_tag_cloud_title(cloud, counts = nil)
