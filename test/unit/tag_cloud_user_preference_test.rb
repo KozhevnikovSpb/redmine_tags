@@ -22,10 +22,21 @@ class TagCloudUserPreferenceTest < ActiveSupport::TestCase
     assert_not TagCloudUserPreference.can_configure_untagged?(@user)
   end
 
-  test 'untagged profile switch hidden without cloud permissions' do
+  test 'untagged profile switch disabled without cloud permissions' do
     stub_global_cloud_permissions(@user)
     TagCloudUserPreference.save_display!(@user, show_untagged: true)
 
+    assert_not TagCloudUserPreference.can_configure_untagged?(@user)
+    assert_not TagCloudUserPreference.show_untagged?(@user)
+  end
+
+  test 'untagged profile switch disabled without assigned project role' do
+    @user.stubs(:admin?).returns(false)
+    @user.stubs(:logged?).returns(true)
+    @user.stubs(:memberships).returns([])
+    @user.stubs(:allowed_to?).with(:manage_tag_clouds, nil, global: true).returns(true)
+
+    assert_not TagCloudUserPreference.assigned_project_role?(@user)
     assert_not TagCloudUserPreference.can_configure_untagged?(@user)
     assert_not TagCloudUserPreference.show_untagged?(@user)
   end
