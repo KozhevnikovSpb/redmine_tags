@@ -85,6 +85,14 @@ if Rails.configuration.respond_to?(:autoloader) && Rails.configuration.autoloade
 end
 
 require File.dirname(__FILE__) + '/lib/redmineup_tags'
+require File.dirname(__FILE__) + '/lib/redmineup_tags/patches/tag_clouds_apply_visibility_patch'
+
+Rails.application.config.to_prepare do
+  if defined?(TagCloudsController) &&
+     !TagCloudsController.ancestors.include?(RedmineupTags::Patches::TagCloudsApplyVisibilityPatch)
+    TagCloudsController.prepend(RedmineupTags::Patches::TagCloudsApplyVisibilityPatch)
+  end
+end
 
 ActiveSupport.on_load(:action_view) do
   include TagsHelper
