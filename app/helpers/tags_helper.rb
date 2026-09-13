@@ -57,7 +57,7 @@ module TagsHelper
 
       if %w[= ! ev !ev cf].include?(vop) && version_ids.any?
         filters << ['fixed_version_id', vop, version_ids]
-      elsif vop == '!='
+      elsif vop == '!*' || vop == '!='
         filters << ['fixed_version_id', '!*', '']
       end
     elsif options[:open_only]
@@ -200,7 +200,7 @@ module TagsHelper
     when '=' then l(:label_equals)
     when '!' then l(:label_not_equals)
     when '*' then l(:label_any)
-    when '!=' then l(:label_none)
+    when '!*', '!=' then l(:label_none)
     when 'ev' then l(:label_has_been)
     when '!ev' then l(:label_has_never_been)
     when 'cf' then l(:label_changed_from)
@@ -225,16 +225,13 @@ module TagsHelper
     parts << operator_filter_summary(:field_status, sop, safe_names(IssueStatus, tag_cloud.status_filter))
     parts << operator_filter_summary(:field_fixed_version, vop, safe_names(Version, tag_cloud.version_filter))
     parts << operator_filter_summary(:field_tracker, top, safe_names(Tracker, tag_cloud.tracker_filter))
-
-    if tagop != '*'
-      tag_names =
-        if tag_cloud.tag_ids.any?
-          Redmineup::Tag.where(id: tag_cloud.tag_ids).order(:name).pluck(:name)
-        else
-          []
-        end
-      parts << operator_filter_summary(:field_tags, tagop, tag_names)
-    end
+    tag_names =
+      if tag_cloud.respond_to?(:tag_ids) && tag_cloud.tag_ids.any?
+        Redmineup::Tag.where(id: tag_cloud.tag_ids).order(:name).pluck(:name)
+      else
+        []
+      end
+    parts << operator_filter_summary(:field_tags, tagop, tag_names)
 
     if tag_cloud.include_subprojects
       parts << content_tag(:span, l(:label_tag_cloud_show_in_subprojects, default: 'Show in subprojects'))
