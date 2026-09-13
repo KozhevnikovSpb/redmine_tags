@@ -86,11 +86,16 @@ end
 
 require File.dirname(__FILE__) + '/lib/redmineup_tags'
 require File.dirname(__FILE__) + '/lib/redmineup_tags/patches/tag_clouds_apply_visibility_patch'
+require File.dirname(__FILE__) + '/lib/redmineup_tags/patches/tag_cloud_roles_visibility_patch'
 
 Rails.application.config.to_prepare do
   if defined?(TagCloudsController) &&
      !TagCloudsController.ancestors.include?(RedmineupTags::Patches::TagCloudsApplyVisibilityPatch)
     TagCloudsController.prepend(RedmineupTags::Patches::TagCloudsApplyVisibilityPatch)
+  end
+  if defined?(TagCloud) &&
+     !TagCloud.ancestors.include?(RedmineupTags::Patches::TagCloudRolesVisibilityPatch)
+    TagCloud.prepend(RedmineupTags::Patches::TagCloudRolesVisibilityPatch)
   end
 end
 
