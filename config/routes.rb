@@ -17,10 +17,15 @@ RedmineApp::Application.routes.draw do
 
   resources :projects do
     resources :tag_clouds, only: %i[index new create edit update destroy] do
+      member do
+        post :apply_visibility
+      end
       collection do
         post :reorder
         post :preview
         post :toggle_system_visible
+        post :reset_preferences
+        post :apply_system_visibility
         get :edit_system, to: 'tag_cloud_system_settings#edit'
         match :update_system, to: 'tag_cloud_system_settings#update', via: %i[patch put]
       end
