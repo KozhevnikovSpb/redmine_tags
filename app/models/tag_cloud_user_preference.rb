@@ -26,7 +26,6 @@ class TagCloudUserPreference < ActiveRecord::Base
       !show_count?(user)
     end
 
-    # Master switch from My account. Default off. Does not inherit plugin settings.
     def show_untagged?(user = User.current)
       return false unless user&.logged?
       return false unless table_available?
@@ -44,14 +43,18 @@ class TagCloudUserPreference < ActiveRecord::Base
       false
     end
 
-    # Profile checkbox requires an assigned project role with manage_tag_clouds (or admin).
-    # Default is off. No assigned role → option stays disabled and off.
+    def can_configure_display?(user = User.current)
+      TagCloud.can_configure_display?(user)
+    end
+
+    # Profile Untagged checkbox: select or manage (or admin) and an assigned project role.
     def can_configure_untagged?(user = User.current)
       return false unless user&.logged?
       return true if user.admin?
       return false unless assigned_project_role?(user)
 
-      user.allowed_to?(:manage_tag_clouds, nil, global: true)
+      user.allowed_to?(:select_tag_clouds, nil, global: true) ||
+        user.allowed_to?(:manage_tag_clouds, nil, global: true)
     rescue StandardError
       false
     end
@@ -66,7 +69,6 @@ class TagCloudUserPreference < ActiveRecord::Base
       false
     end
 
-    # Drop stored master + per-cloud untagged flags when the user no longer has manage rights.
     def revoke_untagged_if_unauthorized!(user)
       return false unless user&.logged?
       return false if can_configure_untagged?(user)
