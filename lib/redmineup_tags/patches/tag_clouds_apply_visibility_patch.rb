@@ -4,6 +4,7 @@ module RedmineupTags
   module Patches
     module TagCloudsApplyVisibilityPatch
       def apply_visibility
+        TagCloud.ensure_operator_schema!
         @tag_cloud.assign_attributes(safe_tag_cloud_params)
         apply_join_ids!(@tag_cloud)
         unless @tag_cloud.save
