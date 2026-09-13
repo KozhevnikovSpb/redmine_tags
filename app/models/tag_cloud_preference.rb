@@ -89,13 +89,33 @@ class TagCloudPreference < ActiveRecord::Base
     def reset_for_user!(user, project)
       return false unless user&.logged? && project
 
-      cloud_ids = (
-        TagCloud.inherited_for(project).map(&:id) +
-        TagCloud.for_project(project).map(&:id)
-      ).uniq
+      cloud_ids = project_cloud_ids(project)
       where(user_id: user.id, tag_cloud_id: cloud_ids).delete_all if cloud_ids.any?
       clear_system_override!(user, project)
       true
+    end
+
+    def reset_visibility_for_cloud!(cloud)
+      return 0 unless cloud&.id
+      return 0 unless table_exists?
+
+      where(tag_cloud_id: cloud.id).delete_all
+    rescue StandardError => e
+      Rails.logger.warn("[redmineup_tags] reset_visibility_for_cloud: #{e.class}: #{e.message}") if defined?(Rails)
+      0
+    end
+
+    def reset_all_for_project!(project)
+      return 0 unless project
+      return 0 unless table_exists?
+
+      ids = project_cloud_ids(project)
+      deleted = ids.any? ? where(tag_cloud_id: ids).delete_all : 0
+      clear_system_overrides_for_project!(project)
+      deleted
+    rescue StandardError => e
+      Rails.logger.warn("[redmineup_tags] reset_all_for_project: #{e.class}: #{e.message}") if defined?(Rails)
+      0
     end
 
     def clear_system_override!(user, project)
@@ -108,6 +128,35 @@ class TagCloudPreference < ActiveRecord::Base
       user.pref[SYSTEM_HIDDEN_KEY] = hidden
       user.pref[SYSTEM_SHOWN_KEY] = shown
       user.pref.save
+    end
+
+    def clear_system_overrides_for_project!(project)
+      return false unless project
+
+      scope = User.respond_to?(:active) ? User.active : User.all
+      scope.find_each do |user|
+        next unless user.respond_to?(:pref) && user.pref
+
+        hidden = Array(user.pref[SYSTEM_HIDDEN_KEY]).map(&:to_i)
+        shown = Array(user.pref[SYSTEM_SHOWN_KEY]).map(&:to_i)
+        next unless hidden.include?(project.id) || shown.include?(project.id)
+
+        hidden.delete(project.id)
+        shown.delete(project.id)
+        user.pref[SYSTEM_HIDDEN_KEY] = hidden
+        user.pref[SYSTEM_SHOWN_KEY] = shown
+        user.pref.save
+      end
+      true
+    rescue StandardError => e
+      Rails.logger.warn("[redmineup_tags] clear_system_overrides_for_project: #{e.class}: #{e.message}") if defined?(Rails)
+      false
+    end
+
+    def project_cloud_ids(project)
+      return [] unless project
+
+      (TagCloud.inherited_for(project).map(&:id) + TagCloud.for_project(project).map(&:id)).uniq
     end
 
     private
