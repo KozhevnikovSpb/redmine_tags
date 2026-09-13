@@ -233,6 +233,14 @@
       <%= hidden_field_tag 'tag_cloud[visible_by_default]', '1', id: 'tag_cloud_visible_by_default_fallback' %>
     <% end %>
     <%= f.label :visible_by_default, l(:label_tag_cloud_visible_by_default) %>
+    <% if @tag_cloud.persisted? %>
+      <%= link_to l(:button_tag_cloud_apply_to_all),
+                  apply_visibility_project_tag_cloud_path(@project, @tag_cloud, from: @from_plugin ? 'plugin' : nil),
+                  method: :post,
+                  data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
+                  class: 'icon icon-reload',
+                  style: 'margin-left:12px;' %>
+    <% end %>
   </p>
   <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_visible_by_default_hint) %></p>
 
