@@ -165,7 +165,7 @@ module IssuesTagsHelper
   def show_untagged_caption_for?(cloud)
     return false unless cloud
     return false unless personal_untagged_master_on?
-    return false unless TagCloud.can_manage?(User.current, @project)
+    return false unless TagCloud.can_select_display?(User.current, @project)
 
     personal_untagged_cloud_ids.include?(cloud.id)
   end
@@ -243,12 +243,12 @@ module IssuesTagsHelper
   end
 
   def clear_stale_tag_cloud_preferences!(user, clouds)
-    return if user.nil? || !user.logged? || clouds.blank?
+    return if user.nil? || !user.logged?
 
-    ids = clouds.map(&:id)
-    return if ids.empty?
-
-    TagCloudPreference.where(user_id: user.id, tag_cloud_id: ids).delete_all
+    ids = Array(clouds).map(&:id)
+    TagCloudPreference.where(user_id: user.id, tag_cloud_id: ids).delete_all if ids.any?
+    TagCloudPreference.clear_system_override!(user, @project) if @project
+    TagCloudUserPreference.revoke_untagged_if_unauthorized!(user)
   rescue StandardError => e
     Rails.logger.warn("[redmineup_tags] clear_stale_tag_cloud_preferences: #{e.class}: #{e.message}")
   end
