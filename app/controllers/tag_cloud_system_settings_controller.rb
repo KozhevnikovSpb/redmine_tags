@@ -5,13 +5,31 @@ class TagCloudSystemSettingsController < ApplicationController
   before_action :authorize_system_cloud
 
   def edit
-    @system_setting = TagCloudProjectSetting.record_for(@project)
-    @system_visible_by_default = TagCloudProjectSetting.local_visible_by_default?(@project)
-    @system_include_subprojects = TagCloudProjectSetting.local_include_subprojects?(@project)
+    load_system_form
     render 'tag_clouds/edit_system'
   end
 
   def update
+    save_system_settings!
+    if params[:apply_to_all].present?
+      TagCloudPreference.clear_system_overrides_for_project!(@project)
+      redirect_to settings_project_path(@project, tab: 'tags'),
+                  notice: l(:notice_tag_cloud_visibility_applied)
+    else
+      redirect_to settings_project_path(@project, tab: 'tags'),
+                  notice: l(:notice_tag_cloud_updated)
+    end
+  end
+
+  private
+
+  def load_system_form
+    @system_setting = TagCloudProjectSetting.record_for(@project)
+    @system_visible_by_default = TagCloudProjectSetting.local_visible_by_default?(@project)
+    @system_include_subprojects = TagCloudProjectSetting.local_include_subprojects?(@project)
+  end
+
+  def save_system_settings!
     visible = ActiveModel::Type::Boolean.new.cast(params[:system_visible_by_default])
     include_sub = ActiveModel::Type::Boolean.new.cast(params[:include_subprojects])
     TagCloudProjectSetting.update_system!(
@@ -19,11 +37,7 @@ class TagCloudSystemSettingsController < ApplicationController
       visible: visible,
       include_subprojects: include_sub
     )
-    redirect_to settings_project_path(@project, tab: 'tags'),
-                notice: l(:notice_tag_cloud_updated)
   end
-
-  private
 
   def authorize_system_cloud
     unless User.current.admin? || TagCloud.can_manage?(User.current, @project)
