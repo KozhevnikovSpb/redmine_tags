@@ -8,7 +8,7 @@ class TagCloudsController < ApplicationController
   before_action :authorize_tag_clouds
   before_action :assign_plugin_context
   before_action :ensure_operator_schema, only: %i[new create edit update preview]
-  before_action :find_tag_cloud, only: %i[edit update destroy]
+  before_action :find_tag_cloud, only: %i[edit update destroy apply_visibility]
 
   def index
     @tag_clouds = TagCloud.for_project(@project).to_a.select do |cloud|
@@ -97,6 +97,31 @@ class TagCloudsController < ApplicationController
     end
 
     redirect_after_change l(:notice_tag_cloud_deleted)
+  end
+
+  def apply_visibility
+    TagCloudPreference.reset_visibility_for_cloud!(@tag_cloud)
+    redirect_after_change l(:notice_tag_cloud_visibility_applied)
+  end
+
+  def apply_system_visibility
+    unless User.current.admin? || TagCloud.can_manage?(User.current, @project)
+      deny_access
+      return
+    end
+
+    TagCloudPreference.clear_system_overrides_for_project!(@project)
+    redirect_after_change l(:notice_tag_cloud_visibility_applied)
+  end
+
+  def reset_preferences
+    unless User.current.admin? || TagCloud.can_manage?(User.current, @project)
+      deny_access
+      return
+    end
+
+    TagCloudPreference.reset_all_for_project!(@project)
+    redirect_after_change l(:notice_tag_cloud_project_preferences_reset)
   end
 
   def reorder
