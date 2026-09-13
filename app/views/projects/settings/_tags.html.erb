@@ -15,6 +15,12 @@
     <%= link_to sprite_icon('add', l(:label_new_tag_cloud)),
                 new_project_tag_cloud_path(@project),
                 class: 'icon icon-add' %>
+    <%= link_to sprite_icon('reload', l(:button_tag_cloud_reset_project)),
+                reset_preferences_project_tag_clouds_path(@project),
+                method: :post,
+                data: { confirm: l(:text_tag_cloud_reset_project_confirm) },
+                class: 'icon icon-reload',
+                style: 'margin-left:16px;' %>
   </p>
 <% end %>
 
