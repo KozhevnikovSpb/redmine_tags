@@ -7,9 +7,6 @@ class TagCloudPreference < ActiveRecord::Base
   validates :user_id, uniqueness: { scope: :tag_cloud_id }
   validates :visible, inclusion: { in: [true, false] }
 
-  # position is optional (user-specific order of clouds); nil = use project order
-  # show_untagged is personal: Reset deletes these rows, so the caption turns off.
-
   SYSTEM_HIDDEN_KEY = 'system_tag_cloud_hidden_project_ids'
   SYSTEM_SHOWN_KEY = 'system_tag_cloud_shown_project_ids'
 
@@ -25,6 +22,7 @@ class TagCloudPreference < ActiveRecord::Base
     def system_visible_for?(user, project)
       project_default = project_system_default(project)
       return project_default unless user&.logged? && project
+      return project_default unless TagCloud.can_select_display?(user, project)
 
       if system_hidden_project_ids(user).include?(project.id)
         false
@@ -37,6 +35,7 @@ class TagCloudPreference < ActiveRecord::Base
 
     def set_system_visible!(user, project, visible)
       return false unless user&.logged? && project
+      return false unless TagCloud.can_select_display?(user, project)
 
       hidden = system_hidden_project_ids(user)
       shown = system_shown_project_ids(user)
@@ -87,8 +86,6 @@ class TagCloudPreference < ActiveRecord::Base
       false
     end
 
-    # Remove personal visibility/order/untagged rows for clouds on this project
-    # and drop personal system-cloud overrides so the project default applies.
     def reset_for_user!(user, project)
       return false unless user&.logged? && project
 
