@@ -62,14 +62,23 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert_not_includes sidebar_ids(@user), owner_cloud.id
   end
 
-  test 'view permission does not list own author-only cloud in settings' do
+  test 'view permission lists own author-only cloud read-only' do
     stub_cloud_permissions(@user, view: true)
     own = create_linked_cloud(name: 'Mine view list', visibility: 'owner', created_by: @user, owner: @user)
 
     assert own.visible_for?(@user, project: @project)
-    assert_not own.listed_in_settings_for?(@user, project: @project)
+    assert own.listed_in_settings_for?(@user, project: @project)
     assert_not own.manageable_by?(@user, project: @project)
     assert_includes sidebar_ids(@user), own.id
+  end
+
+  test 'view permission hides clouds with visible_by_default off' do
+    stub_cloud_permissions(@user, view: true)
+    hidden = create_linked_cloud(name: 'Hidden from view', visibility: 'all', visible_by_default: false, created_by: @admin)
+
+    assert_not hidden.visible_for?(@user, project: @project)
+    assert_not hidden.listed_in_settings_for?(@user, project: @project)
+    assert_not_includes sidebar_ids(@user), hidden.id
   end
 
   test 'select permission cannot reveal another authors owner cloud via preference' do
@@ -79,7 +88,7 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     owner_cloud.preferences.create!(user: @user, visible: true)
 
     assert TagCloud.can_see_custom_clouds?(@user, @project)
-    assert_not TagCloud.can_view_settings_list?(@user, @project)
+    assert TagCloud.can_view_settings_list?(@user, @project)
     assert TagCloud.can_select_display?(@user, @project)
     assert_not owner_cloud.visible_for?(@user, project: @project)
     assert owner_cloud.visible_for?(@admin, project: @project)
@@ -87,20 +96,21 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert_not_includes sidebar_ids(@user), owner_cloud.id
   end
 
-  test 'select permission shows public default-visible clouds and own author-only' do
+  test 'select permission can reveal a hidden default cloud via preference' do
     stub_cloud_permissions(@user, select: true)
 
     public_cloud = create_linked_cloud(name: 'Shared select', visibility: 'all', visible_by_default: true, created_by: @admin)
     hidden_default = create_linked_cloud(name: 'Hidden default', visibility: 'all', visible_by_default: false, created_by: @admin)
     own = create_linked_cloud(name: 'Mine select', visibility: 'owner', created_by: @user, owner: @user)
+    hidden_default.preferences.create!(user: @user, visible: true)
 
     assert public_cloud.visible_for?(@user, project: @project)
-    assert_not hidden_default.visible_for?(@user, project: @project)
+    assert hidden_default.visible_for?(@user, project: @project)
     assert own.visible_for?(@user, project: @project)
-    assert_not TagCloud.can_view_settings_list?(@user, @project)
+    assert TagCloud.can_view_settings_list?(@user, @project)
     assert_includes sidebar_ids(@user), public_cloud.id
     assert_includes sidebar_ids(@user), own.id
-    assert_not_includes sidebar_ids(@user), hidden_default.id
+    assert_includes sidebar_ids(@user), hidden_default.id
   end
 
   test 'manage permission includes display management' do
@@ -145,7 +155,7 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     own = create_linked_cloud(name: 'Mine view', visibility: 'owner', visible_by_default: false, created_by: @user, owner: @user)
 
     assert own.visible_for?(@user, project: @project)
-    assert_not own.listed_in_settings_for?(@user, project: @project)
+    assert own.listed_in_settings_for?(@user, project: @project)
     assert_not own.manageable_by?(@user, project: @project)
     assert_includes sidebar_ids(@user), own.id
   end
