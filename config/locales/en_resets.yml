@@ -1,0 +1,7 @@
+en:
+  button_tag_cloud_apply_to_all: Apply to all
+  text_tag_cloud_apply_to_all_confirm: Clear personal show/hide for this cloud for all users? Sidebar will follow Visible by default.
+  notice_tag_cloud_visibility_applied: Personal visibility for this cloud was reset for all users.
+  button_tag_cloud_reset_project: Reset
+  text_tag_cloud_reset_project_confirm: Reset personal visibility and order of all tag clouds in this project for every user?
+  notice_tag_cloud_project_preferences_reset: Personal tag cloud visibility and order were reset for all users on this project.
