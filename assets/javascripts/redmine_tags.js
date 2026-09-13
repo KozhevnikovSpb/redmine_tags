@@ -196,8 +196,7 @@ $(function () {
             fontFamily: $select.css('font-family'),
             padding: '0 8px'
         }).text(longest).appendTo('body');
-        var multi = $select.is('[multiple]') || parseInt($select.attr('size'), 10) > 1;
-        var extra = multi ? 44 : 28;
+        var extra = $select.is('[multiple]') || parseInt($select.attr('size'), 10) > 1 ? 44 : 28;
         var w = Math.max(160, Math.ceil($probe.outerWidth()) + extra);
         $probe.remove();
         $select.css('width', w + 'px');
@@ -236,6 +235,28 @@ $(function () {
         setToggleHidden($('#tag-cloud-untagged-stat'), !show);
     }
 
+    function selectValueEmpty(val) {
+        return val == null || val === '' || ($.isArray(val) && val.length === 0);
+    }
+
+    function ensureFirstValue($select) {
+        if (!$select.length) {
+            return;
+        }
+        if (!selectValueEmpty($select.val())) {
+            return;
+        }
+        var $first = $select.find('option').filter(function () {
+            return String($(this).val()) !== '';
+        }).first();
+        if (!$first.length) {
+            $first = $select.find('option').first();
+        }
+        if ($first.length) {
+            $select.val($first.val());
+        }
+    }
+
     function setFilterOpen($row, open, opts) {
         opts = opts || {};
         if (!isOperatorFilterRow($row)) {
@@ -250,6 +271,7 @@ $(function () {
         if (open) {
             $select.attr('multiple', 'multiple');
             $select.attr('size', Math.min(Math.max(count, 4), 6));
+            ensureFirstValue($select);
         } else {
             var val = $select.val();
             $select.removeAttr('multiple');
@@ -257,6 +279,7 @@ $(function () {
             if ($.isArray(val)) {
                 $select.val(val.length ? val[0] : null);
             }
+            ensureFirstValue($select);
         }
         fitSelectWidth($select);
         if (!opts.silent) {
@@ -282,6 +305,7 @@ $(function () {
             setToggleHidden($select, false);
             setToggleHidden($btn, false);
             setFilterOpen($row, $btn.attr('data-open') === '1', { silent: true });
+            ensureFirstValue($select);
         }
         syncUntaggedStat();
         if (!opts.silent) {
