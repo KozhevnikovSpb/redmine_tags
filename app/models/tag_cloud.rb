@@ -119,7 +119,18 @@ class TagCloud < ActiveRecord::Base
     return false unless user
     return true if user.admin?
     return false unless project
-    user.allowed_to?(:view_tag_clouds, project) || user.allowed_to?(:manage_tag_clouds, project)
+    %i[view_tag_clouds select_tag_clouds manage_tag_clouds].any? { |permission| user.allowed_to?(permission, project) }
+  end
+
+  def self.can_configure_display?(user)
+    return false unless user&.logged?
+    return true if user.admin?
+
+    %i[view_tag_clouds select_tag_clouds manage_tag_clouds].any? do |permission|
+      user.allowed_to?(permission, nil, global: true)
+    end
+  rescue StandardError
+    false
   end
 
   def self.sidebar_clouds_for(project, user)
@@ -169,16 +180,20 @@ class TagCloud < ActiveRecord::Base
       return user.admin?
     end
 
+    return false unless project
+    return false unless self.class.can_view_settings_list?(user, project)
+
     if author_only?
-      return false unless authored_by?(user)
-      return false unless project
-      return true if user.admin?
-      return user.allowed_to?(:manage_tag_clouds, project)
+      return authored_by?(user)
     end
 
     return true if user.admin?
-    return false unless project
-    self.class.can_view_settings_list?(user, project)
+    return false unless visibility_allows?(user, project)
+
+    # Manage must see hidden clouds to edit them. View/select hide VBD-off rows.
+    return true if self.class.can_manage?(user, project)
+
+    visible_by_default?
   end
 
   def manageable_by?(user, project: nil, context: :project)
@@ -214,19 +229,12 @@ class TagCloud < ActiveRecord::Base
     end
 
     return false unless self.class.can_see_custom_clouds?(user, project)
+    return false unless visibility_allows?(user, project)
 
     preferred = personal_visibility(user, project)
     return preferred unless preferred.nil?
 
-    case visibility.to_s
-    when 'all'
-      visible_by_default?
-    when 'roles'
-      return true if user.admin?
-      roles_match?(user, project)
-    else
-      false
-    end
+    visible_by_default?
   end
 
   def position_in(project)
@@ -345,6 +353,19 @@ class TagCloud < ActiveRecord::Base
   end
 
   private
+
+  def visibility_allows?(user, project)
+    case visibility.to_s
+    when 'all'
+      true
+    when 'roles'
+      user.admin? || roles_match?(user, project)
+    when 'owner'
+      authored_by?(user)
+    else
+      false
+    end
+  end
 
   def personal_visibility(user, project)
     return nil unless user&.logged? && project && self.class.can_select_display?(user, project)
