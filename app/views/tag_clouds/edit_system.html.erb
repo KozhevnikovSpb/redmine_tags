@@ -14,12 +14,11 @@
       <%= check_box_tag :system_visible_by_default, '1', @system_visible_by_default,
                         id: 'system_visible_by_default' %>
       <%= label_tag :system_visible_by_default, l(:label_tag_cloud_visible_by_default) %>
-      <%= link_to l(:button_tag_cloud_apply_to_all),
-                  apply_system_visibility_project_tag_clouds_path(@project),
-                  method: :post,
-                  data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
-                  class: 'icon icon-reload',
-                  style: 'margin-left:12px;' %>
+      <%= submit_tag l(:button_tag_cloud_apply_to_all),
+                     name: 'apply_to_all',
+                     data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
+                     class: 'icon icon-reload',
+                     style: 'margin-left:12px;' %>
     </p>
     <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_system_visible_by_default_hint) %></p>
 
