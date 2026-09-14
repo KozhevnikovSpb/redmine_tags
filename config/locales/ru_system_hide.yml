@@ -1,0 +1,4 @@
+ru:
+  label_tag_cloud_hide_default: Скрыть Default Tags
+  text_tag_cloud_system_hide_hint: Галочка скрывает Default Tags в этом проекте. С правом управления отображением можно включить облако себе.
+  text_tag_cloud_system_include_subprojects_hint: Если Default Tags скрыт и включены подпроекты, облако скрывается во всех подпроектах и их Edit блокируется.
