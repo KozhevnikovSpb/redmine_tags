@@ -1,0 +1,4 @@
+en:
+  label_tag_cloud_hide_default: Hide Default Tags
+  text_tag_cloud_system_hide_hint: Check to hide Default Tags in this project. Users with Manage display can still show it for themselves.
+  text_tag_cloud_system_include_subprojects_hint: When Default Tags is hidden and Subprojects is on, hide it on all subprojects and lock their Edit.
