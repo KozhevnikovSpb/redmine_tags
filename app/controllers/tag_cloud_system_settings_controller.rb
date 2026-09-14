@@ -30,11 +30,16 @@ class TagCloudSystemSettingsController < ApplicationController
   end
 
   def save_system_settings!
-    visible = ActiveModel::Type::Boolean.new.cast(params[:system_visible_by_default])
+    hidden =
+      if params.key?(:system_hidden)
+        ActiveModel::Type::Boolean.new.cast(params[:system_hidden])
+      else
+        !ActiveModel::Type::Boolean.new.cast(params[:system_visible_by_default])
+      end
     include_sub = ActiveModel::Type::Boolean.new.cast(params[:include_subprojects])
     TagCloudProjectSetting.update_system!(
       @project,
-      visible: visible,
+      visible: !hidden,
       include_subprojects: include_sub
     )
   end
