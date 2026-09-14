@@ -68,7 +68,6 @@ class TagCloudProjectSetting < ActiveRecord::Base
       rec = find_or_initialize_by(project_id: project.id)
       visible = ActiveModel::Type::Boolean.new.cast(visible)
       include_subprojects = ActiveModel::Type::Boolean.new.cast(include_subprojects)
-      include_subprojects = false if visible
       rec.system_visible_by_default = visible
       rec.include_subprojects = include_subprojects if include_subprojects_column?
       rec.save!
