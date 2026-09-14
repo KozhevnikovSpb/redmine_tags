@@ -4,7 +4,7 @@
   <% @tag_clouds = TagCloud.for_project(@project).includes(:created_by).to_a.select { |cloud| cloud.listed_in_settings_for?(User.current, project: @project) } %>
 <% end %>
 <% system_visible_default = TagCloudProjectSetting.system_visible_by_default?(@project) %>
-<% system_include_subprojects = !system_visible_default && TagCloudProjectSetting.local_include_subprojects?(@project) %>
+<% system_include_subprojects = TagCloudProjectSetting.local_include_subprojects?(@project) %>
 <% system_locked = TagCloudProjectSetting.locked_by_ancestor?(@project) %>
 <% reset_cycle('tag_cloud_rows') %>
 
