@@ -115,7 +115,7 @@ class TagCloudsController < ApplicationController
   end
 
   def reset_preferences
-    unless User.current.admin? || TagCloud.can_manage?(User.current, @project)
+    unless User.current.admin?
       deny_access
       return
     end
@@ -175,7 +175,7 @@ class TagCloudsController < ApplicationController
 
     html =
       if tags.empty?
-        helpers.content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
+        helpers.content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud_empty')
       else
         style = RedmineupTags.tag_list_view
         style = :simple_cloud if style == :none || style.blank?

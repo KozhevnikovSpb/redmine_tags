@@ -12,16 +12,21 @@
 <h3><%= l(:tag_clouds) %></h3>
 
 <% if can_manage %>
-  <p>
+  <p class="tag-clouds-settings-toolbar">
     <%= link_to sprite_icon('add', l(:label_new_tag_cloud)),
                 new_project_tag_cloud_path(@project),
                 class: 'icon icon-add' %>
-    <%= link_to sprite_icon('reload', l(:button_tag_cloud_reset_project)),
-                reset_preferences_project_tag_clouds_path(@project),
-                method: :post,
-                data: { confirm: l(:text_tag_cloud_reset_project_confirm) },
-                class: 'icon icon-reload',
-                style: 'margin-left:16px;' %>
+    <% if can_edit_system %>
+      <%= link_to sprite_icon('reload', l(:button_tag_cloud_reset_project)),
+                  reset_preferences_project_tag_clouds_path(@project),
+                  method: :post,
+                  data: { confirm: l(:text_tag_cloud_reset_project_confirm) },
+                  class: 'icon icon-reload tag-clouds-settings-reset' %>
+    <% else %>
+      <span class="icon icon-reload tag-clouds-settings-reset tag-cloud-action-disabled" title="<%= l(:button_tag_cloud_reset_project) %>">
+        <%= sprite_icon('reload', l(:button_tag_cloud_reset_project)) %>
+      </span>
+    <% end %>
   </p>
 <% end %>
 
@@ -44,11 +49,15 @@
     min-height: 18px;
   }
   .tag-clouds-settings-table .tag-cloud-action-handle { min-width: 20px; }
-  .tag-clouds-settings-table .tag-cloud-action-disabled {
+  .tag-clouds-settings-table .tag-cloud-action-disabled,
+  .tag-clouds-settings-toolbar .tag-cloud-action-disabled {
     opacity: 0.35;
     filter: grayscale(1);
     cursor: default;
     pointer-events: none;
+  }
+  .tag-clouds-settings-toolbar .tag-clouds-settings-reset {
+    margin-left: 16px;
   }
 </style>
 

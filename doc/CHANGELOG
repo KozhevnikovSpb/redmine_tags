@@ -24,6 +24,11 @@ Permissions
 * Tests use :create_issue_tags / :edit_issue_tags
 * Restored full ru.yml after a truncated label-only commit
 
+Project settings Tag Clouds
+* Edit Default Tags is enabled only for a full Redmine administrator; manage users see a disabled edit icon
+* Project Reset is enabled only for a full Redmine administrator; manage users see a disabled Reset icon
+* reset_preferences denies non-admin even with manage_tag_clouds
+
 Locales
 * Merged fragment files en_resets.yml, ru_resets.yml, en_system_hide.yml, ru_system_hide.yml into en.yml / ru.yml
 * RU: Apply to all / Reset / Visible by default leftovers translated
