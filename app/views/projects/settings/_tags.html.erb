@@ -1,6 +1,5 @@
 <% can_manage = TagCloud.can_manage?(User.current, @project) %>
 <% can_edit_system = User.current.admin? %>
-<% can_apply_to_all = User.current.admin? %>
 <% inherited_clouds = @project ? TagCloud.inherited_for(@project).select { |cloud| cloud.listed_in_settings_for?(User.current, project: @project) } : [] %>
 <% if @project.present? %>
   <% @tag_clouds = TagCloud.for_project(@project).includes(:created_by).to_a.select { |cloud| cloud.listed_in_settings_for?(User.current, project: @project) } %>
@@ -111,7 +110,6 @@
                 </span>
               <% end %>
             </span>
-            <span class="tag-cloud-action tag-cloud-action-apply"></span>
             <span class="tag-cloud-action tag-cloud-action-delete"></span>
           </span>
         </td>
@@ -160,20 +158,6 @@
                   <%= link_to sprite_icon('edit', l(:button_edit)),
                               edit_project_tag_cloud_path(@project, cloud),
                               class: 'icon icon-edit' %>
-                <% end %>
-              </span>
-              <span class="tag-cloud-action tag-cloud-action-apply">
-                <% if cloud_manageable && can_apply_to_all %>
-                  <%= link_to sprite_icon('reload', l(:button_tag_cloud_apply_to_all)),
-                              apply_visibility_project_tag_cloud_path(@project, cloud),
-                              method: :post,
-                              data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
-                              class: 'icon icon-reload',
-                              title: l(:button_tag_cloud_apply_to_all) %>
-                <% elsif cloud_manageable %>
-                  <span class="icon icon-reload tag-cloud-action-disabled" title="<%= l(:button_tag_cloud_apply_to_all) %>">
-                    <%= sprite_icon('reload', l(:button_tag_cloud_apply_to_all)) %>
-                  </span>
                 <% end %>
               </span>
               <span class="tag-cloud-action tag-cloud-action-delete">
@@ -230,20 +214,6 @@
                     <%= link_to sprite_icon('edit', l(:button_edit)),
                                 edit_project_tag_cloud_path(@project, cloud),
                                 class: 'icon icon-edit' %>
-                  <% end %>
-                </span>
-                <span class="tag-cloud-action tag-cloud-action-apply">
-                  <% if cloud_manageable && can_apply_to_all %>
-                    <%= link_to sprite_icon('reload', l(:button_tag_cloud_apply_to_all)),
-                                apply_visibility_project_tag_cloud_path(@project, cloud),
-                                method: :post,
-                                data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
-                                class: 'icon icon-reload',
-                                title: l(:button_tag_cloud_apply_to_all) %>
-                  <% elsif cloud_manageable %>
-                    <span class="icon icon-reload tag-cloud-action-disabled" title="<%= l(:button_tag_cloud_apply_to_all) %>">
-                      <%= sprite_icon('reload', l(:button_tag_cloud_apply_to_all)) %>
-                    </span>
                   <% end %>
                 </span>
                 <span class="tag-cloud-action tag-cloud-action-delete">
