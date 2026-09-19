@@ -269,6 +269,7 @@ REDMINEUP_TAGS_REQUIRED_FILES = [
   'redmineup_tags/patches/project_patch',
   'redmineup_tags/patches/my_controller_patch',
   'redmineup_tags/patches/tag_cloud_untagged_patch',
+  'redmineup_tags/patches/role_issue_tag_permissions_patch',
   'redmineup_tags/schema_repair'
 ]
 
@@ -284,5 +285,8 @@ REDMINEUP_TAGS_REQUIRED_FILES.each { |file| require(base_url + '/' + file) }
 Rails.application.config.after_initialize do
   RedmineupTags.enable_project_module!
   RedmineupTags.ensure_schema!
+  if defined?(Role) && !Role.ancestors.include?(RedmineupTags::Patches::RoleIssueTagPermissionsPatch)
+    Role.prepend(RedmineupTags::Patches::RoleIssueTagPermissionsPatch)
+  end
   RedmineupTags::IssueTagPermissions.migrate_legacy_role_permissions!
 end

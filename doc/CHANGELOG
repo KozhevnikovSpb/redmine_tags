@@ -18,6 +18,7 @@ Permissions
 * New names in Tags and tag clouds: create_issue_tags / edit_issue_tags
 * Roles labels: Create issue tags / Edit issue tags (RU: Создание тегов задач / Редактирование тегов задач)
 * Roles form checkboxes are independent of Q&A Create tags
+* Create issue tags cannot be set without Edit issue tags (Roles UI + save + runtime check)
 * On boot, roles that already had :create_tags / :edit_tags also receive the issue-tag permissions
 * Issue form Select2 allows typing a new tag only with create_issue_tags
 * Tests use :create_issue_tags / :edit_issue_tags

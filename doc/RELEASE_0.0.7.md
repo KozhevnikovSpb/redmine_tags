@@ -27,6 +27,7 @@ Bug fixes and copy. No new features.
 - RU strings for Apply to all / project Reset / hide Default Tags
 - Issue tag permissions split from Q&A: `create_issue_tags` / `edit_issue_tags`
 - Roles labels distinguish issues from Q&A: Create issue tags / Edit issue tags
+- Create issue tags requires Edit issue tags (checkbox disabled, stripped on save, ignored at runtime)
 - Roles that already had `create_tags` / `edit_tags` get the new issue permissions on boot
 - New tag names in the issue form require `create_issue_tags`
 - Full `ru.yml` restored (a label commit had truncated it)
@@ -45,4 +46,5 @@ No DB migration. After restart open Administration → Roles:
 1. Block **Tags and tag clouds** shows **Create issue tags** / **Edit issue tags**
 2. Block **Q&A** keeps **Create tags** / **Edit tags**
 3. Unchecking the Tags checkboxes must stay unchecked after Save
-4. With both issue permissions on, type a new tag on an issue and save — it must persist
+4. Create issue tags stays disabled until Edit issue tags is checked
+5. With both issue permissions on, type a new tag on an issue and save — it must persist
