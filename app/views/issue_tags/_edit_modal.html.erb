@@ -22,7 +22,7 @@
                       multiple: true,
                       url: auto_complete_redmine_tags_path,
                       placeholder: @is_bulk_editing ? l(:label_no_change_option) : l(:label_tags_add_tag),
-                      tags: User.current.allowed_to?(:create_tags, @projects) %>
+                      tags: RedmineupTags.can_create_issue_tags?(User.current, @projects) %>
     </div>
 
     <p class="most_used_tags">

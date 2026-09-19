@@ -1,4 +1,4 @@
-<% if User.current.allowed_to?(:edit_tags, @issue.project)  %>
+<% if RedmineupTags.can_edit_issue_tags?(User.current, @issue.project) %>
   <p id="issue_tags">
     <label><%= l(:tags) %></label>
     <% tags_table = Redmineup::Tag.table_name %>
@@ -13,6 +13,7 @@
                    options_for_select(tag_names, @issue.tag_list),
                    multiple: true,
                    id: 'issue_tag_list',
-                   class: 'redmine-tags-local-select' %>
+                   class: 'redmine-tags-local-select',
+                   data: { allow_create: RedmineupTags.can_create_issue_tags?(User.current, @issue.project) ? '1' : '0' } %>
   </p>
 <% end %>
