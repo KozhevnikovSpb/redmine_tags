@@ -1,11 +1,33 @@
-<% if controller.controller_name == 'roles' && %w[new edit create update].include?(controller.action_name) %>
+<% if controller.controller_name == 'roles' && %w[new edit create update permissions].include?(controller.action_name) %>
 <%= javascript_tag nonce: true do %>
 (function() {
+  function boxes(name) {
+    return Array.prototype.slice.call(
+      document.querySelectorAll('input[type="checkbox"][value="' + name + '"]')
+    );
+  }
+
+  function wrapOf(el) {
+    return el.closest('label') || el.closest('td') || el.parentElement;
+  }
+
+  function setLocked(el, locked) {
+    var wrap = wrapOf(el);
+    el.disabled = !!locked;
+    if (locked) el.checked = false;
+    if (wrap) wrap.classList.toggle('issue-tag-perm-disabled', !!locked);
+    el.classList.toggle('issue-tag-perm-disabled', !!locked);
+    el.setAttribute('aria-disabled', locked ? 'true' : 'false');
+    if (locked) {
+      el.title = <%= raw l(:permission_create_issue_tags).to_json %> + ' — ' + <%= raw l(:permission_edit_issue_tags).to_json %>;
+    } else {
+      el.removeAttribute('title');
+    }
+  }
+
   var view = document.querySelector('input[type="checkbox"][value="view_tag_clouds"]');
   var select = document.querySelector('input[type="checkbox"][value="select_tag_clouds"]');
   var manage = document.querySelector('input[type="checkbox"][value="manage_tag_clouds"]');
-  var editTags = document.querySelector('input[type="checkbox"][value="edit_issue_tags"]');
-  var createTags = document.querySelector('input[type="checkbox"][value="create_issue_tags"]');
 
   function syncClouds() {
     if (!view || !select || !manage) return;
@@ -25,13 +47,25 @@
   }
 
   function syncIssueTags() {
-    if (!editTags || !createTags) return;
-    if (editTags.checked) {
-      createTags.disabled = false;
-    } else {
-      createTags.checked = false;
-      createTags.disabled = true;
-    }
+    var edits = boxes('edit_issue_tags');
+    var creates = boxes('create_issue_tags');
+    if (!creates.length) return;
+
+    creates.forEach(function(createEl) {
+      var form = createEl.form;
+      var editEl = null;
+      if (form) {
+        editEl = form.querySelector('input[type="checkbox"][value="edit_issue_tags"]');
+        if (createEl.className) {
+          var roleClass = (createEl.className.match(/role-\d+/) || [])[0];
+          if (roleClass) {
+            editEl = form.querySelector('input[type="checkbox"][value="edit_issue_tags"].' + roleClass) || editEl;
+          }
+        }
+      }
+      if (!editEl && edits.length === 1) editEl = edits[0];
+      setLocked(createEl, !(editEl && editEl.checked));
+    });
   }
 
   function sync() {
@@ -41,11 +75,20 @@
 
   if (manage) manage.addEventListener('change', sync);
   if (select) select.addEventListener('change', sync);
-  if (editTags) editTags.addEventListener('change', sync);
+  boxes('edit_issue_tags').forEach(function(el) {
+    el.addEventListener('change', sync);
+  });
+  document.addEventListener('click', function(e) {
+    if (!e.target) return;
+    if (e.target.closest && (e.target.closest('a.icon-checked') || e.target.closest('.icon-only'))) {
+      setTimeout(sync, 0);
+    }
+  });
   sync();
 
-  var form = (manage && manage.form) || (editTags && editTags.form);
+  var form = (manage && manage.form) || (boxes('edit_issue_tags')[0] && boxes('edit_issue_tags')[0].form);
   if (!form) return;
+  form.addEventListener('change', sync);
   form.addEventListener('submit', function() {
     if (manage && manage.checked) {
       select.disabled = false;
@@ -56,13 +99,34 @@
       view.disabled = false;
       view.checked = true;
     }
-    if (editTags && createTags) {
-      if (!editTags.checked) {
-        createTags.checked = false;
+    boxes('create_issue_tags').forEach(function(createEl) {
+      var wrap = wrapOf(createEl);
+      var editEl = form.querySelector('input[type="checkbox"][value="edit_issue_tags"]');
+      var roleClass = (createEl.className.match(/role-\d+/) || [])[0];
+      if (roleClass) {
+        editEl = form.querySelector('input[type="checkbox"][value="edit_issue_tags"].' + roleClass) || editEl;
       }
-      createTags.disabled = false;
-    }
+      if (!(editEl && editEl.checked)) createEl.checked = false;
+      createEl.disabled = false;
+      if (wrap) wrap.classList.remove('issue-tag-perm-disabled');
+    });
   });
 })();
 <% end %>
+<style>
+  input[type="checkbox"][value="create_issue_tags"].issue-tag-perm-disabled,
+  input[type="checkbox"][value="create_issue_tags"]:disabled {
+    opacity: 0.4;
+    filter: grayscale(1);
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  label.issue-tag-perm-disabled,
+  td.issue-tag-perm-disabled,
+  tr.permission-create_issue_tags:has(.issue-tag-perm-disabled) td.name {
+    opacity: 0.45;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
+</style>
 <% end %>
