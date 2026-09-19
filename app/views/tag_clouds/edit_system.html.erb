@@ -2,19 +2,29 @@
 
 <%= form_tag update_system_project_tag_clouds_path(@project), method: :patch do %>
   <div class="box tag-cloud-form tag-cloud-system-form">
-    <p class="tag-cloud-visible-row">
-      <%= hidden_field_tag :system_hidden, '0' %>
-      <%= check_box_tag :system_hidden, '1', !@system_visible_by_default,
-                        id: 'system_hidden' %>
-      <%= label_tag :system_hidden, l(:label_tag_cloud_hide_default) %>
-      <%= link_to l(:button_tag_cloud_apply_to_all),
-                  apply_system_visibility_project_tag_clouds_path(@project),
-                  method: :post,
-                  data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
-                  class: 'icon icon-reload',
-                  style: 'margin-left:12px;' %>
-    </p>
-    <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_system_hide_hint) %></p>
+    <% if User.current.admin? %>
+      <p class="tag-cloud-visible-row">
+        <%= hidden_field_tag :system_hidden, '0' %>
+        <%= check_box_tag :system_hidden, '1', !@system_visible_by_default,
+                          id: 'system_hidden' %>
+        <%= label_tag :system_hidden, l(:label_tag_cloud_hide_default) %>
+        <%= link_to l(:button_tag_cloud_apply_to_all),
+                    apply_system_visibility_project_tag_clouds_path(@project),
+                    method: :post,
+                    data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
+                    class: 'icon icon-reload',
+                    style: 'margin-left:12px;' %>
+      </p>
+      <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_system_hide_hint) %></p>
+    <% else %>
+      <p class="tag-cloud-visible-row">
+        <%= link_to l(:button_tag_cloud_apply_to_all),
+                    apply_system_visibility_project_tag_clouds_path(@project),
+                    method: :post,
+                    data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
+                    class: 'icon icon-reload' %>
+      </p>
+    <% end %>
 
     <p class="tag-cloud-subprojects-row">
       <%= hidden_field_tag :include_subprojects, '0' %>
