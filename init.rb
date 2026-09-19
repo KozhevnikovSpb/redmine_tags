@@ -26,8 +26,8 @@ Redmine::Plugin.register :redmineup_tags do
   }, partial: 'tags/settings'
 
   project_module :redmineup_tags do
-    permission :create_tags, {}
-    permission :edit_tags, {}
+    permission :create_issue_tags, {}
+    permission :edit_issue_tags, {}
     permission :view_tag_clouds, {
       tag_clouds: %i[index]
     }
