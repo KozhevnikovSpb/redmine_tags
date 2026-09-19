@@ -7,11 +7,12 @@
       <%= check_box_tag :system_hidden, '1', !@system_visible_by_default,
                         id: 'system_hidden' %>
       <%= label_tag :system_hidden, l(:label_tag_cloud_hide_default) %>
-      <%= submit_tag l(:button_tag_cloud_apply_to_all),
-                     name: 'apply_to_all',
-                     data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
-                     class: 'icon icon-reload',
-                     style: 'margin-left:12px;' %>
+      <%= link_to l(:button_tag_cloud_apply_to_all),
+                  apply_system_visibility_project_tag_clouds_path(@project),
+                  method: :post,
+                  data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
+                  class: 'icon icon-reload',
+                  style: 'margin-left:12px;' %>
     </p>
     <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_system_hide_hint) %></p>
 
