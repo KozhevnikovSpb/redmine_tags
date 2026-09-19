@@ -4,6 +4,20 @@ Redmine Tags plugin - Tags board plugin for redmine
 Copyright (C) 2011-2026 Kirill Bezrukov (RedmineUP)
 http://www.redmineup.com/
 
+== 2026-09-19 v0.0.7
+
+Development. Plugin ID: :redmineup_tags
+Target: Redmine 7.0.0 / Ruby 3.4 / Rails 8.1
+Version in init.rb: 0.0.7 (Development)
+Docs: doc/RELEASE_0.0.7.md
+
+Scope: bug fixes and copy (no new features).
+
+Locales
+* Merged fragment files en_resets.yml, ru_resets.yml, en_system_hide.yml, ru_system_hide.yml into en.yml / ru.yml
+* RU: Apply to all / Reset / Visible by default leftovers translated
+* System hide hint follows the Hide Default Tags checkbox (Subprojects stays independent)
+
 == 2026-09-07 v0.0.6
 
 Development. Plugin ID: :redmineup_tags
