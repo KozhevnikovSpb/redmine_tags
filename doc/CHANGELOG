@@ -27,7 +27,8 @@ Permissions
 Project settings Tag Clouds
 * Edit Default Tags is enabled only for a full Redmine administrator; manage users see a disabled edit icon
 * Project Reset is enabled only for a full Redmine administrator; manage users see a disabled Reset icon
-* reset_preferences denies non-admin even with manage_tag_clouds
+* Apply to all (custom cloud and Default Tags) is enabled only for a full Redmine administrator; manage users see a disabled link
+* reset_preferences / apply_visibility / apply_system_visibility deny non-admin even with manage_tag_clouds
 
 Locales
 * Merged fragment files en_resets.yml, ru_resets.yml, en_system_hide.yml, ru_system_hide.yml into en.yml / ru.yml

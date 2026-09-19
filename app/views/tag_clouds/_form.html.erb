@@ -10,6 +10,7 @@
   visibility_author = @tag_cloud.visibility_author || User.current
   name_blank_message = l(:text_tag_cloud_name_blank)
   available_tags = Array(@available_tags)
+  can_apply_to_all = User.current.admin?
 
   status_op  = @tag_cloud.respond_to?(:normalized_status_operator) ? @tag_cloud.normalized_status_operator : '*'
   version_op = @tag_cloud.respond_to?(:normalized_version_operator) ? @tag_cloud.normalized_version_operator : '*'
@@ -28,6 +29,16 @@
 <% if @from_plugin %>
   <%= hidden_field_tag :from, 'plugin' %>
 <% end %>
+
+<style>
+  .tag-cloud-apply-to-all { margin-left: 12px; }
+  .tag-cloud-apply-to-all.tag-cloud-action-disabled {
+    opacity: 0.35;
+    filter: grayscale(1);
+    cursor: default;
+    pointer-events: none;
+  }
+</style>
 
 <div class="box tag-cloud-form"
      data-preview-url="<%= preview_url %>"
@@ -234,12 +245,17 @@
     <% end %>
     <%= f.label :visible_by_default, l(:label_tag_cloud_visible_by_default) %>
     <% if @tag_cloud.persisted? %>
-      <%= link_to l(:button_tag_cloud_apply_to_all),
-                  apply_visibility_project_tag_cloud_path(@project, @tag_cloud, from: @from_plugin ? 'plugin' : nil),
-                  method: :post,
-                  data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
-                  class: 'icon icon-reload',
-                  style: 'margin-left:12px;' %>
+      <% if can_apply_to_all %>
+        <%= link_to l(:button_tag_cloud_apply_to_all),
+                    apply_visibility_project_tag_cloud_path(@project, @tag_cloud, from: @from_plugin ? 'plugin' : nil),
+                    method: :post,
+                    data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
+                    class: 'icon icon-reload tag-cloud-apply-to-all' %>
+      <% else %>
+        <span class="icon icon-reload tag-cloud-apply-to-all tag-cloud-action-disabled" title="<%= l(:button_tag_cloud_apply_to_all) %>">
+          <%= l(:button_tag_cloud_apply_to_all) %>
+        </span>
+      <% end %>
     <% end %>
   </p>
   <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_visible_by_default_hint) %></p>

@@ -33,7 +33,8 @@ Bug fixes and copy. No new features.
 - Full `ru.yml` restored (a label commit had truncated it)
 - Functional tests use the new permission symbols
 - Project settings: Edit Default Tags and Reset are enabled only for a full Redmine administrator; manage users see disabled icons
-- `reset_preferences` is admin-only (manage_tag_clouds is not enough)
+- Apply to all on cloud forms is enabled only for a full Redmine administrator; manage users see a disabled link
+- `reset_preferences`, `apply_visibility` and `apply_system_visibility` are admin-only (manage_tag_clouds is not enough)
 
 ## Deploy
 
@@ -50,4 +51,4 @@ No DB migration. After restart open Administration → Roles:
 3. Unchecking the Tags checkboxes must stay unchecked after Save
 4. Create issue tags stays disabled until Edit issue tags is checked
 5. With both issue permissions on, type a new tag on an issue and save — it must persist
-6. Project → Settings → Tag Clouds: manager with Manage tag clouds sees disabled Edit on Default Tags and disabled Reset; only a full administrator can use them
+6. Project → Settings → Tag Clouds: manager with Manage tag clouds sees disabled Edit on Default Tags, disabled Reset, and disabled Apply to all; only a full administrator can use them

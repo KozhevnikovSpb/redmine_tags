@@ -1,5 +1,15 @@
 <h2><%= l(:label_edit_system_tag_cloud) %></h2>
 
+<style>
+  .tag-cloud-apply-to-all { margin-left: 12px; }
+  .tag-cloud-apply-to-all.tag-cloud-action-disabled {
+    opacity: 0.35;
+    filter: grayscale(1);
+    cursor: default;
+    pointer-events: none;
+  }
+</style>
+
 <%= form_tag update_system_project_tag_clouds_path(@project), method: :patch do %>
   <div class="box tag-cloud-form tag-cloud-system-form">
     <p class="tag-cloud-visible-row">
@@ -7,12 +17,17 @@
       <%= check_box_tag :system_hidden, '1', !@system_visible_by_default,
                         id: 'system_hidden' %>
       <%= label_tag :system_hidden, l(:label_tag_cloud_hide_default) %>
-      <%= link_to l(:button_tag_cloud_apply_to_all),
-                  apply_system_visibility_project_tag_clouds_path(@project),
-                  method: :post,
-                  data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
-                  class: 'icon icon-reload',
-                  style: 'margin-left:12px;' %>
+      <% if User.current.admin? %>
+        <%= link_to l(:button_tag_cloud_apply_to_all),
+                    apply_system_visibility_project_tag_clouds_path(@project),
+                    method: :post,
+                    data: { confirm: l(:text_tag_cloud_apply_to_all_confirm) },
+                    class: 'icon icon-reload tag-cloud-apply-to-all' %>
+      <% else %>
+        <span class="icon icon-reload tag-cloud-apply-to-all tag-cloud-action-disabled" title="<%= l(:button_tag_cloud_apply_to_all) %>">
+          <%= l(:button_tag_cloud_apply_to_all) %>
+        </span>
+      <% end %>
     </p>
     <p class="info tag-cloud-visible-hint"><%= l(:text_tag_cloud_system_hide_hint) %></p>
 
