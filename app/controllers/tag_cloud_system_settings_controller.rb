@@ -30,24 +30,22 @@ class TagCloudSystemSettingsController < ApplicationController
   end
 
   def save_system_settings!
-    include_sub = ActiveModel::Type::Boolean.new.cast(params[:include_subprojects])
-    visible =
-      if User.current.admin? && params.key?(:system_hidden)
-        !ActiveModel::Type::Boolean.new.cast(params[:system_hidden])
-      elsif User.current.admin? && params.key?(:system_visible_by_default)
-        ActiveModel::Type::Boolean.new.cast(params[:system_visible_by_default])
+    hidden =
+      if params.key?(:system_hidden)
+        ActiveModel::Type::Boolean.new.cast(params[:system_hidden])
       else
-        TagCloudProjectSetting.local_visible_by_default?(@project)
+        !ActiveModel::Type::Boolean.new.cast(params[:system_visible_by_default])
       end
+    include_sub = ActiveModel::Type::Boolean.new.cast(params[:include_subprojects])
     TagCloudProjectSetting.update_system!(
       @project,
-      visible: visible,
+      visible: !hidden,
       include_subprojects: include_sub
     )
   end
 
   def authorize_system_cloud
-    unless User.current.admin? || TagCloud.can_manage?(User.current, @project)
+    unless User.current.admin?
       deny_access
       return
     end
