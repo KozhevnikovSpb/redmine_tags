@@ -53,7 +53,7 @@ class IssueTagsControllerTest < ActionController::TestCase
     @ids = [1, 2, 8]
     @most_used_tags = %w[second third first]
     @role = roles(:roles_001) # Manager role
-    @role.add_permission! :edit_tags
+    @role.add_permission! :edit_issue_tags
   end
 
   def test_should_get_edit_when_one_issue_chose
@@ -158,7 +158,7 @@ class IssueTagsControllerTest < ActionController::TestCase
     assert_equal I18n.t(:notice_tags_added), flash[:notice]
     assert_equal Issue.find(1).tag_list, [tag]
 
-    @role.remove_permission! :edit_tags
+    @role.remove_permission! :edit_issue_tags
     tag2 = 'second'
 
     assert Issue.all_tags.map(&:name).include?(tag2)
@@ -179,7 +179,7 @@ class IssueTagsControllerTest < ActionController::TestCase
     assert_equal Issue.find(1).tag_list.sort, %w[first second third]
     assert_equal Issue.find(8).tag_list.sort, %w[first second]
 
-    @role.remove_permission! :edit_tags
+    @role.remove_permission! :edit_issue_tags
     tag2 = 'second'
 
     assert Issue.all_tags.map(&:name).include?(tag2)
@@ -192,7 +192,7 @@ class IssueTagsControllerTest < ActionController::TestCase
   end
 
   def test_create_tags_permission
-    @role.add_permission! :create_tags
+    @role.add_permission! :create_issue_tags
     new_tag = 'enable_create_tags_permission'
 
     assert_not_equal Issue.find(1).tag_list, [new_tag]
@@ -203,7 +203,7 @@ class IssueTagsControllerTest < ActionController::TestCase
     assert_equal I18n.t(:notice_tags_added), flash[:notice]
     assert_equal Issue.find(1).tag_list, [new_tag]
 
-    @role.remove_permission! :create_tags
+    @role.remove_permission! :create_issue_tags
     new_tag2 = 'disable_create_tags_permission'
 
     assert !Issue.all_tags.map(&:name).include?(new_tag2)
