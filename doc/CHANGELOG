@@ -13,6 +13,13 @@ Docs: doc/RELEASE_0.0.7.md
 
 Scope: bug fixes and copy (no new features).
 
+Permissions
+* Issue tagging no longer registers :create_tags / :edit_tags (those names belong to Q&A)
+* New names in Tags and tag clouds: create_issue_tags / edit_issue_tags (labels stay Create tags / Edit tags)
+* Roles form checkboxes are independent of Q&A Create tags
+* On boot, roles that already had :create_tags / :edit_tags also receive the issue-tag permissions
+* Issue form Select2 allows typing a new tag only with create_issue_tags
+
 Locales
 * Merged fragment files en_resets.yml, ru_resets.yml, en_system_hide.yml, ru_system_hide.yml into en.yml / ru.yml
 * RU: Apply to all / Reset / Visible by default leftovers translated
@@ -25,70 +32,4 @@ Target: Redmine 7.0.0 / Ruby 3.4 / Rails 8.1
 Version in init.rb: 0.0.6 (Development)
 Docs: doc/RELEASE_0.0.6.md, doc/TEST_V006_TAG_COLORS.md
 
-Project default Tags cloud
-* Project → Settings → Tag Clouds: system Tags row has Edit (checkbox stays read-only)
-* Form fields: Visible by default + Subprojects
-* Subprojects is enabled only when Visible by default is off
-* Subprojects on + hidden: default Tags cloud is hidden on descendants and their Edit is locked
-* Stored in tag_cloud_project_settings (migration 009 + 010 include_subprojects)
-* Personal Select visible still overrides; Reset follows the effective project default
-
-Tag colors
-* Admin Edit / Merge: pastel swatch grid (45) + native color input + hex + Auto
-* First 27 swatches unchanged; added stone / lime / teal / indigo / rose / amber
-* Auto colors still MD5(name) + mute (palette is editor-only, not the auto range)
-* Replaces RedmineUP $.fn.colorPicker on those pages
-* Stored tags.color is slightly desaturated on chips (soften S×0.86), not muted
-* Empty color still uses MD5(name) + mute; less white (t 0.34 → 0.20, max L 0.76 → 0.72)
-* Chip text follows background luminance (light text on dark manual colors)
-* Save normalizes to #rrggbb; Auto / blank clears the column
-* Field name tag[color] unchanged for RedmineUP Q&A
-
-== 2026-09-02 v0.0.5
-
-Stable freeze. Plugin ID: :redmineup_tags
-Target: Redmine 7.0.0 / Ruby 3.4 / Rails 8.1
-Version in init.rb: 0.0.5 (Stable)
-Git tag: v0.0.5 (to be created by maintainer)
-Docs: doc/RELEASE_0.0.5.md
-
-Boot / schema
-* Zeitwerk: tag_cloud_untagged_patch.rb now defines RedmineupTags::Patches::TagCloudUntaggedPatch
-  so rake redmine:plugins:migrate and Rails boot no longer raise NameError on Redmine 7 / Rails 8
-* tag_cloud_preferences.show_untagged is created by migration 007 and SchemaRepair
-  (boot / rake redmineup_tags:ensure_tables / script/extend_database.sh)
-* tag_cloud_user_preferences.show_untagged is created by migration 008 and SchemaRepair
-  (My account master switch; not dropped on force_rebuild)
-
-Personal untagged caption
-* Per-user per-cloud checkbox in Select visible tag clouds (not in the cloud form)
-* Stored in tag_cloud_preferences.show_untagged; default off
-* Only that user sees «untagged issues - N» / «без тегов - N» next to the cloud title
-* Reset deletes preference rows → visibility, order and untagged checkboxes all revert
-* Click opens the issue list with the cloud filters plus issue_tags !*
-* If matching issues exist but all are tagged → «all issues are tagged» / «все задачи затегированы»
-
-Personal untagged master switch (My account)
-* My account → Tags: «Show untagged issues» next to «Show issue counts»
-* Master off (default) hides modal Untagged column and all sidebar captions
-* Profile checkbox is shown only for manage_tag_clouds or admin
-* manage_tag_clouds includes select_tag_clouds (modal + personal order/visibility)
-* Losing manage clears the stored master switch and per-cloud show_untagged flags
-* Show issue counts stays available to every logged-in user (system + custom clouds)
-* Modal Reset does not clear the My account master switch
-
-Form copy
-* Em dash replaced with hyphen in form texts, hints and untagged captions
-* Hints shortened on My account, cloud form, plugin General and modal
-* Tooltips removed (modal drag handle, S/R markers, system-scope title)
-
-Issue list Tags filter
-* Tags is (=) / is not (!) with several values is OR, same as Status / Tracker / Version
-* Was match_all (AND: issue must have every selected tag)
-* Now tagged_with any: true (issue matches if it has at least one selected tag)
-* is not excludes issues that have any of the selected tags
-* Same change in Time log filter and Agile board filter
-* Field name stays issue_tags for RedmineUP Q&A
-* Functional tests updated for OR; added test_filter_by_tags_equal_is_or_not_and
-
-See git history for 0.0.4 and earlier notes.
+See git history for 0.0.6 details and earlier notes.

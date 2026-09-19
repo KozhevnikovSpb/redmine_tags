@@ -26,8 +26,8 @@ module RedmineupTags
           has_many :tag_clouds, through: :tag_cloud_projects
           after_save :enable_redmineup_tags_module_if_needed
 
-          # Keep create_tags / edit_tags available after they left issue_tracking.
           # Enable Tags module only together with Issue tracking.
+          # Issue tag create/edit live in this module as create_issue_tags / edit_issue_tags.
           def enable_redmineup_tags_module_if_needed
             return if module_enabled?(:redmineup_tags)
             return unless module_enabled?(:issue_tracking)

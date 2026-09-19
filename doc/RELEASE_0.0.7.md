@@ -25,12 +25,16 @@ Bug fixes and copy. No new features.
 - Version bumped from `0.0.6` to `0.0.7`
 - Locale fragments (`*_resets.yml`, `*_system_hide.yml`) merged into `config/locales/en.yml` and `ru.yml`
 - RU strings for Apply to all / project Reset / hide Default Tags
+- Issue tag permissions split from Q&A: `create_issue_tags` / `edit_issue_tags`
+- Roles that already had `create_tags` / `edit_tags` get the new issue permissions on boot
+- New tag names in the issue form require `create_issue_tags`
 
 ## Deploy
 
 ```bash
 cd /path/to/redmine/plugins/redmine_tags   # or redmineup_tags symlink
 git pull origin main
-# no migration required for this locale-only start
-# restart app, then Ctrl+F5
+# restart app so role permission copy runs, then Ctrl+F5
 ```
+
+No DB migration. After restart open Administration → Roles and confirm **Tags and tag clouds** Create tags / Edit tags can be toggled independently of Q&A.
