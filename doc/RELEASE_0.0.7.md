@@ -26,8 +26,11 @@ Bug fixes and copy. No new features.
 - Locale fragments (`*_resets.yml`, `*_system_hide.yml`) merged into `config/locales/en.yml` and `ru.yml`
 - RU strings for Apply to all / project Reset / hide Default Tags
 - Issue tag permissions split from Q&A: `create_issue_tags` / `edit_issue_tags`
+- Roles labels distinguish issues from Q&A: Create issue tags / Edit issue tags
 - Roles that already had `create_tags` / `edit_tags` get the new issue permissions on boot
 - New tag names in the issue form require `create_issue_tags`
+- Full `ru.yml` restored (a label commit had truncated it)
+- Functional tests use the new permission symbols
 
 ## Deploy
 
@@ -37,4 +40,9 @@ git pull origin main
 # restart app so role permission copy runs, then Ctrl+F5
 ```
 
-No DB migration. After restart open Administration → Roles and confirm **Tags and tag clouds** Create tags / Edit tags can be toggled independently of Q&A.
+No DB migration. After restart open Administration → Roles:
+
+1. Block **Tags and tag clouds** shows **Create issue tags** / **Edit issue tags**
+2. Block **Q&A** keeps **Create tags** / **Edit tags**
+3. Unchecking the Tags checkboxes must stay unchecked after Save
+4. With both issue permissions on, type a new tag on an issue and save — it must persist

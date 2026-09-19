@@ -54,8 +54,8 @@ en:
   project_module_redmineup_tags: Tags and tag clouds
   permission_create_tags: Create tags
   permission_edit_tags: Edit tags
-  permission_create_issue_tags: Create tags
-  permission_edit_issue_tags: Edit tags
+  permission_create_issue_tags: Create issue tags
+  permission_edit_issue_tags: Edit issue tags
   permission_view_tag_clouds: View tag clouds
   permission_select_tag_clouds: Manage tag cloud display
   permission_manage_tag_clouds: Manage tag clouds
