@@ -4,9 +4,11 @@
   var view = document.querySelector('input[type="checkbox"][value="view_tag_clouds"]');
   var select = document.querySelector('input[type="checkbox"][value="select_tag_clouds"]');
   var manage = document.querySelector('input[type="checkbox"][value="manage_tag_clouds"]');
-  if (!view || !select || !manage) return;
+  var editTags = document.querySelector('input[type="checkbox"][value="edit_issue_tags"]');
+  var createTags = document.querySelector('input[type="checkbox"][value="create_issue_tags"]');
 
-  function sync() {
+  function syncClouds() {
+    if (!view || !select || !manage) return;
     if (manage.checked) {
       select.checked = true;
       view.checked = true;
@@ -22,21 +24,43 @@
     }
   }
 
-  manage.addEventListener('change', sync);
-  select.addEventListener('change', sync);
+  function syncIssueTags() {
+    if (!editTags || !createTags) return;
+    if (editTags.checked) {
+      createTags.disabled = false;
+    } else {
+      createTags.checked = false;
+      createTags.disabled = true;
+    }
+  }
+
+  function sync() {
+    syncClouds();
+    syncIssueTags();
+  }
+
+  if (manage) manage.addEventListener('change', sync);
+  if (select) select.addEventListener('change', sync);
+  if (editTags) editTags.addEventListener('change', sync);
   sync();
 
-  var form = manage.form;
+  var form = (manage && manage.form) || (editTags && editTags.form);
   if (!form) return;
   form.addEventListener('submit', function() {
-    if (manage.checked) {
+    if (manage && manage.checked) {
       select.disabled = false;
       view.disabled = false;
       select.checked = true;
       view.checked = true;
-    } else if (select.checked) {
+    } else if (select && select.checked) {
       view.disabled = false;
       view.checked = true;
+    }
+    if (editTags && createTags) {
+      if (!editTags.checked) {
+        createTags.checked = false;
+      }
+      createTags.disabled = false;
     }
   });
 })();
