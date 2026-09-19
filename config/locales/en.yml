@@ -115,11 +115,20 @@ en:
   text_tag_cloud_no_roles: No assignable project roles were found.
   text_tag_cloud_visible_by_default_hint: If All users and unchecked, hidden until enabled in Select visible tag clouds.
   text_tag_cloud_system_visible_by_default_hint: Project default for Default Tags. Users with Manage display can override it for themselves.
-  text_tag_cloud_system_include_subprojects_hint: When Visible by default is off, hide Default Tags on all subprojects and lock their Edit.
+  label_tag_cloud_hide_default: Hide Default Tags
+  text_tag_cloud_system_hide_hint: Check to hide Default Tags in this project. Users with Manage display can still show it for themselves.
+  text_tag_cloud_system_include_subprojects_hint: When Default Tags is hidden and Subprojects is on, hide it on all subprojects and lock their Edit.
   text_tag_cloud_system_locked: Locked by parent project
   text_tag_cloud_name_blank: Please enter a name.
   text_plugin_tag_display_options: plugin-wide tag display options (sidebar style, colors, sort).
   text_tag_clouds_managed_per_project_html: "Tag clouds are managed per project: <strong>Project → Settings → %{tab}</strong>."
+
+  button_tag_cloud_apply_to_all: Apply to all
+  text_tag_cloud_apply_to_all_confirm: Clear personal show/hide for this cloud for all users? Sidebar will follow Visible by default.
+  notice_tag_cloud_visibility_applied: Personal visibility for this cloud was reset for all users.
+  button_tag_cloud_reset_project: Reset
+  text_tag_cloud_reset_project_confirm: Reset personal visibility and order of all tag clouds in this project for every user?
+  notice_tag_cloud_project_preferences_reset: Personal tag cloud visibility and order were reset for all users on this project.
 
   label_tag_cloud_tag_filter: Tag whitelist
   label_tag_cloud_tag_filter_enable: Restrict cloud to selected tags only

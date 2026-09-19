@@ -115,11 +115,20 @@ ru:
   text_tag_cloud_no_roles: Не найдено ролей, которые можно назначать участникам проекта.
   text_tag_cloud_visible_by_default_hint: При «Все пользователи» снятие галочки скрывает облако, пока его не включат в «Выбрать видимые облака».
   text_tag_cloud_system_visible_by_default_hint: Проектное значение по умолчанию для Default Tags. С правом управления отображением можно переопределить для себя.
-  text_tag_cloud_system_include_subprojects_hint: Если «Видимо по умолчанию» снято, Default Tags скрывается во всех подпроектах и их Edit блокируется.
+  label_tag_cloud_hide_default: Скрыть Default Tags
+  text_tag_cloud_system_hide_hint: Галочка скрывает Default Tags в этом проекте. С правом управления отображением можно включить облако себе.
+  text_tag_cloud_system_include_subprojects_hint: Если Default Tags скрыт и включены подпроекты, облако скрывается во всех подпроектах и их правка блокируется.
   text_tag_cloud_system_locked: Заблокировано родителем
   text_tag_cloud_name_blank: Укажите название.
   text_plugin_tag_display_options: общие настройки отображения тегов (сайдбар, цвета, сортировка).
   text_tag_clouds_managed_per_project_html: "Облака тегов настраиваются в проекте: <strong>Проект → Настройки → %{tab}</strong>."
+
+  button_tag_cloud_apply_to_all: Применить ко всем
+  text_tag_cloud_apply_to_all_confirm: Сбросить личный показ/скрытие этого облака у всех пользователей? В сайдбаре снова будет «Видимо по умолчанию».
+  notice_tag_cloud_visibility_applied: Личная видимость этого облака сброшена у всех пользователей.
+  button_tag_cloud_reset_project: Сброс
+  text_tag_cloud_reset_project_confirm: Сбросить личную видимость и порядок всех облаков этого проекта у всех пользователей?
+  notice_tag_cloud_project_preferences_reset: Личная видимость и порядок облаков сброшены у всех пользователей проекта.
 
   label_tag_cloud_tag_filter: Белый список тегов
   label_tag_cloud_tag_filter_enable: Ограничить облако выбранными тегами
