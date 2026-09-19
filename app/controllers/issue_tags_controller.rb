@@ -11,7 +11,7 @@ class IssueTagsController < ApplicationController
   def update
     tags = Array(params.dig(:issue, :tag_list)).reject(&:blank?).uniq
 
-    unless User.current.allowed_to?(:create_tags, @projects) || Issue.allowed_tags?(tags)
+    unless RedmineupTags.can_create_issue_tags?(User.current, @projects) || Issue.allowed_tags?(tags)
       flash[:error] = t(:notice_failed_to_add_tags)
       return redirect_to_referer_or { render plain: 'Tags were not updated.', status: :unprocessable_entity }
     end
@@ -53,7 +53,7 @@ class IssueTagsController < ApplicationController
   private
 
   def authorize_tag_editing
-    deny_access unless User.current.allowed_to?(:edit_tags, @projects)
+    deny_access unless RedmineupTags.can_edit_issue_tags?(User.current, @projects)
   end
 
   def update_tags(issues, tags)

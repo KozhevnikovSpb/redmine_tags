@@ -134,11 +134,11 @@ module RedmineupTags
         def safe_attributes_with_safe_tags=(attrs, user = User.current)
           self.send(:safe_attributes_without_safe_tags=, attrs, user)
           return unless attrs && (attrs[:tag_list] || attrs[:add_tag_list] || attrs[:remove_tag_list])
-          return unless user.allowed_to?(:edit_tags, project)
+          return unless RedmineupTags.can_edit_issue_tags?(user, project)
 
           tags = attrs[:tag_list] || (Array(tag_list) + Array(attrs[:add_tag_list]) - Array(attrs[:remove_tag_list]))
           tags = tags.reject(&:blank?).uniq
-          self.tag_list = tags if user.allowed_to?(:create_tags, project) || Issue.allowed_tags?(tags)
+          self.tag_list = tags if RedmineupTags.can_create_issue_tags?(user, project) || Issue.allowed_tags?(tags)
         end
 
         def tags_relations
