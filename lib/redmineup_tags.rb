@@ -249,6 +249,7 @@ module RedmineupTags
 end
 
 REDMINEUP_TAGS_REQUIRED_FILES = [
+  'redmineup_tags/issue_tag_permissions',
   'redmineup_tags/hooks/model_issue_hook',
   'redmineup_tags/hooks/views_context_menus_hook',
   'redmineup_tags/hooks/views_issues_hook',
@@ -283,4 +284,5 @@ REDMINEUP_TAGS_REQUIRED_FILES.each { |file| require(base_url + '/' + file) }
 Rails.application.config.after_initialize do
   RedmineupTags.enable_project_module!
   RedmineupTags.ensure_schema!
+  RedmineupTags::IssueTagPermissions.migrate_legacy_role_permissions!
 end
