@@ -175,7 +175,7 @@ class TagCloudsController < ApplicationController
 
     html =
       if tags.empty?
-        helpers.content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud_empty')
+        helpers.content_tag(:p, l(:label_tag_cloud_empty), class: 'tag-cloud-empty')
       else
         style = RedmineupTags.tag_list_view
         style = :simple_cloud if style == :none || style.blank?
