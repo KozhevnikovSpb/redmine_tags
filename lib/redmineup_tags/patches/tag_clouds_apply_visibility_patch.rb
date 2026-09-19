@@ -33,6 +33,16 @@ module RedmineupTags
           render :edit, status: :unprocessable_entity
         end
       end
+
+      def apply_system_visibility
+        unless User.current.admin?
+          deny_access
+          return
+        end
+
+        TagCloudPreference.clear_system_overrides_for_project!(@project)
+        redirect_after_change l(:notice_tag_cloud_visibility_applied)
+      end
     end
   end
 end
