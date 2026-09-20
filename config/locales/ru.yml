@@ -81,7 +81,7 @@ ru:
   label_tag_cloud_op_has_been: был
   label_tag_cloud_op_never: никогда не был
   label_tag_cloud_op_changed_from: изменён с
-  label_tag_cloud_visible_by_default: Видимо по умолчанию
+  label_tag_cloud_visible_by_default: Видимость по умолчанию
   label_tag_cloud_include_subprojects: Подпроекты
   label_tag_cloud_show_in_subprojects: Показ в подпроектах
   text_tag_cloud_include_subprojects_hint: Показ облака в сайдбаре подпроектов. Подсчёт совпадает со списком задач.
@@ -127,7 +127,7 @@ ru:
   text_tag_clouds_managed_per_project_html: "Облака тегов настраиваются в проекте: <strong>Проект → Настройки → %{tab}</strong>."
 
   button_tag_cloud_apply_to_all: Применить ко всем
-  text_tag_cloud_apply_to_all_confirm: Сбросить личный показ/скрытие этого облака у всех пользователей? В сайдбаре снова будет «Видимо по умолчанию».
+  text_tag_cloud_apply_to_all_confirm: Сбросить личный показ/скрытие этого облака у всех пользователей? В сайдбаре снова будет «Видимость по умолчанию».
   notice_tag_cloud_visibility_applied: Личная видимость этого облака сброшена у всех пользователей.
   button_tag_cloud_reset_project: Сброс
   text_tag_cloud_reset_project_confirm: Сбросить личную видимость и порядок всех облаков этого проекта у всех пользователей?
@@ -173,7 +173,7 @@ ru:
         roles: Роли
         tag_filter: Белый список тегов
         include_subprojects: Подпроекты
-        visible_by_default: Видимо по умолчанию
+        visible_by_default: Видимость по умолчанию
         show_untagged: Показывать задачи без тегов
     errors:
       models:
