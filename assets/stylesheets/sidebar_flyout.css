@@ -1,0 +1,105 @@
+/* Tag clouds inside #sidebar and the Redmine hamburger flyout.
+   Section h3 is uppercase on the dark panel — override so titles stay a caption,
+   not another menu item. */
+
+#sidebar .sidebar-tag-cloud-controls,
+.flyout-menu .sidebar-tag-cloud-controls {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 10px 0 8px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+#sidebar .sidebar-tag-cloud-controls a.sidebar-tag-cloud-select,
+.flyout-menu .sidebar-tag-cloud-controls a.sidebar-tag-cloud-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: normal;
+  text-decoration: none;
+  opacity: 1;
+}
+
+#sidebar .sidebar-tag-cloud,
+.flyout-menu .sidebar-tag-cloud {
+  max-width: 100%;
+  min-width: 0;
+  margin: 10px 0 12px;
+  padding: 0;
+}
+
+#sidebar .sidebar-tag-cloud > h3,
+#sidebar .sidebar-tag-cloud .sidebar-tag-cloud-title,
+.flyout-menu .sidebar-tag-cloud > h3,
+.flyout-menu .sidebar-tag-cloud .sidebar-tag-cloud-title {
+  display: block !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  color: inherit;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin: 0 0 6px !important;
+  max-width: 100%;
+  box-sizing: border-box;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+#sidebar .sidebar-tag-cloud-name,
+.flyout-menu .sidebar-tag-cloud-name {
+  display: inline;
+  text-transform: none !important;
+  letter-spacing: normal;
+  font-weight: 700;
+}
+
+#sidebar .sidebar-tag-cloud .tag-cloud-marker,
+.flyout-menu .sidebar-tag-cloud .tag-cloud-marker {
+  vertical-align: text-top;
+  margin-left: 4px;
+  text-transform: none;
+}
+
+#sidebar .sidebar-tag-cloud-system .tag-cloud-system-scope,
+.flyout-menu .sidebar-tag-cloud-system .tag-cloud-system-scope {
+  display: inline;
+  margin-left: 4px;
+  color: inherit;
+  opacity: 0.72;
+  font-size: 0.85em;
+  font-weight: 500;
+  text-transform: none !important;
+  letter-spacing: normal;
+}
+
+#sidebar .sidebar-tag-cloud-body,
+.flyout-menu .sidebar-tag-cloud-body {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+#sidebar .sidebar-tag-cloud-body .tags-cloud,
+.flyout-menu .sidebar-tag-cloud-body .tags-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  margin: 0;
+  padding: 0 1px;
+  list-style: none;
+}
