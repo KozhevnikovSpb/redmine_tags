@@ -111,7 +111,8 @@ module IssuesTagsHelper
           sprite_icon('watch', l(:label_select_visible_tag_clouds)),
           edit_project_tag_cloud_preferences_path(@project),
           remote: true,
-          class: 'icon icon-watch'
+          class: 'icon icon-watch sidebar-tag-cloud-select',
+          title: l(:label_select_visible_tag_clouds)
         )
       end
     end
@@ -184,16 +185,24 @@ module IssuesTagsHelper
 
   def system_tag_cloud_title
     open_only = system_issues_open_only?
+    name = content_tag(
+      :span,
+      l(:label_default_tag_cloud),
+      class: 'sidebar-tag-cloud-name',
+      title: l(:label_default_tag_cloud)
+    )
     scope = content_tag(
       :span,
       open_only ? l(:label_system_tag_cloud_open_only) : l(:label_system_tag_cloud_all),
       class: 'tag-cloud-system-scope'
     )
-    safe_join([l(:label_default_tag_cloud), ' '.html_safe, tag_cloud_letter_marker(:system), ' '.html_safe, scope])
+    safe_join([name, ' '.html_safe, tag_cloud_letter_marker(:system), ' '.html_safe, scope])
   end
 
   def custom_tag_cloud_title(cloud, counts = nil)
-    parts = [h(cloud.name)]
+    parts = [
+      content_tag(:span, h(cloud.name), class: 'sidebar-tag-cloud-name', title: cloud.name.to_s)
+    ]
     if @project && cloud.inherited_in?(@project)
       parts << ' '.html_safe
       parts << tag_cloud_letter_marker(:inherited)
@@ -280,8 +289,8 @@ module IssuesTagsHelper
 
     content_tag(:div, options) do
       safe_join([
-        content_tag(:h3, title),
-        body,
+        content_tag(:h3, title, class: 'sidebar-tag-cloud-title'),
+        content_tag(:div, body, class: 'sidebar-tag-cloud-body'),
         extra
       ].compact)
     end
