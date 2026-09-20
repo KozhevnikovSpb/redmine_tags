@@ -15,12 +15,30 @@ module RedmineupTags
 
         return true if authored_by?(user)
         return false if author_only?
-
-        return true if user.admin?
-        return true if self.class.can_manage?(user, project)
         return false unless visibility_allows?(user, project)
 
+        return true if self.class.can_manage?(user, project)
         visible_by_default?
+      end
+
+      def manageable_by?(user, project: nil, context: :project)
+        return false if user.nil?
+        return user.admin? if context.to_sym == :admin
+
+        if author_only?
+          return false unless authored_by?(user)
+          return false unless project
+          return true if user.admin?
+          return user.allowed_to?(:manage_tag_clouds, project)
+        end
+
+        return false unless project
+        if visibility.to_s == 'roles'
+          return false unless visibility_allows?(user, project)
+        end
+
+        return true if user.admin?
+        user.allowed_to?(:manage_tag_clouds, project)
       end
 
       private
@@ -30,7 +48,7 @@ module RedmineupTags
         when 'all'
           true
         when 'roles'
-          user&.admin? || authored_by?(user) || roles_match?(user, project)
+          authored_by?(user) || roles_match?(user, project)
         when 'owner'
           authored_by?(user)
         else
