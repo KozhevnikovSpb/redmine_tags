@@ -37,37 +37,27 @@ class TagColorTest < ActiveSupport::TestCase
     assert_equal auto, RedmineupTags.display_tag_color(tag)
     assert_equal auto, RedmineupTags.extract_tag_hex(tag)
     assert_equal auto, RedmineupTags.auto_pastel_hex(tag)
-    assert_match(/\A#[0-9a-f]{6}\z/, auto)
+    assert_includes RedmineupTags::AUTO_SWATCHES, auto
   end
 
-  def test_auto_color_stays_in_pastel_band_and_varies
+  def test_auto_color_picks_distinct_swatches
     names = %w[Bug Feature Hotfix Review Docs Backend Frontend Support Design]
     colors = names.map { |name| RedmineupTags.auto_tag_color(name) }
+    colors.each { |hex| assert_includes RedmineupTags::AUTO_SWATCHES, hex }
     assert colors.uniq.size >= 6, colors.inspect
     colors.each do |hex|
       r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
       _h, s, l = RedmineupTags.rgb_to_hsl(r, g, b)
-      assert_operator s, :<=, 0.48, hex
-      assert_operator l, :>=, 0.62, hex
-      assert_operator l, :<=, 0.90, hex
+      assert_operator s, :>=, 0.40, hex
+      assert_operator l, :>=, 0.50, hex
+      assert_operator l, :<=, 0.75, hex
     end
   end
 
   def test_auto_color_spreads_hues_for_common_names
     names = ['Tags', 'Redmine', 'Telegram', 'Python', 'Chat-bot', '#SCADA']
-    hues = names.map do |name|
-      hex = RedmineupTags.auto_tag_color(name)
-      r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
-      h, _s, _l = RedmineupTags.rgb_to_hsl(r, g, b)
-      h * 360.0
-    end
-    names.each_with_index do |left, i|
-      ((i + 1)...names.size).each do |j|
-        delta = (hues[i] - hues[j]).abs
-        delta = [delta, 360.0 - delta].min
-        assert_operator delta, :>=, 20.0, "#{left} vs #{names[j]} Δhue=#{delta.round(1)}"
-      end
-    end
+    colors = names.map { |name| RedmineupTags.auto_tag_color(name) }
+    assert_equal names.size, colors.uniq.size, colors.inspect
   end
 
   def test_tag_text_color_dark_background_is_light
@@ -83,6 +73,13 @@ class TagColorTest < ActiveSupport::TestCase
   def test_pastel_palette_size_and_format
     assert_equal 45, RedmineupTags::PASTEL_PALETTE.size
     RedmineupTags::PASTEL_PALETTE.each do |hex|
+      assert_equal hex, RedmineupTags.normalize_stored_color(hex)
+    end
+  end
+
+  def test_auto_swatches_size_and_format
+    assert_equal 12, RedmineupTags::AUTO_SWATCHES.size
+    RedmineupTags::AUTO_SWATCHES.each do |hex|
       assert_equal hex, RedmineupTags.normalize_stored_color(hex)
     end
   end

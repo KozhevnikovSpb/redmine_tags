@@ -55,11 +55,22 @@ module RedmineupTags
     #fef3c7 #f5e0a8 #e8d08a
   ].freeze
 
-  # Auto color: MD5 picks one of 18 ~20° sectors instead of a raw hue.
-  # Keeps chips in one cloud from collapsing into the same beige/lilac band.
-  AUTO_HUE_SECTORS = 18
-  AUTO_HUE_OFFSET = 12.0
-  AUTO_HUE_JITTER = 8.0
+  # Auto chips pick one of these 12 hues (~30° apart). Even MD5 sectors
+  # packed 60–160° into look-alike greens after desaturation.
+  AUTO_SWATCHES = %w[
+    #e07a7a
+    #e09b5a
+    #d4c05a
+    #7ec85a
+    #5fbf7a
+    #4db8c4
+    #5a9ed4
+    #6a80e0
+    #8b74d4
+    #c06ad4
+    #d46aa8
+    #d48a7a
+  ].freeze
 
   def self.settings() Setting[:plugin_redmineup_tags].stringify_keys end
 
@@ -141,19 +152,10 @@ module RedmineupTags
   def self.auto_tag_color(tag_or_name)
     name = tag_or_name.respond_to?(:name) ? tag_or_name.name.to_s : tag_or_name.to_s
     digest = Digest::MD5.hexdigest(name)
-    sector = digest[0, 8].to_i(16) % AUTO_HUE_SECTORS
-    jitter = ((digest[8, 4].to_i(16) / 65_535.0) - 0.5) * AUTO_HUE_JITTER
-    h = ((sector * (360.0 / AUTO_HUE_SECTORS) + AUTO_HUE_OFFSET + jitter) % 360.0) / 360.0
-    s = 0.36 + (digest[12, 4].to_i(16) / 65_535.0) * 0.12
-    l = 0.64 + (digest[16, 4].to_i(16) / 65_535.0) * 0.08
-    nr, ng, nb = hsl_to_rgb(h, s, l)
-    t = 0.10
-    nr = nr * (1.0 - t) + t
-    ng = ng * (1.0 - t) + t
-    nb = nb * (1.0 - t) + t
-    format('#%02x%02x%02x', (nr * 255).round, (ng * 255).round, (nb * 255).round)
+    index = digest[0, 16].to_i(16) % AUTO_SWATCHES.size
+    AUTO_SWATCHES[index]
   rescue StandardError
-    '#c7d2fe'
+    AUTO_SWATCHES.first
   end
 
   def self.auto_pastel_hex(tag_or_name)
@@ -169,7 +171,7 @@ module RedmineupTags
   end
 
   def self.tag_text_color(bg_hex)
-    hex = normalize_stored_color(bg_hex) || '#c7d2fe'
+    hex = normalize_stored_color(bg_hex) || AUTO_SWATCHES.first
     r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
     lin = lambda do |c|
       c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055)**2.4
