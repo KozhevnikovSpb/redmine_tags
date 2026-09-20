@@ -6,7 +6,7 @@ TAGS_VERSION_NUMBER = '0.0.7'
 TAGS_VERSION_TYPE = 'Development'
 
 Redmine::Plugin.register :redmineup_tags do
-  name "Redmine Multi Tags Clouds plugin (#{TAGS_VERSION_TYPE})"
+  name 'Redmine Multi Tags Clouds plugin'
   author 'RedmineUP / KozhevnikovSpb'
   description 'Redmine issues tagging support with multiple tag clouds'
   version TAGS_VERSION_NUMBER
