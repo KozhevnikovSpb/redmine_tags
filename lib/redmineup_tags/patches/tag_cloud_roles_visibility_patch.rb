@@ -13,9 +13,8 @@ module RedmineupTags
         return false unless project
         return false unless self.class.can_view_settings_list?(user, project)
 
-        if author_only?
-          return authored_by?(user)
-        end
+        return true if authored_by?(user)
+        return false if author_only?
 
         return true if user.admin?
         return true if self.class.can_manage?(user, project)
@@ -25,6 +24,19 @@ module RedmineupTags
       end
 
       private
+
+      def visibility_allows?(user, project)
+        case visibility.to_s
+        when 'all'
+          true
+        when 'roles'
+          user&.admin? || authored_by?(user) || roles_match?(user, project)
+        when 'owner'
+          authored_by?(user)
+        else
+          false
+        end
+      end
 
       def roles_match?(user, project)
         return false unless user&.logged? && project
