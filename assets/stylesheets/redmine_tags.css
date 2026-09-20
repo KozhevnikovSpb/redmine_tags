@@ -83,10 +83,18 @@
 .tag-clouds-settings-table { width: 100%; min-width: 0; table-layout: auto; border-collapse: collapse; }
 .tag-clouds-settings-table th,
 .tag-clouds-settings-table td {
-  vertical-align: top; white-space: normal !important; overflow-wrap: anywhere;
+  vertical-align: top; white-space: normal !important;
+}
+.tag-clouds-settings-table td {
+  overflow-wrap: anywhere;
   word-wrap: break-word; word-break: break-word;
 }
-.tag-clouds-settings-table th { line-height: 1.25; }
+.tag-clouds-settings-table th {
+  line-height: 1.25;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
+}
 .tag-clouds-settings-table .tag-cloud-col-drag { width: 28px; text-align: center; vertical-align: middle; }
 .tag-clouds-settings-table .tag-cloud-col-name,
 .tag-clouds-settings-table .tag-cloud-col-filters,
@@ -97,12 +105,12 @@
 .tag-clouds-settings-table td.tag-cloud-col-name,
 .tag-clouds-settings-table td.name { width: 18%; min-width: 7em; }
 .tag-clouds-settings-table .tag-cloud-col-filters,
-.tag-clouds-settings-table td.tag-cloud-col-filters { width: 28%; min-width: 8em; }
+.tag-clouds-settings-table td.tag-cloud-col-filters { width: 24%; min-width: 8em; }
 .tag-clouds-settings-table .tag-cloud-col-visibility { width: 16%; min-width: 7em; }
 .tag-clouds-settings-table .tag-cloud-col-project,
 .tag-clouds-settings-table .tag-cloud-col-author { width: 12%; min-width: 6em; }
-.tag-clouds-settings-table .tag-cloud-col-visible,
-.tag-clouds-settings-table .tag-cloud-col-subprojects { width: 6%; min-width: 4.5em; text-align: center; }
+.tag-clouds-settings-table .tag-cloud-col-visible { width: 10%; min-width: 8.5em; text-align: center; }
+.tag-clouds-settings-table .tag-cloud-col-subprojects { width: 8%; min-width: 7.5em; text-align: center; }
 .tag-clouds-settings-table .buttons { width: 1%; white-space: nowrap !important; text-align: right; vertical-align: middle; }
 .tag-clouds-settings-table .tag-cloud-col-name .tag-cloud-marker { margin-left: 6px; vertical-align: middle; }
 .tag-clouds-settings-table .tag-cloud-drag-handle,
