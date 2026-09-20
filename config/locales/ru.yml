@@ -17,7 +17,7 @@ ru:
   setting_issue_tags: Теги задач
   sidebar_tag_list_view: Боковую панель как
   issues_show_count: Показать кол-во задач
-  text_issues_show_count_hint: По умолчанию для всех облаков. Пользователь может изменить в «Моя учётная запись → Теги».
+  text_issues_show_count_hint: По умолчанию для всех облаков. Пользователь может изменить в «Моя учётная запись - Теги».
   issues_open_only: Только открытые задачи
   text_issues_open_only_hint: Только для Default Tags. У других облаков действует их собственный фильтр статуса.
   issues_sort_by: Упорядочить теги по
