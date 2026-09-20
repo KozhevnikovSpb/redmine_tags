@@ -8,7 +8,7 @@ TAGS_VERSION_TYPE = 'Development'
 Redmine::Plugin.register :redmineup_tags do
   name 'Redmine Multi Tags Clouds plugin'
   author 'RedmineUP / KozhevnikovSpb'
-  description 'Redmine issues tagging support with multiple tag clouds'
+  description 'Issue tags and multiple tag clouds'
   version TAGS_VERSION_NUMBER
   url 'https://github.com/KozhevnikovSpb/redmine_tags'
   author_url 'mailto:support@redmineup.com'
