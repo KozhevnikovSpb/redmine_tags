@@ -1,4 +1,4 @@
-/* Narrow sidebar / hamburger: wrap long titles, keep chips below the name. */
+/* Narrow sidebar / hamburger: title wraps in-flow, chips stay below. */
 
 #sidebar .sidebar-tag-cloud-controls,
 .flyout-menu .sidebar-tag-cloud-controls {
@@ -22,9 +22,12 @@
 
 #sidebar .sidebar-tag-cloud,
 .flyout-menu .sidebar-tag-cloud {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
   clear: both;
-  overflow: hidden;
+  overflow: visible;
   max-width: 100%;
   min-width: 0;
   margin: 12px 0 10px;
@@ -36,19 +39,23 @@
 .flyout-menu .sidebar-tag-cloud .sidebar-tag-cloud-title {
   display: block !important;
   float: none !important;
-  clear: both;
-  position: relative;
-  z-index: 1;
+  position: static !important;
+  z-index: auto;
+  flex: 0 0 auto;
   width: 100%;
   max-width: 100%;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
   box-sizing: border-box;
   text-transform: none !important;
   letter-spacing: normal !important;
   background: none !important;
   padding: 0 !important;
-  margin: 0 0 8px !important;
+  margin: 0 !important;
   line-height: 1.35 !important;
   white-space: normal !important;
+  overflow: visible !important;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
@@ -76,9 +83,9 @@
 .flyout-menu .sidebar-tag-cloud-body {
   display: block;
   float: none;
-  clear: both;
-  position: relative;
-  z-index: 0;
+  position: static;
+  z-index: auto;
+  flex: 0 0 auto;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -93,7 +100,6 @@
   align-items: flex-start;
   gap: 4px 6px;
   float: none !important;
-  clear: both;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
