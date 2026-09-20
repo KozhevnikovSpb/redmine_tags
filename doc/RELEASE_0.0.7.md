@@ -1,6 +1,6 @@
 # Release v0.0.7 (Development)
 
-**Date:** 2026-09-19  
+**Date:** 2026-09-20  
 **Plugin version:** `0.0.7` (Development)  
 **Plugin ID:** `:redmineup_tags`  
 **Repository:** https://github.com/KozhevnikovSpb/redmine_tags
@@ -35,6 +35,7 @@ Bug fixes and copy. No new features.
 - Project settings: Edit Default Tags and Reset are enabled only for a full Redmine administrator; manage users see disabled icons
 - Apply to all on cloud forms is enabled only for a full Redmine administrator; manage users see a disabled link
 - `reset_preferences`, `apply_visibility` and `apply_system_visibility` are admin-only (manage_tag_clouds is not enough)
+- Auto tag color: MD5 maps to 18 hue sectors (~20°), higher saturation, 10% white mix — chips no longer collapse into beige/lilac pairs
 
 ## Deploy
 
@@ -52,3 +53,4 @@ No DB migration. After restart open Administration → Roles:
 4. Create issue tags stays disabled until Edit issue tags is checked
 5. With both issue permissions on, type a new tag on an issue and save — it must persist
 6. Project → Settings → Tag Clouds: manager with Manage tag clouds sees disabled Edit on Default Tags, disabled Reset, and disabled Apply to all; only a full administrator can use them
+7. Sidebar auto-colored tags should look more distinct after Ctrl+F5 (manual `tags.color` unchanged)
