@@ -11,7 +11,7 @@
 #
 # redmine_tags is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -54,6 +54,12 @@ module RedmineupTags
     #ffe4e6 #fecdd3 #f5b8c4
     #fef3c7 #f5e0a8 #e8d08a
   ].freeze
+
+  # Auto color: MD5 picks one of 18 ~20° sectors instead of a raw hue.
+  # Keeps chips in one cloud from collapsing into the same beige/lilac band.
+  AUTO_HUE_SECTORS = 18
+  AUTO_HUE_OFFSET = 12.0
+  AUTO_HUE_JITTER = 8.0
 
   def self.settings() Setting[:plugin_redmineup_tags].stringify_keys end
 
@@ -135,11 +141,13 @@ module RedmineupTags
   def self.auto_tag_color(tag_or_name)
     name = tag_or_name.respond_to?(:name) ? tag_or_name.name.to_s : tag_or_name.to_s
     digest = Digest::MD5.hexdigest(name)
-    h = digest[0, 8].to_i(16) / 4_294_967_295.0
-    s = 0.24 + (digest[8, 4].to_i(16) / 65_535.0) * 0.20
-    l = 0.62 + (digest[12, 4].to_i(16) / 65_535.0) * 0.12
+    sector = digest[0, 8].to_i(16) % AUTO_HUE_SECTORS
+    jitter = ((digest[8, 4].to_i(16) / 65_535.0) - 0.5) * AUTO_HUE_JITTER
+    h = ((sector * (360.0 / AUTO_HUE_SECTORS) + AUTO_HUE_OFFSET + jitter) % 360.0) / 360.0
+    s = 0.36 + (digest[12, 4].to_i(16) / 65_535.0) * 0.12
+    l = 0.64 + (digest[16, 4].to_i(16) / 65_535.0) * 0.08
     nr, ng, nb = hsl_to_rgb(h, s, l)
-    t = 0.22
+    t = 0.10
     nr = nr * (1.0 - t) + t
     ng = ng * (1.0 - t) + t
     nb = nb * (1.0 - t) + t

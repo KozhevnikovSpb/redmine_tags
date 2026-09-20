@@ -30,6 +30,11 @@ Project settings Tag Clouds
 * Apply to all (custom cloud and Default Tags) is enabled only for a full Redmine administrator; manage users see a disabled link
 * reset_preferences / apply_visibility / apply_system_visibility deny non-admin even with manage_tag_clouds
 
+Colors
+* Auto tag color uses 18 hue sectors (~20°) from MD5 instead of a raw hue
+* Saturation 0.36–0.48, lightness 0.64–0.72, white mix 10% (was 22%)
+* Manual tags.color unchanged; Q&A still reads the stored column
+
 Locales
 * Merged fragment files en_resets.yml, ru_resets.yml, en_system_hide.yml, ru_system_hide.yml into en.yml / ru.yml
 * RU: Apply to all / Reset / Visible by default leftovers translated

@@ -53,6 +53,23 @@ class TagColorTest < ActiveSupport::TestCase
     end
   end
 
+  def test_auto_color_spreads_hues_for_common_names
+    names = ['Tags', 'Redmine', 'Telegram', 'Python', 'Chat-bot', '#SCADA']
+    hues = names.map do |name|
+      hex = RedmineupTags.auto_tag_color(name)
+      r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) / 255.0 }
+      h, _s, _l = RedmineupTags.rgb_to_hsl(r, g, b)
+      h * 360.0
+    end
+    names.each_with_index do |left, i|
+      ((i + 1)...names.size).each do |j|
+        delta = (hues[i] - hues[j]).abs
+        delta = [delta, 360.0 - delta].min
+        assert_operator delta, :>=, 20.0, "#{left} vs #{names[j]} Δhue=#{delta.round(1)}"
+      end
+    end
+  end
+
   def test_tag_text_color_dark_background_is_light
     assert_equal '#f8fafc', RedmineupTags.tag_text_color('#000000')
     assert_equal '#f8fafc', RedmineupTags.tag_text_color('#1e3a8a')
