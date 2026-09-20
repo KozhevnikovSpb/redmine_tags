@@ -341,4 +341,26 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     assert cloud.visible_for?(@user, project: @project)
     assert_includes sidebar_ids(@user), cloud.id
   end
+
+  test 'admin without role is not author sees roles cloud only in plugin list' do
+    cloud = create_roles_cloud_for(@user, name: 'Roles plugin only')
+    @admin.stubs(:roles_for_project).with(@project).returns([])
+
+    assert_not cloud.authored_by?(@admin)
+    assert_not cloud.visible_for?(@admin, project: @project)
+    assert_not cloud.listed_in_settings_for?(@admin, project: @project)
+    assert_not cloud.manageable_by?(@admin, project: @project)
+    assert_not_includes sidebar_ids(@admin), cloud.id
+    assert cloud.listed_in_settings_for?(@admin, context: :admin)
+    assert cloud.manageable_by?(@admin, context: :admin)
+  end
+
+  test 'admin who is the author still sees roles cloud on the project' do
+    cloud = create_roles_cloud_for(@admin, name: 'Admin author roles')
+
+    assert cloud.visible_for?(@admin, project: @project)
+    assert cloud.listed_in_settings_for?(@admin, project: @project)
+    assert cloud.manageable_by?(@admin, project: @project)
+    assert_includes sidebar_ids(@admin), cloud.id
+  end
 end
