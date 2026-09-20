@@ -82,7 +82,6 @@ class TagCloudPreferencesController < ApplicationController
   def selectable_cloud?(cloud)
     return true if cloud.authored_by?(User.current)
     return false if cloud.author_only?
-    return true if TagCloud.can_manage?(User.current, @project)
     return true unless cloud.respond_to?(:visibility_allowed_for?)
 
     cloud.visibility_allowed_for?(User.current, @project)
