@@ -185,13 +185,9 @@ class TagCloud < ActiveRecord::Base
 
     return true if authored_by?(user)
     return false if author_only?
-
-    return true if user.admin?
     return false unless visibility_allows?(user, project)
 
-    # Manage must see hidden clouds to edit them. View/select hide VBD-off rows.
     return true if self.class.can_manage?(user, project)
-
     visible_by_default?
   end
 
@@ -209,8 +205,12 @@ class TagCloud < ActiveRecord::Base
       return user.allowed_to?(:manage_tag_clouds, project)
     end
 
-    return true if user.admin?
     return false unless project
+    if visibility.to_s == 'roles'
+      return false unless visibility_allows?(user, project)
+    end
+
+    return true if user.admin?
     user.allowed_to?(:manage_tag_clouds, project)
   end
 
@@ -234,6 +234,10 @@ class TagCloud < ActiveRecord::Base
     return preferred unless preferred.nil?
 
     visible_by_default?
+  end
+
+  def visibility_allowed_for?(user, project)
+    visibility_allows?(user, project)
   end
 
   def position_in(project)
@@ -358,7 +362,7 @@ class TagCloud < ActiveRecord::Base
     when 'all'
       true
     when 'roles'
-      user.admin? || authored_by?(user) || roles_match?(user, project)
+      authored_by?(user) || roles_match?(user, project)
     when 'owner'
       authored_by?(user)
     else
@@ -376,10 +380,40 @@ class TagCloud < ActiveRecord::Base
   end
 
   def roles_match?(user, project)
-    return false unless user.logged? && project
+    return false unless user&.logged? && project
 
-    user_role_ids = user.roles_for_project(project).map(&:id)
-    (assigned_role_ids & user_role_ids).any?
+    wanted = Array(assigned_role_ids).map(&:to_i).reject(&:zero?)
+    return false if wanted.empty?
+
+    have = membership_role_ids_for(user, project)
+    (wanted & have).any?
+  end
+
+  def membership_role_ids_for(user, project)
+    ids = []
+    memberships = []
+
+    memberships << user.membership(project) if user.respond_to?(:membership)
+    if project.respond_to?(:memberships)
+      memberships.concat(Array(project.memberships.where(user_id: user.id)))
+      if user.respond_to?(:groups)
+        group_ids = Array(user.groups).map(&:id)
+        if group_ids.any?
+          memberships.concat(Array(project.memberships.where(user_id: group_ids)))
+        end
+      end
+    end
+
+    memberships.compact.uniq.each do |membership|
+      ids.concat(Array(membership.roles).map { |role| role.id.to_i }) if membership.respond_to?(:roles)
+      ids.concat(Array(membership.member_roles).map { |mr| mr.role_id.to_i }) if membership.respond_to?(:member_roles)
+      ids.concat(Array(membership.role_ids).map(&:to_i)) if membership.respond_to?(:role_ids)
+    end
+
+    ids.reject(&:zero?).uniq
+  rescue StandardError => e
+    Rails.logger.warn("[redmineup_tags] membership_role_ids_for: #{e.class}: #{e.message}") if defined?(Rails) && Rails.logger
+    []
   end
 
   def read_filter_operator(name)
