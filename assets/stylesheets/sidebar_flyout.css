@@ -1,8 +1,9 @@
-/* Hamburger / narrow sidebar: wrap long cloud names, no extra plaques. */
+/* Narrow sidebar / hamburger: wrap long titles, keep chips below the name. */
 
 #sidebar .sidebar-tag-cloud-controls,
 .flyout-menu .sidebar-tag-cloud-controls {
   display: block;
+  clear: both;
   margin: 10px 0 6px;
   padding: 0;
   background: none;
@@ -21,6 +22,9 @@
 
 #sidebar .sidebar-tag-cloud,
 .flyout-menu .sidebar-tag-cloud {
+  display: block;
+  clear: both;
+  overflow: hidden;
   max-width: 100%;
   min-width: 0;
   margin: 12px 0 10px;
@@ -31,12 +35,18 @@
 .flyout-menu .sidebar-tag-cloud > h3,
 .flyout-menu .sidebar-tag-cloud .sidebar-tag-cloud-title {
   display: block !important;
+  float: none !important;
+  clear: both;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   text-transform: none !important;
   letter-spacing: normal !important;
   background: none !important;
   padding: 0 !important;
-  margin: 0 0 6px !important;
-  max-width: 100%;
+  margin: 0 0 8px !important;
   line-height: 1.35 !important;
   white-space: normal !important;
   overflow-wrap: anywhere;
@@ -65,16 +75,48 @@
 #sidebar .sidebar-tag-cloud-body,
 .flyout-menu .sidebar-tag-cloud-body {
   display: block;
+  float: none;
+  clear: both;
+  position: relative;
+  z-index: 0;
+  width: 100%;
   max-width: 100%;
   min-width: 0;
 }
 
 #sidebar .sidebar-tag-cloud-body .tags-cloud,
-.flyout-menu .sidebar-tag-cloud-body .tags-cloud {
-  display: flex;
+#sidebar .sidebar-tag-cloud .tags-cloud,
+.flyout-menu .sidebar-tag-cloud-body .tags-cloud,
+.flyout-menu .sidebar-tag-cloud .tags-cloud {
+  display: flex !important;
   flex-wrap: wrap;
+  align-items: flex-start;
   gap: 4px 6px;
+  float: none !important;
+  clear: both;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+#sidebar .sidebar-tag-cloud .tags-cloud > span,
+#sidebar .sidebar-tag-cloud .tags-cloud > li,
+.flyout-menu .sidebar-tag-cloud .tags-cloud > span,
+.flyout-menu .sidebar-tag-cloud .tags-cloud > li {
+  float: none !important;
+  position: static;
+  display: inline-block;
+  max-width: 100%;
+}
+
+#sidebar .sidebar-tag-cloud .tag-label-color,
+#sidebar .sidebar-tag-cloud .tag-label,
+.flyout-menu .sidebar-tag-cloud .tag-label-color,
+.flyout-menu .sidebar-tag-cloud .tag-label {
+  position: static;
+  float: none;
+  max-width: 100%;
 }
