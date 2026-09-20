@@ -62,24 +62,30 @@ module RedmineupTags
         wanted = Array(assigned_role_ids).map(&:to_i).reject(&:zero?)
         return false if wanted.empty?
 
-        have = project_role_ids_for(user, project)
+        have = membership_role_ids_for(user, project)
         (wanted & have).any?
       end
 
-      def project_role_ids_for(user, project)
+      # Real project membership only. Do not call User#roles_for_project —
+      # full admins get every givable role there even with no membership.
+      def membership_role_ids_for(user, project)
         ids = []
-        if user.respond_to?(:roles_for_project)
-          ids.concat(Array(user.roles_for_project(project)).map { |role| role.id.to_i })
+
+        memberships = []
+        if user.respond_to?(:membership)
+          memberships << user.membership(project)
+        end
+        if project.respond_to?(:memberships)
+          memberships.concat(Array(project.memberships.where(user_id: user.id)))
+          if user.respond_to?(:groups)
+            group_ids = Array(user.groups).map(&:id)
+            if group_ids.any?
+              memberships.concat(Array(project.memberships.where(user_id: group_ids)))
+            end
+          end
         end
 
-        membership =
-          if user.respond_to?(:membership)
-            user.membership(project)
-          elsif project.respond_to?(:memberships)
-            project.memberships.find_by(user_id: user.id)
-          end
-
-        if membership
+        memberships.compact.uniq.each do |membership|
           if membership.respond_to?(:roles)
             ids.concat(Array(membership.roles).map { |role| role.id.to_i })
           end
@@ -93,7 +99,7 @@ module RedmineupTags
 
         ids.reject(&:zero?).uniq
       rescue StandardError => e
-        Rails.logger.warn("[redmineup_tags] project_role_ids_for: #{e.class}: #{e.message}") if defined?(Rails) && Rails.logger
+        Rails.logger.warn("[redmineup_tags] membership_role_ids_for: #{e.class}: #{e.message}") if defined?(Rails) && Rails.logger
         []
       end
     end
