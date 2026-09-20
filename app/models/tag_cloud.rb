@@ -183,9 +183,8 @@ class TagCloud < ActiveRecord::Base
     return false unless project
     return false unless self.class.can_view_settings_list?(user, project)
 
-    if author_only?
-      return authored_by?(user)
-    end
+    return true if authored_by?(user)
+    return false if author_only?
 
     return true if user.admin?
     return false unless visibility_allows?(user, project)
@@ -359,7 +358,7 @@ class TagCloud < ActiveRecord::Base
     when 'all'
       true
     when 'roles'
-      user.admin? || roles_match?(user, project)
+      user.admin? || authored_by?(user) || roles_match?(user, project)
     when 'owner'
       authored_by?(user)
     else
