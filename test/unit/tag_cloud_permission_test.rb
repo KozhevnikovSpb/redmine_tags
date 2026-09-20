@@ -23,6 +23,22 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     cloud
   end
 
+  def create_roles_cloud_for(author, attrs = {})
+    role = roles(:roles_002)
+    cloud = TagCloud.new({
+      name: 'Roles without author',
+      visibility: 'roles',
+      visible_by_default: true,
+      created_by: author,
+      owner: author
+    }.merge(attrs))
+    cloud.role_ids = [role.id]
+    cloud.save!
+    cloud.tag_cloud_projects.create!(project: @project, position: TagCloudProject.where(project_id: @project.id).count)
+    author.stubs(:roles_for_project).with(@project).returns([])
+    cloud
+  end
+
   def sidebar_ids(user)
     TagCloud.sidebar_clouds_for(@project, user).map(&:id)
   end
@@ -299,5 +315,30 @@ class TagCloudPermissionTest < ActiveSupport::TestCase
     cloud.preferences.create!(user: @user, visible: true)
 
     assert cloud.visible_for?(@user, project: @project)
+  end
+
+  test 'author sees selected-roles cloud without belonging to those roles' do
+    stub_cloud_permissions(@user, view: true, select: true, manage: true)
+    cloud = create_roles_cloud_for(@user)
+
+    assert cloud.authored_by?(@user)
+    assert cloud.visible_for?(@user, project: @project)
+    assert cloud.listed_in_settings_for?(@user, project: @project)
+    assert cloud.manageable_by?(@user, project: @project)
+    assert_includes sidebar_ids(@user), cloud.id
+    assert_not cloud.visible_for?(@other, project: @project)
+  end
+
+  test 'author can enable selected-roles cloud when visible_by_default is off' do
+    stub_cloud_permissions(@user, select: true)
+    cloud = create_roles_cloud_for(@user, name: 'Roles hidden default', visible_by_default: false)
+
+    assert cloud.listed_in_settings_for?(@user, project: @project)
+    assert_not cloud.visible_for?(@user, project: @project)
+    assert_not_includes sidebar_ids(@user), cloud.id
+
+    cloud.preferences.create!(user: @user, visible: true)
+    assert cloud.visible_for?(@user, project: @project)
+    assert_includes sidebar_ids(@user), cloud.id
   end
 end
