@@ -109,9 +109,9 @@ en:
   label_tag_cloud_visibility_rule: Visibility
   label_tag_cloud_visibility_all: All users
   label_tag_cloud_visibility_owner: Author only
-  label_tag_cloud_visibility_roles: Selected roles
+  label_tag_cloud_visibility_roles: Selected roles and author
   label_tag_cloud_owner: Author
-  text_tag_cloud_visibility_hint: Who sees the cloud in the sidebar. Users with Manage tag clouds can override this for themselves, except another user's author-only cloud.
+  text_tag_cloud_visibility_hint: Who sees the cloud in the sidebar. Selected roles always include the author. Users with Manage tag clouds can override this for themselves, except another user's author-only cloud.
   text_tag_cloud_roles_required: Select at least one role.
   text_tag_cloud_owner_only_author: Only the cloud author can choose «Author only».
   text_tag_cloud_no_roles: No assignable project roles were found.
