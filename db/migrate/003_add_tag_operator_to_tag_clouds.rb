@@ -17,13 +17,15 @@ class AddTagOperatorToTagClouds < ActiveRecord::Migration[7.0]
   def backfill_tag_operator
     return unless table_exists?(:tag_clouds)
     return unless column_exists?(:tag_clouds, :tag_filter)
+    return unless column_exists?(:tag_clouds, :tag_operator)
 
     say_with_time 'Backfill tag_operator from tag_filter (true → is)' do
+      true_literal = connection.quote(true)
       execute(<<~SQL.squish)
         UPDATE tag_clouds
         SET tag_operator = '='
         WHERE tag_operator = '*'
-          AND (tag_filter = TRUE OR tag_filter = 1 OR tag_filter = 't')
+          AND tag_filter = #{true_literal}
       SQL
     end
   end
